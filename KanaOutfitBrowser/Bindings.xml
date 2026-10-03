@@ -1,0 +1,11 @@
+<Bindings>
+    <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+        <Category name="KanaOutfitBrowser">
+            <Action name="KANA_OUTFIT_BROWSER_TOGGLE">
+                <Down>KanaOutfitBrowser.Toggle()</Down>
+            </Action>
+        </Category>
+    </Layer>
+
+    <Layer name="KanaOutfitBrowserScene" allowFallthrough="false"/>
+</Bindings>

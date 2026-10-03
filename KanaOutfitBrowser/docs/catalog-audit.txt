@@ -1,0 +1,393 @@
+Records: 4980; families: 397; variants: 960; omitted: 0
+
+REVIEW collectible:7617:visual:6 | Ведро | 1 slots
+  7617 | Ведро | /esoui/art/icons/housing_gen_bucket_001.dds | armor=6
+
+REVIEW collectible:9077:visual:6 | Погребальная маска болотного гниляка | 1 slots
+  9077 | Погребальная маска болотного гниляка | /esoui/art/icons/cos_bogblightmask.dds | armor=6
+
+REVIEW itemstyle:71 | Стиль ордена Псиджиков | 2 slots
+  5111 | Псиджикская кираса с мистическим оком | /esoui/art/icons/gear_psijic_heavy_chestv2.dds | armor=3
+  5114 | Псиджикские перчатки хранителя | /esoui/art/icons/gear_psijic_wargauntlet.dds | armor=3
+  5115 | Пламенные перчатки Псиджиков | /esoui/art/icons/gear_psijic_flamegauntlet.dds | armor=3
+  5116 | Морозные перчатки Псиджиков | /esoui/art/icons/gear_psijic_frostgauntlet.dds | armor=3
+  5117 | Электрические перчатки Псиджиков | /esoui/art/icons/gear_psijic_shockgauntlet.dds | armor=3
+
+REVIEW name:opal:велидрет:visual:4 | Опаловый: Велидрет | 2 slots
+  10561 | Опаловая маска Велидрет | /esoui/art/icons/gear_undvelidrethopal_head_a.dds | armor=4
+  10562 | Опаловый наплечник Велидрет | /esoui/art/icons/gear_undvelidrethopal_shoulder_a.dds | armor=4
+
+REVIEW name:opal:жнеца-палача:visual:4 | Опаловый: жнеца-палача | 2 slots
+  9827 | Опаловая маска жнеца-палача | /esoui/art/icons/gear_undharvesteropal_head_a.dds | armor=4
+  9828 | Опаловый наплечник жнеца-палача | /esoui/art/icons/gear_undharvesteropal_shoulder_a.dds | armor=4
+
+REVIEW name:opal:иламбрисов:visual:4 | Опаловый: Иламбрисов | 2 slots
+  6910 | Опаловая маска Иламбрисов | /esoui/art/icons/gear_undxivilai_helmet_e.dds | armor=4
+  6911 | Опаловый наплечник Иламбрисов | /esoui/art/icons/gear_undxivilai_shoulders_e.dds | armor=4
+
+REVIEW name:opal:короля троллей:visual:4 | Опаловый: короля троллей | 2 slots
+  6912 | Опаловая маска короля троллей | /esoui/art/icons/gear_undtroll_head_e.dds | armor=4
+  6913 | Опаловый наплечник короля троллей | /esoui/art/icons/gear_undtroll_shoulders_e.dds | armor=4
+
+REVIEW name:opal:крови земли:visual:4 | Опаловый: крови земли | 2 slots
+  10425 | Опаловая маска крови земли | /esoui/art/icons/gear_opalearthgore_head_a.dds | armor=4
+  10426 | Опаловый наплечник крови земли | /esoui/art/icons/gear_opalearthgore_shoulders_a.dds | armor=4
+
+REVIEW name:opal:ледяного сердца:visual:4 | Опаловый: Ледяного Сердца | 2 slots
+  7756 | Опаловая маска Ледяного Сердца | /esoui/art/icons/gear_undatronach_head_e.dds | armor=4
+  7757 | Опаловый наплечник Ледяного Сердца | /esoui/art/icons/gear_undatronach_shoulder_e.dds | armor=4
+
+REVIEW name:opal:лорда-надзирателя:visual:4 | Опаловый: лорда-надзирателя | 2 slots
+  7763 | Опаловая маска лорда-надзирателя | /esoui/art/icons/undgrievoust_head_e.dds | armor=4
+  7764 | Опаловый наплечник лорда-надзирателя | /esoui/art/icons/undgrievoust_shoulders_e.dds | armor=4
+
+REVIEW name:opal:матери стаи:visual:4 | Опаловый: Матери стаи | 2 slots
+  7808 | Опаловая маска Матери стаи | /esoui/art/icons/gear_undgiantspider_helmet_006.dds | armor=4
+  7809 | Опаловый наплечник Матери стаи | /esoui/art/icons/gear_undgiantspider_shoulders_006.dds | armor=4
+
+REVIEW name:opal:механического стража:visual:4 | Опаловый: механического стража | 2 slots
+  6908 | Опаловая маска механического стража | /esoui/art/icons/unddwemer_head_e.dds | armor=4
+  6909 | Опаловый наплечник механического стража | /esoui/art/icons/unddwemer_shoulders_e.dds | armor=4
+
+REVIEW name:opal:пламени ночи:visual:4 | Опаловый: Пламени Ночи | 2 slots
+  7770 | Опаловая маска Пламени Ночи | /esoui/art/icons/undtitan_head_e.dds | armor=4
+  7771 | Опаловый наплечник Пламени Ночи | /esoui/art/icons/undtitan_shoulder_e.dds | armor=4
+
+REVIEW name:opal:порождения крови:visual:4 | Опаловый: Порождения Крови | 2 slots
+  6906 | Опаловая маска Порождения Крови | /esoui/art/icons/gear_undgargoyle_head_e.dds | armor=4
+  6907 | Опаловый наплечник Порождения Крови | /esoui/art/icons/gear_undgargoyle_shoulders_e.dds | armor=4
+
+REVIEW name:opal:стража ркугамза:visual:4 | Опаловый: стража Ркугамза | 2 slots
+  10751 | Опаловая маска стража Ркугамза | /esoui/art/icons/gear_undcenturion_head_e.dds | armor=4
+  10752 | Опаловый наплечник стража Ркугамза | /esoui/art/icons/gear_undcenturion_shoulders_e.dds | armor=4
+
+REVIEW name:opal:удушая:visual:4 | Опаловый: Удушая | 2 slots
+  9812 | Опаловая маска Удушая | /esoui/art/icons/gear_undstrangler_head_e.dds | armor=4
+  9813 | Опаловый наплечник Удушая | /esoui/art/icons/gear_undstrangler_shoulders_e.dds | armor=4
+
+REVIEW name:архидруида девирика:visual:4 | архидруида Девирика | 2 slots
+  10565 | Маска архидруида Девирика | /esoui/art/icons/gear_terrorbear_head_a.dds | armor=4
+  10566 | Наплечник архидруида Девирика | /esoui/art/icons/gear_terrorbear_shoulder_a.dds | armor=4
+
+REVIEW name:балорга:visual:4 | Балорга | 2 slots
+  7426 | Маска Балорга | /esoui/art/icons/gear_undaunted_werewolfbehemoth_head_a.dds | armor=4
+  7427 | Наплечник Балорга | /esoui/art/icons/gear_undaunted_werewolfbehemoth_shoulder_a.dds | armor=4
+
+REVIEW name:бар-сакки:visual:4 | Бар-Сакки | 2 slots
+  13427 | Маска Бар-Сакки | /esoui/art/icons/gear_kaalnorgmonster_head_a.dds | armor=4
+  13428 | Наплечник Бар-Сакки | /esoui/art/icons/gear_kaalnorgmonster_shoulder_a.dds | armor=4
+
+REVIEW name:барона зодруса:visual:4 | барона Зодруса | 2 slots
+  9015 | Маска барона Зодруса | /esoui/art/icons/gear_undredlord_head_a.dds | armor=4
+  9016 | Наплечник барона Зодруса | /esoui/art/icons/gear_undredlord_shoulder_a.dds | armor=4
+
+REVIEW name:барона тирска:visual:4 | барона Тирска | 2 slots
+  10024 | Маска барона Тирска | /esoui/art/icons/gear_undgrievoustwilightv2_head_a.dds | armor=4
+  10025 | Наплечники барона Тирска | /esoui/art/icons/gear_undgrievoustwilightv2_shoulder_a.dds | armor=4
+
+REVIEW name:вайкосы:visual:4 | Вайкосы | 2 slots
+  8688 | Маска Вайкосы | /esoui/art/icons/gear_undvykosa_helmet_a.dds | armor=4
+  8689 | Наплечник Вайкосы | /esoui/art/icons/gear_undvykosa_shoulders_a.dds | armor=4
+
+REVIEW name:валкина скории:visual:4 | Валкина Скории | 2 slots
+  6174 | Маска Валкина Скории | /esoui/art/icons/gear_undaunted_magma_head_a.dds | armor=4
+  6175 | Наплечник Валкина Скории | /esoui/art/icons/gear_undaunted_magma_shoulders_a.dds | armor=4
+
+REVIEW name:велидрет:visual:4 | Велидрет | 2 slots
+  6692 | Маска Велидрет | /esoui/art/icons/gear_undaunted_hoarvordaedra_head_a.dds | armor=4
+  6693 | Наплечник Велидрет | /esoui/art/icons/gear_undaunted_hoarvordaedra_shoulders_a.dds | armor=4
+
+REVIEW name:грандвульфа:visual:4 | Грандвульфа | 2 slots
+  9128 | Маска Грандвульфа | /esoui/art/icons/gear_undmfgrundwulf_helmet_a.dds | armor=4
+  9129 | Наплечник Грандвульфа | /esoui/art/icons/gear_undmfgrundwulf_shoulder_a.dds | armor=4
+
+REVIEW name:гротдарра:visual:4 | Гротдарра | 2 slots
+  5545 | Маска Гротдарра | /esoui/art/icons/gear_undauntedfleshatronach_head_a.dds | armor=4
+  5546 | Наплечник Гротдарра | /esoui/art/icons/gear_undauntedfleshatronach_shoulders_a.dds | armor=4
+
+REVIEW name:домихауса:visual:4 | Домихауса | 2 slots
+  7749 | Маска Домихауса | /esoui/art/icons/gear_undauntedminotaur_a.dds | armor=4
+  7750 | Наплечник Домихауса | /esoui/art/icons/gear_undauntedminotaur_shoulder_a.dds | armor=4
+
+REVIEW name:живого пламени:visual:4 | Живого Пламени | 2 slots
+  9629 | Маска Живого Пламени | /esoui/art/icons/gear_undearthinvarnate_head_a.dds | armor=4
+  9630 | Наплечник Живого Пламени | /esoui/art/icons/gear_undearthinvarnate_shoulder_a.dds | armor=4
+
+REVIEW name:жнеца-палача:visual:4 | жнеца-палача | 2 slots
+  7682 | Маска жнеца-палача | /esoui/art/icons/gear_undauntedharvester_head_a.dds | armor=4
+  7683 | Наплечник жнеца-палача | /esoui/art/icons/gear_undauntedharvester_shoulders_a.dds | armor=4
+
+REVIEW name:заан:visual:4 | Заан | 2 slots
+  8761 | Маска Заан | /esoui/art/icons/gear_undaunted_dragonpriest_head_a.dds | armor=4
+  8762 | Наплечник Заан | /esoui/art/icons/gear_undaunted_dragonpriest_shoulder_a.dds | armor=4
+
+REVIEW name:иламбрисов:visual:4 | Иламбрисов | 2 slots
+  5452 | Маска Иламбрисов | /esoui/art/icons/gear_undauntedxivilai_head_a.dds | armor=4
+  5453 | Наплечник Иламбрисов | /esoui/art/icons/gear_undauntedxilvilai_shoulders_a.dds | armor=4
+
+REVIEW name:каргеды:visual:4 | Каргеды | 2 slots
+  10035 | Маска Каргеды | /esoui/art/icons/gear_undgryphon_head_a.dds | armor=4
+  10036 | Наплечник Каргеды | /esoui/art/icons/gear_undgryphon_shoulder_a.dds | armor=4
+
+REVIEW name:короля троллей:visual:4 | короля троллей | 2 slots
+  5607 | Маска короля троллей | /esoui/art/icons/gear_undauntedtroll_head_a.dds | armor=4
+  5608 | Наплечник короля троллей | /esoui/art/icons/gear_undauntedtroll_shoulders_a.dds | armor=4
+
+REVIEW name:кошмара кьялнара:visual:4 | кошмара Кьялнара | 2 slots
+  7513 | Маска кошмара Кьялнара | /esoui/art/icons/gear_undbonecolossus_head_a.dds | armor=4
+  7514 | Наплечник кошмара Кьялнара | /esoui/art/icons/gear_undbonecolossus_shoulder_a.dds | armor=4
+
+REVIEW name:кра'гха:visual:4 | Кра'гха | 2 slots
+  6956 | Маска Кра'гха | /esoui/art/icons/gear_undaunteddreugh_head_a.dds | armor=4
+  6957 | Наплечник Кра'гха | /esoui/art/icons/gear_undaunteddreugh_shoulders_a.dds | armor=4
+
+REVIEW name:крови земли:visual:4 | крови земли | 2 slots
+  8167 | Маска крови земли | /esoui/art/icons/gear_undaunted_ironatronach_head_a.dds | armor=4
+  8168 | Наплечник крови земли | /esoui/art/icons/gear_undaunted_ironatronach_shoulders_a.dds | armor=4
+
+REVIEW name:леди малигды:visual:4 | леди Малигды | 2 slots
+  10026 | Маска леди Малигды | /esoui/art/icons/gear_undladymalygda_head_a.dds | armor=4
+  10027 | Наплечник леди Малигды | /esoui/art/icons/gear_undladymalygda_shoulder_a.dds | armor=4
+
+REVIEW name:леди шипов:visual:4 | Леди Шипов | 2 slots
+  10022 | Маска Леди Шипов | /esoui/art/icons/gear_undvamplord_head_a.dds | armor=4
+  10023 | Наплечник Леди Шипов | /esoui/art/icons/gear_undvamplord_shoulder_a.dds | armor=4
+
+REVIEW name:ледяного сердца:visual:4 | Ледяного Сердца | 2 slots
+  5615 | Маска Ледяного Сердца | /esoui/art/icons/gear_undauntedatronach_head_a.dds | armor=4
+  5616 | Наплечник Ледяного Сердца | /esoui/art/icons/gear_undauntedatronach_shoulders_a.dds | armor=4
+
+REVIEW name:лорда-надзирателя:visual:4 | лорда-надзирателя | 2 slots
+  6388 | Маска лорда-надзирателя | /esoui/art/icons/gear_undauntedgrievoust_head_a.dds | armor=4
+  6389 | Наплечник лорда-надзирателя | /esoui/art/icons/gear_undauntedgrievoust_shoulders_a.dds | armor=4
+
+REVIEW name:марселока:visual:4 | Марселока | 2 slots
+  9273 | Маска Марселока | /esoui/art/icons/gear_undmaarselok_helmet_a.dds | armor=4
+  9274 | Наплечник Марселока | /esoui/art/icons/gear_undmaarselok_shoulders_a.dds | armor=4
+
+REVIEW name:матери кьяннайт:visual:4 | матери Кьяннайт | 2 slots
+  7511 | Маска матери Кьяннайт | /esoui/art/icons/gear_undciannait_head_a.dds | armor=4
+  7512 | Наплечник матери Кьяннайт | /esoui/art/icons/gear_undciannait_shoulders_a.dds | armor=4
+
+REVIEW name:матери стаи:visual:4 | Матери стаи | 2 slots
+  5926 | Маска Матери стаи | /esoui/art/icons/gear_undauntedgiantspider_head_a.dds | armor=4
+  5927 | Наплечник Матери стаи | /esoui/art/icons/gear_undauntedgiantspider_shoulders_a.dds | armor=4
+
+REVIEW name:механического стража:visual:4 | механического стража | 2 slots
+  6044 | Маска механического стража | /esoui/art/icons/gear_undaunteddwemer_head_a.dds | armor=4
+  6045 | Наплечник механического стража | /esoui/art/icons/gear_undaunteddwemer_shoulders_a.dds | armor=4
+
+REVIEW name:могучей чудан:visual:4 | Могучей Чудан | 2 slots
+  6690 | Маска Могучей Чудан | /esoui/art/icons/gear_undaunted_hajmota_head_a.dds | armor=4
+  6691 | Наплечник Могучей Чудан | /esoui/art/icons/gear_undaunted_hajmota_shoulders_a.dds | armor=4
+
+REVIEW name:молаг кены:visual:4 | Молаг Кены | 2 slots
+  5454 | Маска Молаг Кены | /esoui/art/icons/gear_undauntedclivia_head_a.dds | armor=4
+  5455 | Наплечник Молаг Кены | /esoui/art/icons/gear_undauntedclivia_shoulders_a.dds | armor=4
+
+REVIEW name:назарей:visual:4 | Назарей | 2 slots
+  10042 | Маска Назарей | /esoui/art/icons/gear_undspriggan_head_a.dds | armor=4
+  10043 | Наплечник Назарей | /esoui/art/icons/gear_undspriggan_shoulder_a.dds | armor=4
+
+REVIEW name:нериен'эта:visual:4 | Нериен'эта | 1 slots
+  7784 | Маска Нериен'эта | /esoui/art/icons/gear_undaunted_lich_head_a.dds | armor=4
+
+REVIEW name:нериен’эта:visual:4 | Нериен’эта | 1 slots
+  7785 | Наплечник Нериен’эта | /esoui/art/icons/gear_undaunted_lich_shoulders_a.dds | armor=4
+
+REVIEW name:нунатака:visual:4 | Нунатака | 2 slots
+  10028 | Маска Нунатака | /esoui/art/icons/gear_undfrostatronachv2_head_a.dds | armor=4
+  10029 | Наплечник Нунатака | /esoui/art/icons/gear_undfrostatronachv2_shoulder_a.dds | armor=4
+
+REVIEW name:огненного стража:visual:4 | огненного стража | 2 slots
+  6948 | Маска огненного стража | /esoui/art/icons/gear_undauntedlurcher_head_a.dds | armor=4
+  6949 | Наплечник огненного стража | /esoui/art/icons/gear_undauntedlurcher_shoulders_a.dds | armor=4
+
+REVIEW name:огненной пасти:visual:4 | Огненной Пасти | 2 slots
+  8147 | Маска Огненной Пасти | /esoui/art/icons/gear_undaunted_daedroth_head_a.dds | armor=4
+  8148 | Наплечник Огненной Пасти | /esoui/art/icons/gear_undaunted_daedroth_shoulders_a.dds | armor=4
+
+REVIEW name:озезана бушующее пламя:visual:4 | Озезана Бушующее Пламя | 2 slots
+  11003 | Маска Озезана Бушующее Пламя | /esoui/art/icons/gear_undinfernium_head_a.dds | armor=4
+  11004 | Наплечник Озезана Бушующее Пламя | /esoui/art/icons/gear_undinfernium_shoulder_a.dds | armor=4
+
+REVIEW name:пламени ночи:visual:4 | Пламени Ночи | 2 slots
+  6251 | Маска Пламени Ночи | /esoui/art/icons/gear_undaunted_titan_head_a.dds | armor=4
+  6252 | Наплечник Пламени Ночи | /esoui/art/icons/gear_undaunted_titan_shoulders_a.dds | armor=4
+
+REVIEW name:порождения крови:visual:4 | Порождения Крови | 2 slots
+  5924 | Маска Порождения Крови | /esoui/art/icons/gear_undauntedgargoyle_head_a.dds | armor=4
+  5925 | Наплечник Порождения Крови | /esoui/art/icons/gear_undauntedgargoyle_shoulders_a.dds | armor=4
+
+REVIEW name:порождения мефалы:visual:4 | порождения Мефалы | 2 slots
+  6775 | Маска порождения Мефалы | /esoui/art/icons/gear_undauntedspiderdaedra_head_c.dds | armor=4
+  6776 | Наплечник порождения Мефалы | /esoui/art/icons/gear_undauntedspiderdaedra_should_c.dds | armor=4
+
+REVIEW name:прибрежного стража:visual:4 | Прибрежного Стража | 2 slots
+  10563 | Маска Прибрежного Стража | /esoui/art/icons/gear_hadolid_head_a.dds | armor=4
+  10564 | Наплечник Прибрежного Стража | /esoui/art/icons/gear_hadolid_shoulder_a.dds | armor=4
+
+REVIEW name:приора тьеррика:visual:4 | приора Тьеррика | 2 slots
+  9588 | Маска приора Тьеррика | /esoui/art/icons/gear_undartifactmaster_head_a.dds | armor=4
+  9589 | Наплечник приора Тьеррика | /esoui/art/icons/gear_undartifactmaster_shoulder_a.dds | armor=4
+
+REVIEW name:роксы искалеченного:visual:4 | Роксы Искалеченного | 2 slots
+  11010 | Маска Роксы Искалеченного | /esoui/art/icons/gear_undnixox_head_a.dds | armor=4
+  11011 | Наплечник Роксы Искалеченного | /esoui/art/icons/gear_undnixox_shoulder_a.dds | armor=4
+
+REVIEW name:с оскалом гадюки для потентата:visual:6 | с оскалом гадюки для потентата | 1 slots
+  8203 | Шлем с оскалом гадюки для потентата | /esoui/art/icons/hat_potentatev1.dds | armor=6
+
+REVIEW name:с чешуей дракона для потентата:visual:6 | с чешуей дракона для потентата | 1 slots
+  8204 | Шлем с чешуей дракона для потентата | /esoui/art/icons/hat_potentatev2.dds | armor=6
+
+REVIEW name:селены:visual:4 | Селены | 2 slots
+  8339 | Маска Селены | /esoui/art/icons/gear_undselene_head_b.dds | armor=4
+  8340 | Наплечник Селены | /esoui/art/icons/gear_undselene_shoulders_b.dds | armor=4
+
+REVIEW name:селлистрикс:visual:4 | Селлистрикс | 2 slots
+  5763 | Маска Селлистрикс | /esoui/art/icons/gear_undauntedlamia_head_a.dds | armor=4
+  5764 | Наплечник Селлистрикс | /esoui/art/icons/gear_undauntedlamia_shoulders_a.dds | armor=4
+
+REVIEW name:симфонии клинков:visual:4 | Симфонии Клинков | 2 slots
+  8958 | Маска Симфонии Клинков | /esoui/art/icons/gear_undnarlimor_head_a.dds | armor=4
+  8959 | Наплечник Симфонии Клинков | /esoui/art/icons/gear_undnarlimor_shoulder_a.dds | armor=4
+
+REVIEW name:скелета-пирата:visual:4 | скелета-пирата | 2 slots
+  6721 | Маска скелета-пирата | /esoui/art/icons/gear_undauntedpirateskeleton_head_a.dds | armor=4
+  6722 | Наплечник скелета-пирата | /esoui/art/icons/gear_undauntedpirateskeleton_shoulders_a.dds | armor=4
+
+REVIEW name:слепой:visual:4 | Слепой | 2 slots
+  12021 | Маска Слепой | /esoui/art/icons/gear_theblind_head_a.dds | armor=4
+  12022 | Наплечник Слепой | /esoui/art/icons/gear_theblind_shoulders_a.dds | armor=4
+
+REVIEW name:слизебрюха:visual:4 | Слизебрюха | 2 slots
+  7329 | Маска Слизебрюха | /esoui/art/icons/gear_undcrocodile_head_b.dds | armor=4
+  7330 | Наплечник Слизебрюха | /esoui/art/icons/gear_undcrocodile_shoulders_b.dds | armor=4
+
+REVIEW name:стража ркугамза:visual:4 | стража Ркугамза | 2 slots
+  6963 | Маска стража Ркугамза | /esoui/art/icons/gear_undcenturion_head_b.dds | armor=4
+  6964 | Наплечник стража Ркугамза | /esoui/art/icons/gear_undcenturion_shoulders_b.dds | armor=4
+
+REVIEW name:тактика орфеона:visual:4 | тактика Орфеона | 2 slots
+  12876 | Маска тактика Орфеона | /esoui/art/icons/gear_undremanimp_head_a.dds | armor=4
+  12877 | Наплечник тактика Орфеона | /esoui/art/icons/gear_undremanimp_shoulders_a.dds | armor=4
+
+REVIEW name:творения антелмир:visual:4 | творения Антелмир | 2 slots
+  12014 | Маска творения Антелмир | /esoui/art/icons/gear_histguardian_head_a.dds | armor=4
+  12015 | Наплечник творения Антелмир | /esoui/art/icons/gear_histguardian_shoulders_a.dds | armor=4
+
+REVIEW name:теневика:visual:4 | Теневика | 2 slots
+  5456 | Маска Теневика | /esoui/art/icons/gear_undauntedclannfear_head_a.dds | armor=4
+  5457 | Наплечник Теневика | /esoui/art/icons/gear_undauntedclannfear_shoulders_a.dds | armor=4
+
+REVIEW name:турвокуна:visual:4 | Турвокуна | 2 slots
+  8695 | Маска Турвокуна | /esoui/art/icons/gear_undaunted_fanglair_head_a.dds | armor=4
+  8696 | Наплечник Турвокуна | /esoui/art/icons/gear_undaunted_fanglair_shoulder_a.dds | armor=4
+
+REVIEW name:удушая:visual:4 | Удушая | 2 slots
+  6744 | Маска Удушая | /esoui/art/icons/gear_undaunted_strangler_heavy_head_a.dds | armor=4
+  6745 | Наплечник Удушая | /esoui/art/icons/gear_undaunted_strangler_heavy_shoulder_a.dds | armor=4
+
+REVIEW name:хранителя камня:visual:4 | хранителя Камня | 2 slots
+  9001 | Маска хранителя Камня | /esoui/art/icons/gear_undauntedstonekeeper_head_a.dds | armor=4
+  9002 | Наплечник хранителя Камня | /esoui/art/icons/gear_undauntedstonekeeper_shoulders_a.dds | armor=4
+
+REVIEW name:чешуйчатого сотрясателя:visual:4 | Чешуйчатого Сотрясателя | 2 slots
+  8176 | Маска Чешуйчатого Сотрясателя | /esoui/art/icons/gear_undauntedsuneripper_head_a.dds | armor=4
+  8177 | Наплечник Чешуйчатого Сотрясателя | /esoui/art/icons/gear_undauntedsuneripper_shoulders_a.dds | armor=4
+
+REVIEW name:чудовища из черного камня:visual:4 | чудовища из черного камня | 2 slots
+  13425 | Маска чудовища из черного камня | /esoui/art/icons/gear_blacksoulgematronach_head_a.dds | armor=4
+  13426 | Наплечник чудовища из черного камня | /esoui/art/icons/gear_blacksoulgematronach_shoulder_a.dds | armor=4
+
+REVIEW name:чудовища энкратиса:visual:4 | чудовища Энкратиса | 2 slots
+  9017 | Маска чудовища Энкратиса | /esoui/art/icons/gear_undfiregiant_head_a.dds | armor=4
+  9018 | Наплечник чудовища Энкратиса | /esoui/art/icons/gear_undfiregiant_shoulder_a.dds | armor=4
+
+REVIEW name:шквала возмездия:visual:4 | Шквала Возмездия | 2 slots
+  12874 | Маска Шквала Возмездия | /esoui/art/icons/gear_undexilesvengeance_head_a.dds | armor=4
+  12875 | Наплечник Шквала Возмездия | /esoui/art/icons/gear_undexilesvengeance_shoulders_a.dds | armor=4
+
+REVIEW name:штормового кулака:visual:4 | Штормового Кулака | 2 slots
+  7424 | Маска Штормового Кулака | /esoui/art/icons/gear_undstromfist_helmet_b.dds | armor=4
+  7425 | Наплечник Штормового Кулака | /esoui/art/icons/gear_undstromfist_shoulder_b.dds | armor=4
+
+REVIEW texture:alliancemimicryalddom:visual:6 | Пародийный шутовской Доминиона | 2 slots
+  12830 | Пародийная шутовская куртка Доминиона | /esoui/art/icons/gear_alliancemimicryalddom_chest_a.dds | armor=6
+  12831 | Пародийный шутовской шлем Доминиона | /esoui/art/icons/gear_alliancemimicryalddom_head_a.dds | armor=6
+
+REVIEW texture:alliancemimicrydaggerfallcove:visual:6 | Пародийный шутовской Ковенанта | 2 slots
+  12834 | Пародийная шутовская куртка Ковенанта | /esoui/art/icons/gear_alliancemimicrydaggerfallcove_chest_a.dds | armor=6
+  12835 | Пародийный шутовской шлем Ковенанта | /esoui/art/icons/gear_alliancemimicrydaggerfallcove_head_a.dds | armor=6
+
+REVIEW texture:alliancemimicryebonheartpact:visual:6 | Пародийный шутовской Пакта | 2 slots
+  12832 | Пародийная шутовская куртка Пакта | /esoui/art/icons/gear_alliancemimicryebonheartpact_chest_a.dds | armor=6
+  12833 | Пародийный шутовской шлем Пакта | /esoui/art/icons/gear_alliancemimicryebonheartpact_head_a.dds | armor=6
+
+REVIEW texture:barbus:visual:6 | Копия шлема Барбаса | 1 slots
+  12440 | Копия шлема Барбаса | /esoui/art/icons/gear_barbus_head_a.dds | armor=6
+
+REVIEW texture:dragonorigin | Чешуйчатые сабатоны | 1 slots
+  10066 | Чешуйчатые сабатоны | /esoui/art/icons/gear_dragonorigin_feet_a.dds | armor=3
+
+REVIEW texture:dragradiant:visual:6 | Маска истребителя небесного ужаса | 2 slots
+  6593 | Маска истребителя небесного ужаса | /esoui/art/icons/gear_dragradiant_helmet_a.dds | armor=6
+  6594 | Наплечники истребителя небесного ужаса | /esoui/art/icons/gear_dragradiant_shoulder_a.dds | armor=6
+
+REVIEW texture:dramaturgesdelirium:visual:4 | безумия драматурга | 2 slots
+  13632 | Тяжелый шлем безумия драматурга | /esoui/art/icons/gear_dramaturgesdelirium_head_a.dds | armor=4
+  13633 | Наплечники безумия драматурга | /esoui/art/icons/gear_dramaturgesdelirium_shoulder_a.dds | armor=4
+
+REVIEW texture:dunmercryptpriest:visual:6 | Одеяние могильного каноника | 1 slots
+  11414 | Одеяние могильного каноника | /esoui/art/icons/gear_dunmercryptpriest_chest_a.dds | armor=6
+
+REVIEW texture:dwemerharshconditions:visual:6 | Эзотерические поножи | 1 slots
+  11413 | Эзотерические поножи | /esoui/art/icons/gear_dwemerharshconditions_legs_a.dds | armor=6
+
+REVIEW texture:faunslarkcladding:visual:6 | Куртка из одеяния шалости фавна | 1 slots
+  10772 | Куртка из одеяния шалости фавна | /esoui/art/icons/gear_faunslarkcladding_a.dds | armor=6
+
+REVIEW texture:feraldruid_b | Эполеты Старшего Течения | 1 slots
+  10583 | Эполеты Старшего Течения | /esoui/art/icons/gear_feraldruid_light_shoulder_b.dds | armor=1
+  10584 | Наплечники Старшего Течения | /esoui/art/icons/gear_feraldruid_heavy_shoulder_b.dds | armor=3
+  10705 | Оплечье Старшего Течения | /esoui/art/icons/gear_feraldruid_medium_shoulder_b.dds | armor=2
+
+REVIEW texture:hermaeusmora | Эполеты морского покрова | 1 slots
+  10067 | Эполеты морского покрова | /esoui/art/icons/gear_hermaeusmora_shoulders_a.dds | armor=1
+
+REVIEW texture:hircinessnarlmask:visual:6 | Боевая маска Охотника | 1 slots
+  13291 | Боевая маска Охотника | /esoui/art/icons/gear_hircinessnarlmask_head_a.dds | armor=6
+
+REVIEW texture:perniciouspoulaines:visual:6 | Танцевальные туфли Безумного Бога | 1 slots
+  13214 | Танцевальные туфли Безумного Бога | /esoui/art/icons/gear_perniciouspoulaines_feet_a.dds | armor=6
+
+REVIEW texture:rakkat:visual:6 | Накидка пустоты Ракката | 1 slots
+  12532 | Накидка пустоты Ракката | /esoui/art/icons/gear_rakkat_shoulder_a.dds | armor=6
+
+REVIEW texture:rourkenheavygauntlets_mythic:visual:6 | Паровые щитки клана Руркен | 1 slots
+  12169 | Паровые щитки клана Руркен | /esoui/art/icons/gear_rourkenheavygauntlets_mythic_hands_a.dds | armor=6
+
+REVIEW texture:sacredgrovepants:visual:6 | Брюки пляски призывателя бури | 1 slots
+  10770 | Брюки пляски призывателя бури | /esoui/art/icons/gear_sacredgrovepants_legs_a.dds | armor=6
+
+REVIEW texture:shadowseekerscowl:visual:6 | Капюшон Королевы теней | 1 slots
+  12170 | Капюшон Королевы теней | /esoui/art/icons/gear_shadowseekerscowl_head_a.dds | armor=6
+
+REVIEW texture:sinistralmer | Пояс-ремень леворуких | 1 slots
+  10256 | Пояс-ремень леворуких | /esoui/art/icons/gear_sinistralmer_waist_a.dds | armor=2
+
+REVIEW texture:syrabanesregard:visual:6 | Ремень оберега Сирабейна | 1 slots
+  10723 | Ремень оберега Сирабейна | /esoui/art/icons/gear_syrabanesregard_waist_a.dds | armor=6
+
+REVIEW texture:undglitteringgoad:visual:6 | Блеска Искушения | 2 slots
+  13975 | Тяжелый шлем Блеска Искушения | /esoui/art/icons/gear_undglitteringgoad_head_a.dds | armor=6
+  13976 | Наплечники Блеска Искушения | /esoui/art/icons/gear_undglitteringgoad_shoulder_a.dds | armor=6
+
+REVIEW texture:undtheruckus:visual:6 | Погрома | 2 slots
+  13993 | Тяжелый шлем Погрома | /esoui/art/icons/gear_undtheruckus_head_a.dds | armor=6
+  13994 | Наплечники Погрома | /esoui/art/icons/gear_undtheruckus_shoulder_a.dds | armor=6
+
+REVIEW texture:undthousandeyes:visual:6 | Тысячи Глаз | 2 slots
+  13977 | Тяжелый шлем Тысячи Глаз | /esoui/art/icons/gear_undthousandeyes_head_a.dds | armor=6
+  13978 | Наплечники Тысячи Глаз | /esoui/art/icons/gear_undthousandeyes_shoulder_a.dds | armor=6

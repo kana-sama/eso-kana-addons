@@ -1,0 +1,49 @@
+## Title: KanaWardrobe
+## Author: Kana
+## Version: 0.1.0
+## APIVersion: 101048 101049 101050 101051
+## SavedVariables: KanaWardrobeSaved
+## OptionalDependsOn: LibFilters-3.0
+
+UI.xml
+ProbeReport.lua
+Core.lua
+PerformanceProbe.lua
+BuildCapabilities.lua
+BuildProbe.lua
+lang/en.lua
+lang/ru.lua
+Slots.lua
+BuildModel.lua
+Presets.lua
+Inventory.lua
+EquipmentPlan.lua
+EquipmentRunner.lua
+Protection.lua
+SkillState.lua
+SkillAdapter.lua
+AttributeAdapter.lua
+BuildPlanner.lua
+BuildRunner.lua
+BuildDraft.lua
+BuildJournal.lua
+OperationJournal.lua
+OperationExecutor.lua
+OperationPlan.lua
+OperationSteps.lua
+OperationSession.lua
+Session.lua
+EffectModel.lua
+SetModel.lua
+BuildDescription.lua
+SummaryView.lua
+SoftPanel.lua
+PreviewTooltips.lua
+SetPreview.lua
+ItemTooltips.lua
+InventoryFilters.lua
+Dialogs.lua
+OperationWindow.lua
+PageAdapters.lua
+SelectionOverlay.lua
+UI.lua

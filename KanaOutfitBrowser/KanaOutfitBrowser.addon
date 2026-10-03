@@ -1,0 +1,11 @@
+## Title: KanaOutfitBrowser
+## Description: Sets category with native armor style buttons in Collections
+## Author: Kana
+## Version: 0.2.2
+## APIVersion: 101050
+## SavedVariables: KanaOutfitBrowserSavedVariables KanaOutfitBrowserCharacterSavedVariables
+
+Catalog.lua
+NativeSetModel.lua
+NativeSets.xml
+NativeSets.lua

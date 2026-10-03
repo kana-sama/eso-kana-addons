@@ -1,0 +1,1269 @@
+[
+  {
+    "name": "Glenumbra",
+    "mapKey": "glenumbra_glenumbra_base",
+    "mapId": 1,
+    "nativeBlob": {
+      "id": 1,
+      "name": "Гленумбра",
+      "mask": "/art/maps/tamriel/tamriel-glenumbra.dds",
+      "width": 0.1166992188,
+      "height": 0.1508789062,
+      "x": 0.0412903987,
+      "y": 0.2687096
+    },
+    "palette": [
+      "#617044",
+      "#87925A",
+      "#A19563",
+      "#777D73",
+      "#454F43"
+    ],
+    "subzones": [
+      {
+        "name": "Daenia / Beldama Wyrd / Daggerfall",
+        "position": "south and southwest",
+        "terrain": "Temperate green and yellow-green broadleaf woodland with grassy openings; Daggerfall coastal stone city.",
+        "colors": [
+          "#617044",
+          "#87925A",
+          "#777D73"
+        ]
+      },
+      {
+        "name": "Cambray Hills / Westtry",
+        "position": "central",
+        "terrain": "Rolling mixed woodland; Westtry is locally grey, sparse and dead-wooded. Do not extend its blight across all Glenumbra.",
+        "colors": [
+          "#87925A",
+          "#A19563",
+          "#777D73"
+        ]
+      },
+      {
+        "name": "Hag Fen and northern uplands",
+        "position": "east-central wet lowland; rocky northern/northeastern spine",
+        "terrain": "Dark wet lowland inferred from native map; upland crags and forest farther north. Preserve the native peninsula and bays.",
+        "colors": [
+          "#454F43",
+          "#617044",
+          "#777D73"
+        ]
+      }
+    ],
+    "geographicObjects": "Long southwest–northeast peninsula; Daggerfall southwest, Beldama Wyrd southern interior, Camlorn central, craggy northern spine. Ocean remains outside the native land mask.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/glenumbra_glenumbra_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://skyrim.annathepiper.org/files/2024/12/306130_20240321001719_1-1024x640.png",
+        "page": "https://skyrim.annathepiper.org/2024/12/12/eso-catchup-post-veghra-in-late-march/",
+        "location": "Glenumbra hillside, exact landmark unspecified",
+        "observed": "Green grass, green/gold broadleaf canopy, mossy grey stone.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-glenumbra-hill"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://skyrim.annathepiper.org/files/2024/10/306130_20240226232516_1-1024x640.png",
+        "page": "https://skyrim.annathepiper.org/2024/10/09/in-which-veghra-quests-in-daggerfall-and-glenumbra/",
+        "location": "Beldama Wyrd quest scenery",
+        "observed": "Green/yellow trees, meadow and slate stone.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-glenumbra-wyrd"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifter.com/wp-content/uploads/2018/02/106-the-ghost-of-westtry-bridge.jpg",
+        "page": "https://thetamrieldrifter.com/2015/03/",
+        "location": "Westtry Bridge",
+        "observed": "Dead trees, hazy grey rock and muted grass at haunted settlement.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-glenumbra-westtry"
+      }
+    ],
+    "confidence": "High for southern temperate woodland and central Westtry contrast; medium for whole-zone partition.",
+    "gaps": "No useful wide Hag Fen screenshot was verified. A Mother Murk character close-up and a ship-at-sea image were rejected as biome evidence. Northern upland coverage remains native-map based."
+  },
+  {
+    "name": "Rivenspire",
+    "mapKey": "rivenspire_rivenspire_base",
+    "mapId": 10,
+    "nativeBlob": {
+      "id": 10,
+      "name": "Ривенспайр",
+      "mask": "/art/maps/tamriel/tamriel-rivenspire.dds",
+      "width": 0.1049804688,
+      "height": 0.0917968899,
+      "x": 0.1225807965,
+      "y": 0.1925808042
+    },
+    "palette": [
+      "#77766A",
+      "#A29373",
+      "#666A52",
+      "#85845A",
+      "#4B5348"
+    ],
+    "subzones": [
+      {
+        "name": "Southern and central moors",
+        "position": "south / central rocky interior",
+        "terrain": "Grey and ochre exposed ground, jagged rock spires, narrow valleys, sparse or dead trees.",
+        "colors": [
+          "#77766A",
+          "#A29373",
+          "#666A52"
+        ]
+      },
+      {
+        "name": "Fell's Run basin",
+        "position": "east to northeast",
+        "terrain": "Noticeably greener pasture around settlement and brook, mixed light grass and dark trees; small area, not a province-wide green blanket.",
+        "colors": [
+          "#85845A",
+          "#666A52",
+          "#4B5348"
+        ]
+      },
+      {
+        "name": "Northern coast / Northpoint approach",
+        "position": "north and northeast edge",
+        "terrain": "Coastal strip within rugged crag country; retain native peninsula, inlets and ridges.",
+        "colors": [
+          "#77766A",
+          "#666A52"
+        ]
+      }
+    ],
+    "geographicObjects": "Rock spires and broken ridges dominate silhouette. Shornhelm southwest of center; Fell's Run eastern basin and Northpoint northeast. No screenshot evidence supports adding lava.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/rivenspire_rivenspire_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://jolstatic.fr/www/captures/1816/0/89850.jpg",
+        "page": "https://teso.jeuxonline.info/article/13030/regions-alliance-daguefilante",
+        "location": "Rivenspire rocky moor panorama; exact landmark not captioned",
+        "observed": "Bare grey/ochre terrain and leafless trees.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-rivenspire-barren"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifter.com/wp-content/uploads/2018/03/278-a-fells-run.jpg",
+        "page": "https://thetamrieldrifter.com/2017/03/02/278-fells-run/",
+        "location": "Fell's Run",
+        "observed": "Greener pasture, brook and bridge under warm sunset light.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-rivenspire-green"
+      }
+    ],
+    "confidence": "High for contrast of barren interior versus green Fell's Run; medium for fine boundary placement.",
+    "gaps": "Northern shore and each formal quest subregion were not separately photographed. Sunset tint was discounted; screenshot does not justify orange land."
+  },
+  {
+    "name": "Stormhaven",
+    "mapKey": "stormhaven_stormhaven_base",
+    "mapId": 12,
+    "nativeBlob": {
+      "id": 12,
+      "name": "Стормхейвен",
+      "mask": "/art/maps/tamriel/tamriel-stormhaven.dds",
+      "width": 0.1240234226,
+      "height": 0.0766601562,
+      "x": 0.1538711935,
+      "y": 0.2712903917
+    },
+    "palette": [
+      "#74814E",
+      "#929761",
+      "#576A49",
+      "#8A8976",
+      "#AD9F71"
+    ],
+    "subzones": [
+      {
+        "name": "Alcaire / Koeglin",
+        "position": "west",
+        "terrain": "Green coastal pasture and mixed broadleaf trees, pale-grey rocky rises.",
+        "colors": [
+          "#74814E",
+          "#929761",
+          "#8A8976"
+        ]
+      },
+      {
+        "name": "Menevia / Wayrest hinterland",
+        "position": "center and southern coast",
+        "terrain": "Grassy farm/woodland mosaic; city and shoreline locally stone-grey, fields light olive.",
+        "colors": [
+          "#929761",
+          "#74814E",
+          "#AD9F71"
+        ]
+      },
+      {
+        "name": "Gavaudon / Weeping Giant",
+        "position": "east",
+        "terrain": "Wooded river and waterfall country, green canopy with some gold/orange deciduous accents and tall grey rocks.",
+        "colors": [
+          "#576A49",
+          "#74814E",
+          "#8A8976"
+        ]
+      }
+    ],
+    "geographicObjects": "Northern rocky boundary; south-facing coastline; Wayrest on southern coast, Bjoulsae/eastern water connections. Weeping Giant is a local rock/waterfall landmark, not a continuous canyon biome.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/stormhaven_stormhaven_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://www.elderscrollsportal.de/wiki/images/thumb/d/df/ESO_Koeglin.jpg/1200px-ESO_Koeglin.jpg",
+        "page": "https://www.elderscrollsportal.de/almanach/Online:Koeglin",
+        "location": "Koeglin village, west",
+        "observed": "Lush green grass, green/yellow trees, grey rocks.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-stormhaven-koeglin"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifterblog.wordpress.com/wp-content/uploads/2018/03/215-a-the-weeping-giant.jpg",
+        "page": "https://thetamrieldrifter.com/2016/05/10/215-the-weeping-giant/",
+        "location": "Weeping Giant, east",
+        "observed": "Mossy face-like cliff, waterfall, mixed green and orange trees.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-stormhaven-weeping"
+      }
+    ],
+    "confidence": "High for west/east temperate terrain; medium for field-to-forest boundaries.",
+    "gaps": "Central farmland not separately verified in a wide screenshot. Avoid applying the Weeping Giant's autumn accents across every tree."
+  },
+  {
+    "name": "Alik'r Desert",
+    "mapKey": "alikr_alikr_base",
+    "mapId": 30,
+    "nativeBlob": {
+      "id": 30,
+      "name": "Пустыня Алик'р",
+      "mask": "/art/maps/tamriel/tamriel-alikr.dds",
+      "width": 0.1435547024,
+      "height": 0.0947265625,
+      "x": 0.1138712019,
+      "y": 0.3425807953
+    },
+    "palette": [
+      "#CBB783",
+      "#AF9564",
+      "#82755A",
+      "#657050",
+      "#758B83"
+    ],
+    "subzones": [
+      {
+        "name": "Myrkwasa / Sentinel",
+        "position": "west, northwest coastal city",
+        "terrain": "Pale desert and weathered stone; palms are isolated accents near habitation and water.",
+        "colors": [
+          "#CBB783",
+          "#AF9564",
+          "#657050"
+        ]
+      },
+      {
+        "name": "Hollow Wastes",
+        "position": "central",
+        "terrain": "Wide light sand dunes, dark flat-topped rock mesas and sparse palms.",
+        "colors": [
+          "#CBB783",
+          "#AF9564",
+          "#82755A"
+        ]
+      },
+      {
+        "name": "Tigonus",
+        "position": "east",
+        "terrain": "Arid rocky desert continuing to eastern mountain rim; follow native rock bands rather than inventing uniform dunes.",
+        "colors": [
+          "#AF9564",
+          "#82755A",
+          "#CBB783"
+        ]
+      }
+    ],
+    "geographicObjects": "Broad north-facing coast; dry inland basin bounded by dark rocky ridges particularly south/east. Oases and coast are small blue-green interruptions. Correct subregion order is Myrkwasa WEST, Hollow Wastes CENTRAL, Tigonus EAST.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/alikr_alikr_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://images.squarespace-cdn.com/content/v1/54e310f0e4b0f4a6ba3ac899/1516907228231-FZUOF9XRPQ2GMJPKVER2/Screenshot_20180125_173537.jpg?format=1000w",
+        "page": "https://www.containsmoderateperil.com/blog/2018/1/23/alikr-desert-dolmen-farming",
+        "location": "Hollow Waste Dolmen",
+        "observed": "Daylight pale beige dunes, scattered palms and dark mesa rock.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-alikr-dolmen"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://esohelpportal.s3.amazonaws.com/ESO/Quest/Prologues/ESO_Hinzuur_ALL.png",
+        "page": "https://help.bethesda.net/app/answers/detail/a_id/48630/~/the-dragonguards-legacy---dragonhold-prologue-quest---the-elder-scrolls-online",
+        "location": "Sentinel, Hinzuur prologue-quest location",
+        "observed": "Night city view verifies palms and stone; unsuitable as direct daylight colour measurement.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-alikr-sentinel"
+      }
+    ],
+    "confidence": "High for central sand and west urban palms; medium for eastern rocky transition.",
+    "gaps": "No independent Tigonus daylight landscape viewed. Night Sentinel image supports objects, not exact saturation."
+  },
+  {
+    "name": "Bangkorai",
+    "mapKey": "bangkorai_bangkorai_base",
+    "mapId": 20,
+    "nativeBlob": {
+      "id": 20,
+      "name": "Бангкорай",
+      "mask": "/art/maps/tamriel/tamriel-bangkorai.dds",
+      "width": 0.0869140625,
+      "height": 0.12890625,
+      "x": 0.25,
+      "y": 0.2674191892
+    },
+    "palette": [
+      "#778052",
+      "#A69864",
+      "#877F6A",
+      "#BB9060",
+      "#A56B48"
+    ],
+    "subzones": [
+      {
+        "name": "Mournoth / Evermore hinterland",
+        "position": "north",
+        "terrain": "Green and gold temperate trees/grass around a stone city and wet lowlands.",
+        "colors": [
+          "#778052",
+          "#A69864",
+          "#877F6A"
+        ]
+      },
+      {
+        "name": "Central lake and Bangkorai Garrison barrier",
+        "position": "center",
+        "terrain": "Rocky dividing ridge and constrained passage; vegetation thins toward southern side.",
+        "colors": [
+          "#877F6A",
+          "#A69864"
+        ]
+      },
+      {
+        "name": "Fallen Wastes / southern Craglorn gate",
+        "position": "south",
+        "terrain": "Dry yellow-ochre to rusty sandstone canyon land with sparse bushes; distinctly different from green north.",
+        "colors": [
+          "#BB9060",
+          "#A56B48",
+          "#877F6A"
+        ]
+      }
+    ],
+    "geographicObjects": "Evermore beside northwestern water/Bjoulsae; lake and rocky barrier through middle; southern desert must remain clearly legible. Preserve the native narrow transition through the garrison.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/bangkorai_bangkorai_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifter.com/wp-content/uploads/2019/08/screenshot_20190613_192951.png",
+        "page": "https://thetamrieldrifter.com/2019/08/04/417-evermore/",
+        "location": "Evermore street",
+        "observed": "Grey stone, green and golden trees; verifies northern temperate vegetation but not full countryside.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-bangkorai-north"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://i.pinimg.com/736x/78/98/1e/78981e01faa98b1d623299d43df9009b.jpg",
+        "page": "https://www.pinterest.com/pin/gate-to-craglorn-in-southern-bangkorai-eso-screenshot-by-coco-michelle-in-2025--677017756520560022/",
+        "location": "Southern Bangkorai gate toward Craglorn; photographer-captioned location",
+        "observed": "Rust sandstone canyon, dry sparse scrub.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-bangkorai-south"
+      }
+    ],
+    "confidence": "High for north/south biome break from native map plus screenshots; medium for precise southern screenshot provenance.",
+    "gaps": "South image is a repost with photographer caption, not a first-party gallery. Northern open fields and central lake lack separate wide verified photos."
+  },
+  {
+    "name": "Wrothgar",
+    "mapKey": "wrothgar_wrothgar_base",
+    "mapId": 667,
+    "nativeBlob": {
+      "id": 667,
+      "name": "Ротгар",
+      "mask": "/art/maps/tamriel/tamriel-wrothgar.dds",
+      "width": 0.1401367337,
+      "height": 0.1157226413,
+      "x": 0.1840000004,
+      "y": 0.1860000044
+    },
+    "palette": [
+      "#DCE2DE",
+      "#A7B3B1",
+      "#777B72",
+      "#B7A064",
+      "#777653"
+    ],
+    "subzones": [
+      {
+        "name": "Northern and eastern snow country / Orsinium",
+        "position": "north and east, approximately half the zone visually",
+        "terrain": "White and blue-grey snow across uplands, frozen falls and city environs; dark grey exposed crags and sparse pines.",
+        "colors": [
+          "#DCE2DE",
+          "#A7B3B1",
+          "#777B72"
+        ]
+      },
+      {
+        "name": "Southwestern and lower western tundra",
+        "position": "southwest / west below snowline",
+        "terrain": "Dry straw-yellow and ochre grass, brown/grey rock, sparse conifers. This is the principal snow-free colour field; do not make it lush green.",
+        "colors": [
+          "#B7A064",
+          "#777653",
+          "#777B72"
+        ]
+      },
+      {
+        "name": "Lower coast and waterfall gullies",
+        "position": "west/northwest coastal lower elevations and local ravines",
+        "terrain": "Patchy muted olive/brown vegetation among grey stone; keep these small, subordinate to tundra and snowy uplands.",
+        "colors": [
+          "#777653",
+          "#777B72",
+          "#B7A064"
+        ]
+      }
+    ],
+    "geographicObjects": "Orsinium lies amid eastern mountains; western coast has strong relief and waterfalls; north/east snow line is visible on native map. Use native blob bbox x=0.1840000004,y=0.1860000044,w=0.1401367337,h=0.1157226413, not a guessed province footprint.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/wrothgar_wrothgar_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://cdn.mos.cms.futurecdn.net/7d89b7dfdddfdc10d5adac5350f046b1.jpg",
+        "page": "https://www.pcgamer.com/the-elder-scrolls-online-opens-the-doors-to-orsinium-in-november/",
+        "location": "Orsinium exterior",
+        "observed": "Snow at walls, graphite masonry, sparse trees.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-wrothgar-city"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://www.gaisciochmagazine.com/images/art/125852_2.jpg",
+        "page": "https://www.gaisciochmagazine.com/previews/first_look_at_orsinium.html",
+        "location": "Wrothgar snow-free upland with mammoth; exact landmark uncaptioned",
+        "observed": "Dry beige/straw grass, grey rock, sparse pines. Supports tundra palette but does not independently locate the southwest boundary.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-wrothgar-review2"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://www.gaisciochmagazine.com/images/art/125852_3.jpg",
+        "page": "https://www.gaisciochmagazine.com/previews/first_look_at_orsinium.html",
+        "location": "Wrothgar frozen waterfall; exact landmark uncaptioned",
+        "observed": "Large icy/snowy cliff and cold grey-blue stone.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-wrothgar-review3"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://www.gaisciochmagazine.com/images/art/125852_4.jpg",
+        "page": "https://www.gaisciochmagazine.com/previews/first_look_at_orsinium.html",
+        "location": "Wrothgar lower coastal camp; exact landmark uncaptioned",
+        "observed": "Patchy muted green/brown grass, sparse pines, large grey boulders.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-wrothgar-review4"
+      }
+    ],
+    "confidence": "High for snow-versus-ochre contrast and native-map orientation; medium for assigning uncaptioned screenshots to exact local coordinates.",
+    "gaps": "Approximately half snowy is an artist-scale reading of native map, not a measured area fraction. No screenshot independently pins the entire snowline. Morkul image download failed; Morkul text alone is not counted as viewed evidence."
+  },
+  {
+    "name": "Craglorn",
+    "mapKey": "craglorn_craglorn_base",
+    "mapId": 1126,
+    "nativeBlob": {
+      "id": 1126,
+      "name": "Краглорн",
+      "mask": "/art/maps/tamriel/tamriel-craglorn.dds",
+      "width": 0.1762695312,
+      "height": 0.1186523438,
+      "x": 0.32371521,
+      "y": 0.3140000105
+    },
+    "palette": [
+      "#9F8E6B",
+      "#77786B",
+      "#69745B",
+      "#B5A47F",
+      "#687D76"
+    ],
+    "subzones": [
+      {
+        "name": "Lower Craglorn / Belkarth",
+        "position": "south and central",
+        "terrain": "Dry rocky uplands and sparse trees; Belkarth lake grey-green water and grey escarpments.",
+        "colors": [
+          "#9F8E6B",
+          "#77786B",
+          "#687D76"
+        ]
+      },
+      {
+        "name": "Balamath and eastern dry ruin country",
+        "position": "east",
+        "terrain": "Bare grey/beige stone, low dry vegetation and leafless trees around ruins.",
+        "colors": [
+          "#77786B",
+          "#B5A47F",
+          "#9F8E6B"
+        ]
+      },
+      {
+        "name": "Upper Craglorn / Dragonstar approaches",
+        "position": "north / northwest",
+        "terrain": "Rugged northern valleys, river and some greener sparse vegetation on native map; avoid turning the whole zone into sand dunes.",
+        "colors": [
+          "#69745B",
+          "#77786B",
+          "#9F8E6B"
+        ]
+      }
+    ],
+    "geographicObjects": "Belkarth/lake southern region, Dragonstar northwest, northern ridges and branching river valleys. Local magic scars and arena biomes are not representative of the entire surface zone.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/craglorn_craglorn_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://i0.wp.com/exploringeso.com/wp-content/uploads/2014/04/First-photo-of-craglorn.jpg?fit=1200%2C691&ssl=1",
+        "page": "https://exploringeso.com/belkarth-village-craglorn/",
+        "location": "Belkarth lakeside",
+        "observed": "Muted green water, grey rocks, sparse pines, lakeside ruins.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-craglorn-lake"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifterblog.wordpress.com/wp-content/uploads/2022/05/584-a.-the-conjurers-of-balamath.jpg",
+        "page": "https://thetamrieldrifter.com/2022/05/16/584-the-conjurers-of-the-balamath/",
+        "location": "Balamath exterior",
+        "observed": "Rocky arid ground, grey/beige masonry, sparse dead trees under subdued light.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-craglorn-balamath"
+      }
+    ],
+    "confidence": "High for Lower Craglorn rocky aridity; medium for whole-zone northern palette.",
+    "gaps": "No wide Upper Craglorn screenshot was successfully viewed; Valley of Scars image mirror returned 404. Northern greener valleys are native-map evidence and remain provisional."
+  },
+  {
+    "name": "Western Skyrim",
+    "mapKey": "skyrim_westernskryim_base",
+    "mapId": 1719,
+    "nativeBlob": {
+      "id": 1719,
+      "name": "Западный Скайрим",
+      "mask": "/art/maps/skyrim/ui_maps_skyrim_blob2.dds",
+      "width": 0.1513671875,
+      "height": 0.1025390625,
+      "x": 0.3411428034,
+      "y": 0.1834284067
+    },
+    "palette": [
+      "#D7DEDC",
+      "#99A8A7",
+      "#777A68",
+      "#6E7954",
+      "#536653"
+    ],
+    "subzones": [
+      {
+        "name": "Haafingar coast and high ridges",
+        "position": "north; eastern high elevations",
+        "terrain": "Snow fields, exposed grey rock and conifers; strong white band/patches visible on native map.",
+        "colors": [
+          "#D7DEDC",
+          "#99A8A7",
+          "#777A68"
+        ]
+      },
+      {
+        "name": "Karthald / Dragon Bridge approaches",
+        "position": "west and southwest lower country",
+        "terrain": "Grey rocky river valley, green/olive slopes, conifer and birch vegetation; snow remains on higher distant ridges.",
+        "colors": [
+          "#6E7954",
+          "#536653",
+          "#777A68"
+        ]
+      },
+      {
+        "name": "Hjaalmarch / Morthal lowlands",
+        "position": "central and southern low country",
+        "terrain": "Wet dark-olive/brown basin inferred from native map; preserve water channels, avoid uniformly snowy lowlands.",
+        "colors": [
+          "#777A68",
+          "#536653",
+          "#6E7954"
+        ]
+      }
+    ],
+    "geographicObjects": "Solitude and northern coast, Karth/Dragon Bridge western river crossing, Morthal lowland basin. Underground Blackreach is a separate map and should not colour the surface.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/skyrim_westernskryim_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://esosslfiles-a.akamaihd.net/cms/2020/04/2593ff7b2af15e5d936687c904f0a6db.jpg",
+        "page": "https://forums.elderscrollsonline.com/en/discussion/521517/dragon-bridge-new-vs-original",
+        "location": "Dragon Bridge, official ESO comparison screenshot",
+        "observed": "Rocky river crossing and greener slopes with distant high snow.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-westskyrim-bridge"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://images.gamersyde.com/image_the_elder_scrolls_online_greymoor-42093-4409_0012.jpg",
+        "page": "https://www.gamersyde.com/news_western_skyrim_added_to_eso_greymoor-21614_en.html",
+        "location": "Greymoor snowy fishing settlement; exact settlement not independently identified",
+        "observed": "Snow-covered shore and conifer wood with cold dark water.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-westskyrim-docks"
+      }
+    ],
+    "confidence": "High for snow/coastal and lower western contrast; medium for Hjaalmarch colour.",
+    "gaps": "Morthal-specific gallery image blocked with HTTP 406; no wide marsh screenshot successfully viewed. Do not substitute TES V Skyrim photos: search frequently confuses the two games."
+  },
+  {
+    "name": "The Reach",
+    "mapKey": "reach_reach_base",
+    "mapId": 1814,
+    "nativeBlob": {
+      "id": 1814,
+      "name": "Предел",
+      "mask": "/art/maps/reach/ui_maps_reachzone.dds",
+      "width": 0.099609375,
+      "height": 0.0854492038,
+      "x": 0.3261116147,
+      "y": 0.2444116026
+    },
+    "palette": [
+      "#868374",
+      "#A39772",
+      "#747A59",
+      "#546B54",
+      "#657D78"
+    ],
+    "subzones": [
+      {
+        "name": "Karth river / waterfall valleys",
+        "position": "north through center toward southeast",
+        "terrain": "Grey/brown crag walls, pale water and sparse olive greenery; river valley is narrow, not broad tropical forest.",
+        "colors": [
+          "#868374",
+          "#747A59",
+          "#657D78"
+        ]
+      },
+      {
+        "name": "Karthwasten slopes",
+        "position": "north/northeast of central Reach",
+        "terrain": "Grey rocky slopes and tan grassy openings around wooden village.",
+        "colors": [
+          "#868374",
+          "#A39772",
+          "#747A59"
+        ]
+      },
+      {
+        "name": "Markarth and western/eastern uplands",
+        "position": "western city; rugged ridges around zone",
+        "terrain": "Exposed grey-brown stone dominates, sparse green conifers and dry grass; no continuous surface snow blanket.",
+        "colors": [
+          "#868374",
+          "#A39772",
+          "#546B54"
+        ]
+      }
+    ],
+    "geographicObjects": "Markarth west, Karth river and tributaries central, substantial rocky elevation changes. Keep waterfalls and narrow river incision; exclude Blackreach underground palette.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/reach_reach_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://images.squarespace-cdn.com/content/v1/5c95f8d416b640656eb7765a/1600566333181-N4EC71DRMWNRRMB5JHVU/ESO%2BMarkarth_The%2BReach%2BWaterfalls.jpg",
+        "page": "https://www.maxi-geek.com/con/the-final-chapter-of-the-dark-heart-of-skyrim-is-coming-this-november-to-the-elder-scrolls-online",
+        "location": "The Reach waterfalls, official promotional screenshot",
+        "observed": "Massive grey/brown cliffs, numerous falls, sparse olive plants/conifers.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-reach-falls"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://images.squarespace-cdn.com/content/v1/5c95f8d416b640656eb7765a/1600566267290-5EUB0J4SETM3F9YKNY1Y/ESO%2BMarkarth_Karthwasten_Afternoon%2BIn%2BThe%2BVillage.jpg",
+        "page": "https://www.maxi-geek.com/con/the-final-chapter-of-the-dark-heart-of-skyrim-is-coming-this-november-to-the-elder-scrolls-online",
+        "location": "Karthwasten, afternoon in village; official named screenshot",
+        "observed": "Grey slopes, tan grasses, wooden village under warm light.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-reach-karthwasten"
+      }
+    ],
+    "confidence": "High for rocky, sparsely vegetated surface palette; medium for detailed vegetation distribution.",
+    "gaps": "Markarth city itself not separately viewed. Warm promotional lighting is not interpreted as red/orange geology."
+  },
+  {
+    "name": "Eastmarch",
+    "mapKey": "eastmarch_eastmarch_base",
+    "mapId": 61,
+    "nativeBlob": {
+      "id": 61,
+      "name": "Истмарк",
+      "mask": "/art/maps/tamriel/tamriel-eastmarch.dds",
+      "width": 0.12890625,
+      "height": 0.0922851562,
+      "x": 0.5699999928,
+      "y": 0.245161593
+    },
+    "palette": [
+      "#DDE2DE",
+      "#A4AEAA",
+      "#A59772",
+      "#717461",
+      "#536451"
+    ],
+    "subzones": [
+      {
+        "name": "Giant's Run / Lower Yorgrim / Windhelm country",
+        "position": "north",
+        "terrain": "Broad snow cover, cold lakes and snow-dusted conifers; grey mountain rock.",
+        "colors": [
+          "#DDE2DE",
+          "#A4AEAA",
+          "#536451"
+        ]
+      },
+      {
+        "name": "Central-southern geothermal basin / Wittestadr",
+        "position": "central and south, inside snowy rim",
+        "terrain": "Snow-free tan/grey mud and exposed rock, shallow water, sparse vegetation/dead trees. Keep a large visibly different inland basin.",
+        "colors": [
+          "#A59772",
+          "#717461",
+          "#A4AEAA"
+        ]
+      },
+      {
+        "name": "Frostwater Tundra and Icewind Peaks edges",
+        "position": "southwest and southeast respectively",
+        "terrain": "Transition back toward snowy high perimeter; darker sparse forest patches and exposed rock.",
+        "colors": [
+          "#DDE2DE",
+          "#A4AEAA",
+          "#536451"
+        ]
+      }
+    ],
+    "geographicObjects": "Windhelm in north, broad snow-free central/southern basin, white high border west/east. Native map clearly disproves colouring the whole zone white.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/eastmarch_eastmarch_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://1.bp.blogspot.com/-XosjH86ljn8/VIHGcAcPqHI/AAAAAAAAAII/U8eBVDeMCl8/s1600/Lower%2BYorgrim.jpg",
+        "page": "https://mesmerizingtamriel.blogspot.com/2014/12/eastmarch-lower-yorgrim.html",
+        "location": "Lower Yorgrim",
+        "observed": "Snowy town/lake and conifers.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-eastmarch-snow"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://tesonline.org/images/4/4a/ON-place-Wittestadr.jpg",
+        "page": "https://en.uesp.net/wiki/Online:Wittestadr",
+        "location": "Wittestadr, UESP image mirrored by TESOnline",
+        "observed": "Shallow flooded rocky basin, dull brown ground and dead trees without foreground snow.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-eastmarch-wittestadr"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://beautifultamriel.wordpress.com/wp-content/uploads/2014/08/screenshot_20140811_0225201.png",
+        "page": "https://beautifultamriel.wordpress.com/2014/08/10/eso-near-bonestrewn-crest/",
+        "location": "Near Bonestrewn Crest",
+        "observed": "Dark unsnowed riverside and pines; night view does not establish geothermal steam or water colour.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-eastmarch-pools"
+      }
+    ],
+    "confidence": "High for northern snow versus basin contrast; medium for southern edge detail.",
+    "gaps": "No daylight close view of each hot spring. Bonestrewn nighttime image must not be described as visibly steaming pools."
+  },
+  {
+    "name": "The Rift",
+    "mapKey": "therift_therift_base",
+    "mapId": 125,
+    "nativeBlob": {
+      "id": 125,
+      "name": "Рифт",
+      "mask": "/art/maps/tamriel/tamriel-therift.dds",
+      "width": 0.1533203125,
+      "height": 0.09375,
+      "x": 0.5387095809,
+      "y": 0.3225808144
+    },
+    "palette": [
+      "#B39D53",
+      "#938C4E",
+      "#64704C",
+      "#818173",
+      "#D3D8D2"
+    ],
+    "subzones": [
+      {
+        "name": "Ivarstead and western valley",
+        "position": "west, below high mountain wall",
+        "terrain": "Golden birch and olive meadow terraces, grey exposed rock and waterfalls; snow stays on far high peaks.",
+        "colors": [
+          "#B39D53",
+          "#64704C",
+          "#818173"
+        ]
+      },
+      {
+        "name": "Central and eastern autumn woodland / Riften surroundings",
+        "position": "central/east lower country",
+        "terrain": "Gold and green birch mixed with dark conifers; olive/brown floor, lakes and grey boulders.",
+        "colors": [
+          "#B39D53",
+          "#938C4E",
+          "#64704C"
+        ]
+      },
+      {
+        "name": "High border ridges / Smokefrost heights",
+        "position": "southern and other high perimeter ridges visible on native map",
+        "terrain": "Pale snow on high rim with grey rock; keep it peripheral to large autumn lowlands.",
+        "colors": [
+          "#D3D8D2",
+          "#818173"
+        ]
+      }
+    ],
+    "geographicObjects": "Western water/valley by Ivarstead and large Lake Honrich/Riften in east; golden wooded lowland dominates between snowy border mountains. Do not make every tree orange or the whole zone snow-covered.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/therift_therift_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://i.imgur.com/xylMzBi.jpg",
+        "page": "https://forums.elderscrollsonline.com/en/discussion/403206/the-dawns-beauty-volume-i-skyrim-of-past-and-future-present-ivarsteed-windhelm",
+        "location": "Pinepeak Cavern viewpoint toward Ivarstead; ESO image in comparison post",
+        "observed": "Gold birch, olive grass, waterfall and grey rock, distant snowy peaks.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-rift-ivarstead"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://www.elderscrollsportal.de/wiki/images/thumb/0/09/ESO_Verlorener_Ausblick.jpg/1200px-ESO_Verlorener_Ausblick.jpg",
+        "page": "https://www.elderscrollsportal.de/almanach/Verlorener_Ausblick",
+        "location": "Lost Prospect, east of Riften",
+        "observed": "Golden and green birch/pine, olive-brown ground, pond and grey rock.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-rift-east"
+      }
+    ],
+    "confidence": "High for west/east autumn lowlands; medium for exact mountain snow boundary.",
+    "gaps": "Administrative subregion names were not assigned to uncertain boundaries. East and west landmarks are used instead; no separate close screenshot of southern snowy heights."
+  },
+  {
+    "name": "Bleakrock Isle",
+    "mapKey": "stonefalls_bleakrock_base",
+    "mapId": 74,
+    "nativeBlob": {
+      "id": 74,
+      "name": "Остров Стылая Скала",
+      "mask": "/art/maps/tamriel/tamriel-bleakrock.dds",
+      "width": 0.0185546875,
+      "height": 0.017578125,
+      "x": 0.6738712192,
+      "y": 0.2551616132
+    },
+    "palette": [
+      "#DEE3DF",
+      "#A2B1B0",
+      "#747E7A",
+      "#466052",
+      "#567A80"
+    ],
+    "subzones": [
+      {
+        "name": "Village and central/southern island",
+        "position": "center / south",
+        "terrain": "Continuous snow interrupted by grey stone and sparse snowy conifers.",
+        "colors": [
+          "#DEE3DF",
+          "#747E7A",
+          "#466052"
+        ]
+      },
+      {
+        "name": "Hozzin's Folly and Skyshroud uplands",
+        "position": "northwest and eastern high ground",
+        "terrain": "Rocky snow-covered ridges; retain narrow dark spines and local tree patches.",
+        "colors": [
+          "#DEE3DF",
+          "#A2B1B0",
+          "#747E7A"
+        ]
+      },
+      {
+        "name": "Rocky coasts and offshore islets",
+        "position": "perimeter",
+        "terrain": "Cold blue-green sea borders pale snowy shores; keep coastline exact.",
+        "colors": [
+          "#567A80",
+          "#DEE3DF",
+          "#747E7A"
+        ]
+      }
+    ],
+    "geographicObjects": "Small snow island with irregular bays, hill spines and small detached northern land. Village/windmill is a tiny landmark, not a new biome.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/stonefalls_bleakrock_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://jolstatic.fr/www/captures/1816/5/54965.jpg",
+        "page": "https://www.jeuxonline.info/article/12771/interview-paul-sage-elder-scrolls-online-paris-games-week",
+        "location": "Bleakrock settlement windmill",
+        "observed": "Daylight white ground, dark rock and sparse snow-covered pines.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-bleakrock-windmill"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://cdn-eso.mmoui.com/preview/pvw651.jpg",
+        "page": "https://www.esoui.com/downloads/fileinfo.php?id=228&page=5&so=oldest",
+        "location": "Near Bleakrock Wayshrine; in-game UI identifies location",
+        "observed": "Snowy pine forest at night; confirms tree/snow pattern, not daylight blue tint.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-bleakrock-forest"
+      }
+    ],
+    "confidence": "High for island-wide snowy character; medium for precise forest coverage.",
+    "gaps": "Only two local viewpoints, one at night. Mines/interiors excluded from surface palette."
+  },
+  {
+    "name": "Betnikh",
+    "mapKey": "glenumbra_betnihk_base",
+    "mapId": 227,
+    "nativeBlob": {
+      "id": 227,
+      "name": "Бетник",
+      "mask": "/art/maps/tamriel/tamriel-betnikh.dds",
+      "width": 0.0219726562,
+      "height": 0.0234375,
+      "x": 0.0696768016,
+      "y": 0.4248383939
+    },
+    "palette": [
+      "#758253",
+      "#53694C",
+      "#98916A",
+      "#80867B",
+      "#78938A"
+    ],
+    "subzones": [
+      {
+        "name": "Woodland and meadow island",
+        "position": "most lower island",
+        "terrain": "Temperate green grass and mixed broadleaf trees; patches of bare earthy ground, not jungle.",
+        "colors": [
+          "#758253",
+          "#53694C",
+          "#98916A"
+        ]
+      },
+      {
+        "name": "Grimfield burial grounds",
+        "position": "western sector",
+        "terrain": "Grassy stone graves/ruins under broadleaf canopy; grey stone locally visible.",
+        "colors": [
+          "#758253",
+          "#80867B",
+          "#53694C"
+        ]
+      },
+      {
+        "name": "Stonetooth and rocky coastal headlands",
+        "position": "central stronghold / island perimeter",
+        "terrain": "Grey rock and stone interspersed with green vegetation, blue-green coastal water.",
+        "colors": [
+          "#80867B",
+          "#758253",
+          "#78938A"
+        ]
+      }
+    ],
+    "geographicObjects": "Central stronghold, rocky headlands and irregular bays; green island with stone ruins. Island is tiny at Tamriel scale, so two land tones plus rock accents suffice.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/glenumbra_betnihk_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifter.com/wp-content/uploads/2018/01/38-a-the-bloodthorn-abonimations.jpg",
+        "page": "https://thetamrieldrifter.com/category/betnikh/page/2/",
+        "location": "Bloodthorn quest cemetery, Betnikh",
+        "observed": "Grassy graves and deciduous canopy; location inferred from photographer's Betnikh quest sequence, not a visible map pin.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-betnikh-grave"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifter.com/wp-content/uploads/2018/01/36-wrath-of-the-orsimer.jpg",
+        "page": "https://thetamrieldrifter.com/category/betnikh/page/2/",
+        "location": "Betnikh shore/river path, Wrath of the Orsimer post",
+        "observed": "Birch/broadleaf trees, meadow patches and grey rock; exact point not independently pinned.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-betnikh-road"
+      }
+    ],
+    "confidence": "High for green temperate island; medium for cemetery/location alignment.",
+    "gaps": "No full daylight aerial panorama or separately pinned northeastern headland screenshot. Two actual local gameplay views were inspected."
+  },
+  {
+    "name": "Stros M'Kai",
+    "mapKey": "glenumbra_strosmkai_base",
+    "mapId": 201,
+    "nativeBlob": {
+      "id": 201,
+      "name": "Строс М'Кай",
+      "mask": "/art/maps/tamriel/tamriel-stros.dds",
+      "width": 0.021484375,
+      "height": 0.0205078125,
+      "x": 0.1487095952,
+      "y": 0.5338711739
+    },
+    "palette": [
+      "#CEBD8C",
+      "#B69B6B",
+      "#917F64",
+      "#778051",
+      "#60908C"
+    ],
+    "subzones": [
+      {
+        "name": "Northern rocky desert / goblin country",
+        "position": "north",
+        "terrain": "Pale sand, tall banded ochre sandstone, isolated palms/cacti.",
+        "colors": [
+          "#CEBD8C",
+          "#B69B6B",
+          "#917F64"
+        ]
+      },
+      {
+        "name": "Port Hunding and main harbour",
+        "position": "east/central coast",
+        "terrain": "Pale stone and sand around sheltered blue-green water; palms remain small accents.",
+        "colors": [
+          "#CEBD8C",
+          "#917F64",
+          "#60908C"
+        ]
+      },
+      {
+        "name": "Southern palace headland and exposed coast",
+        "position": "south / perimeter",
+        "terrain": "Beige grey rock, sandy pockets, scattered palms and clear turquoise coast.",
+        "colors": [
+          "#CEBD8C",
+          "#917F64",
+          "#778051"
+        ]
+      }
+    ],
+    "geographicObjects": "Arid rocky island, harbour indentation, northern Dwemer/rock region and southern palace. Native coast and small islets matter more than drawing trees at world scale.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-color-map-source/zones/glenumbra_strosmkai_base.png",
+        "url": null,
+        "viewed": true,
+        "notes": "Viewed original extracted zone map in contact sheet; geometry and snow coverage used, parchment tint not treated as literal surface color."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://www.elderscrollsonline.de/sites/www.elderscrollsonline.de/files/images/guides/schatzkarten/eso-schatzkarte-strosmkai03.jpg",
+        "page": "https://www.elderscrollsonline.de/schatzkarten-seite-3",
+        "location": "Hunding palace coastline / treasure location",
+        "observed": "Pale beige rock and sand, palm accents, blue-green sea.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-stros-hunding"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://thetamrieldrifter.com/wp-content/uploads/2018/01/27-a-goblins-to-the-north.jpg",
+        "page": "https://thetamrieldrifter.com/category/stros-mkai/",
+        "location": "Goblins to the North, northern Stros M'Kai",
+        "observed": "Pale dunes and high banded warm sandstone, sparse palms/cacti.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-stros-north"
+      }
+    ],
+    "confidence": "High for north/south arid island character.",
+    "gaps": "Dwemer ruin interior excluded. Harbour water colour shifts with light; use subdued blue-green rather than a luminous border."
+  },
+  {
+    "name": "Grayhome / Серое Убежище",
+    "mapKey": "skyrim_vampireisland_base",
+    "mapId": 1864,
+    "nativeBlob": {
+      "id": 1864,
+      "name": "Серое Убежище",
+      "mask": "/art/maps/skyrim/ui_maps_vampireisland_blob.dds",
+      "width": 0.0170898587,
+      "height": 0.0161132812,
+      "x": 0.242761597,
+      "y": 0.1262675971
+    },
+    "palette": [
+      "#D5DEDE",
+      "#A7B6B8",
+      "#626F70",
+      "#344A45"
+    ],
+    "subzones": [
+      {
+        "name": "Snowy approach / southern promontory",
+        "position": "south",
+        "terrain": "White snow with exposed blue-grey rock and dark conifers.",
+        "colors": [
+          "#D5DEDE",
+          "#A7B6B8",
+          "#344A45"
+        ]
+      },
+      {
+        "name": "Castle island and northern heights",
+        "position": "north/center",
+        "terrain": "Dark gothic castle and grey rock amid snow; tiny dark structural accent within pale island.",
+        "colors": [
+          "#626F70",
+          "#D5DEDE",
+          "#344A45"
+        ]
+      }
+    ],
+    "geographicObjects": "Tiny separate island north of Wrothgar. Use native map1864 blob /art/maps/skyrim/ui_maps_vampireisland_blob.dds, x=0.242761597,y=0.1262675971,w=0.0170898587,h=0.0161132812. This is ESO Grayhome, not a TES V Volkihar screenshot.",
+    "sources": [
+      {
+        "type": "native-map",
+        "path": "/private/tmp/kana-ref-grayhome-map",
+        "url": "https://tesonline.org/images/thumb/8/8b/ON-map-Grayhome_01-s.jpg/200px-ON-map-Grayhome_01-s.jpg",
+        "viewed": true,
+        "notes": "Viewed downloaded map thumbnail."
+      },
+      {
+        "type": "screenshot",
+        "url": "https://tesonline.org/images/thumb/b/b2/ON-place-Grayhome-s.jpg/300px-ON-place-Grayhome-s.jpg",
+        "page": "https://tesonline.org/Серое_Убежище",
+        "location": "Grayhome castle exterior; UESP image mirrored on TESOnline",
+        "observed": "Dark gothic castle, snowy conifers and blue-grey rock.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-grayhome-castle"
+      },
+      {
+        "type": "screenshot",
+        "url": "https://tesonline.org/images/thumb/e/ec/ON-place-Grayhome_01-s.jpg/300px-ON-place-Grayhome_01-s.jpg",
+        "page": "https://tesonline.org/Серое_Убежище",
+        "location": "Grayhome approach path; UESP image mirrored on TESOnline",
+        "observed": "Snowy rock path and conifers.",
+        "viewed": true,
+        "localPath": "/private/tmp/kana-ref-grayhome-road"
+      }
+    ],
+    "confidence": "High for snowy/dark-conifer palette; medium for fine island partition because available images are thumbnails.",
+    "gaps": "Two 300-pixel screenshots and a small map were actually viewed. They support a pale tiny island, not detailed biome painting."
+  }
+]

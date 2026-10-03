@@ -1,0 +1,12 @@
+## Title: KanaCooldownMetronome
+## Description: Radial cooldown display for Combat Metronome, with independent settings.
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050
+## DependsOn: CombatMetronome LibAddonMenu-2.0
+## SavedVariables: KanaCooldownMetronomeSavedVars
+
+Bootstrap.lua
+Radial.lua
+Integration.lua

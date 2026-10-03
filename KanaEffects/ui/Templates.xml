@@ -1,0 +1,24 @@
+<GuiXml>
+    <Controls>
+        <!-- Uniform native ZO_ScrollList row; controls are acquired only in view. -->
+        <Control name="KanaEffectsPickerRow" virtual="true" mouseEnabled="true">
+            <Dimensions y="58"/>
+            <Controls>
+                <Texture name="$(parent)Icon">
+                    <Dimensions x="36" y="36"/>
+                    <Anchor point="TOPLEFT" offsetX="6" offsetY="10"/>
+                </Texture>
+                <Label name="$(parent)Name" font="ZoFontGame" wrapMode="ELLIPSIS" maxLineCount="1">
+                    <Anchor point="TOPLEFT" offsetX="52" offsetY="5"/>
+                    <Anchor point="TOPRIGHT" offsetX="-8" offsetY="5"/>
+                    <Dimensions y="24"/>
+                </Label>
+                <Label name="$(parent)Detail" font="ZoFontGameSmall" wrapMode="ELLIPSIS" maxLineCount="1">
+                    <Anchor point="TOPLEFT" offsetX="52" offsetY="29"/>
+                    <Anchor point="TOPRIGHT" offsetX="-8" offsetY="29"/>
+                    <Dimensions y="24"/>
+                </Label>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>

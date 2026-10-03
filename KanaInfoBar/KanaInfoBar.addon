@@ -1,0 +1,17 @@
+## Title: KanaInfoBar
+## Author: Kana
+## Version: 1.0.11
+## AddOnVersion: 10011
+## APIVersion: 101050 101051
+## Description: Compact draggable multiline HUD with DPS, chat, performance, inventory and stolen treasures.
+## DependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: CombatMetrics AetherChat
+## SavedVariables: KanaInfoBarSaved
+
+Logic.lua
+Core.lua
+Providers.lua
+Inventory.lua
+Panel.lua
+Editor.lua
+Settings.lua

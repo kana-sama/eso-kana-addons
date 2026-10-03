@@ -1,0 +1,59 @@
+<GuiXml>
+    <Controls>
+        <!-- Scene owns the root; Lua alone gates its Content child. -->
+        <TopLevelControl name="KanaWardrobePanel" hidden="true" mouseEnabled="false">
+            <Dimensions x="300" y="640"/>
+            <Controls>
+                <Control name="$(parent)Content" hidden="true" mouseEnabled="true">
+                    <AnchorFill/>
+                    <Controls>
+                        <Texture name="$(parent)Divider" textureFile="EsoUI/Art/CharacterWindow/characterWindow_leftSide_divider.dds">
+                            <Dimensions y="4"/>
+                            <Anchor point="TOPLEFT" offsetY="47"/>
+                            <Anchor point="TOPRIGHT" offsetY="47"/>
+                        </Texture>
+                    </Controls>
+                </Control>
+            </Controls>
+        </TopLevelControl>
+        <TopLevelControl name="KanaWardrobeChoiceDialog" inherits="ZO_CustomDialogBase" virtual="true">
+            <Dimensions x="600"/>
+            <ResizeToFitPadding width="50" height="28"/>
+            <Controls>
+                <Label name="$(parent)Title" override="true"><Dimensions x="550"/></Label>
+                <Label name="$(parent)Text" inherits="ZO_DialogContentAnchors" font="ZoFontGame">
+                    <Dimensions x="550"/>
+                </Label>
+                <!-- Lua setup lays out these controls after native OnInitialized. -->
+                <Control name="$(parent)Choice1" inherits="ZO_CustomDialogButton" excludeFromResizeToFitExtents="false"/>
+                <Control name="$(parent)Choice2" inherits="ZO_CustomDialogButton" excludeFromResizeToFitExtents="false"/>
+                <Control name="$(parent)Choice3" inherits="ZO_CustomDialogButton" excludeFromResizeToFitExtents="false"/>
+            </Controls>
+        </TopLevelControl>
+        <TopLevelControl name="KanaWardrobeProbeReportDialog" inherits="ZO_CustomDialogBase" virtual="true" resizeToFitDescendents="false">
+            <Dimensions x="900" y="620"/>
+            <Controls>
+                <Backdrop name="$(parent)ReportBackdrop" inherits="ZO_MultiLineEditBackdrop_Keyboard">
+                    <Anchor point="TOPLEFT" offsetX="32" offsetY="88"/>
+                    <Anchor point="BOTTOMRIGHT" offsetX="-32" offsetY="-76"/>
+                </Backdrop>
+                <EditBox name="$(parent)Edit" inherits="ZO_DefaultEditMultiLine">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)ReportBackdrop" offsetX="12" offsetY="12"/>
+                    <Anchor point="BOTTOMRIGHT" relativeTo="$(parent)ReportBackdrop" offsetX="-12" offsetY="-12"/>
+                </EditBox>
+                <Button name="$(parent)Previous" inherits="ZO_DefaultButton" font="ZoFontGameSmall">
+                    <Dimensions x="90" y="28"/>
+                    <Anchor point="BOTTOMLEFT" offsetX="32" offsetY="-24"/>
+                </Button>
+                <Button name="$(parent)Next" inherits="ZO_DefaultButton" font="ZoFontGameSmall">
+                    <Dimensions x="90" y="28"/>
+                    <Anchor point="LEFT" relativeTo="$(parent)Previous" relativePoint="RIGHT" offsetX="8"/>
+                </Button>
+                <Label name="$(parent)Page" font="ZoFontGameSmall">
+                    <Anchor point="LEFT" relativeTo="$(parent)Next" relativePoint="RIGHT" offsetX="12"/>
+                </Label>
+                <Control name="$(parent)Close" inherits="ZO_CustomDialogButton"/>
+            </Controls>
+        </TopLevelControl>
+    </Controls>
+</GuiXml>

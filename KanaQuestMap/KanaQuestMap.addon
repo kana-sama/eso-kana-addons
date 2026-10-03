@@ -1,0 +1,15 @@
+## Title: KanaQuestMap
+## Version: 3.29-kana.2
+## AddOnVersion: 32902
+## Author: Kana; QuestMap overlay
+## APIVersion: 101047 101048
+## Description: Update-safe QuestMap overlay with chronology and quest blacklist
+## SavedVariables: KanaQuestMap_SavedVariables
+## DependsOn: QuestMap
+## OptionalDependsOn: LibAddonMenu-2.0 TheQuestingGuide
+
+Overlay.lua
+Chronology.lua
+PC/Overlay.lua
+PC/OverlaySettings.lua
+console/Overlay.lua

@@ -1,0 +1,1068 @@
+[
+  {
+    "name": "Cyrodiil",
+    "mapKey": "cyrodiil_ava_whole",
+    "palette": [
+      "#56A24B",
+      "#B7C960",
+      "#D9A24B",
+      "#E5F1EF",
+      "#398FAD"
+    ],
+    "subzones": [
+      {
+        "name": "Jerall foothills / Bruma",
+        "position": "north",
+        "terrain": "Snowy mountain rim and conifers; snow concentrated at the northern edge.",
+        "colors": [
+          "#E5F1EF",
+          "#7DABC0",
+          "#3D705C"
+        ]
+      },
+      {
+        "name": "Great Forest / Chorrol approaches",
+        "position": "west",
+        "terrain": "Forest green hills, localized Chorrol scar must remain small.",
+        "colors": [
+          "#438D50",
+          "#8BB95B",
+          "#A99671"
+        ]
+      },
+      {
+        "name": "Heartlands / Lake Rumare",
+        "position": "center",
+        "terrain": "Green lowland around clearly defined blue lake, Imperial City island in center.",
+        "colors": [
+          "#89B957",
+          "#398FAD",
+          "#C3D39A"
+        ]
+      },
+      {
+        "name": "Nibenay / Cropsford",
+        "position": "east and southeast",
+        "terrain": "Grass plains and autumn deciduous woods; Cropsford screenshot shows ochre foliage and gray-brown soil.",
+        "colors": [
+          "#B5C65B",
+          "#D9A24B",
+          "#638E45"
+        ]
+      },
+      {
+        "name": "Southern river corridor",
+        "position": "south",
+        "terrain": "Niben river leaves lake southwards through greener lowlands.",
+        "colors": [
+          "#56A24B",
+          "#398FAD",
+          "#91B958"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Lake Rumare",
+      "Imperial City island",
+      "Niben River",
+      "Jerall Mountains"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/cyrodiil_ava_whole.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Bruma northern snow",
+        "url": "https://tesonline.org/images/thumb/c/cf/ON-place-Bruma.jpg/700px-ON-place-Bruma.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed snowy roofs, snowy conifers, pale blue-white slopes; distinct from south."
+      },
+      {
+        "label": "Cropsford southeast",
+        "url": "https://images.uesp.net/5/5b/ON-place-Cropsford.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed autumn gold birch canopy, green grass and gray rock."
+      },
+      {
+        "label": "Cropsford location article",
+        "url": "https://en.m.uesp.net/wiki/Online%3ACropsford",
+        "kind": "location",
+        "viewed": false,
+        "observation": "Image-search source identifies Cropsford."
+      }
+    ],
+    "confidence": "High for north/southeast contrast and native lake layout; medium for fine west/south vegetation transitions.",
+    "implementationNote": "Only native Cyrodiil mask; no giant new city symbol or invented terrain."
+  },
+  {
+    "name": "Imperial City",
+    "mapKey": "cyrodiil_imperialcity_base",
+    "palette": [
+      "#C9D1CF",
+      "#739D64",
+      "#597984",
+      "#A8B9C4"
+    ],
+    "subzones": [
+      {
+        "name": "White-Gold Tower / central ring",
+        "position": "center",
+        "terrain": "Pale stone city; preserve original tiny city geometry on general map.",
+        "colors": [
+          "#C9D1CF",
+          "#A8B9C4"
+        ]
+      },
+      {
+        "name": "Arboretum",
+        "position": "southeast city district",
+        "terrain": "Gray pale masonry and green trees.",
+        "colors": [
+          "#739D64",
+          "#C9D1CF"
+        ]
+      },
+      {
+        "name": "Temple District",
+        "position": "south city district",
+        "terrain": "Stone-paved quarter, gray roofs, scattered trees.",
+        "colors": [
+          "#A8B9C4",
+          "#739D64"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "White-Gold Tower",
+      "six radial districts"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/cyrodiil_imperialcity_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Arboretum official development image",
+        "url": "https://images.uesp.net/thumb/c/c7/GEN-Creating_ESO_Arboretum.jpg/1200px-GEN-Creating_ESO_Arboretum.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed pale classical columns, gray paving, dark green canopy and green roof."
+      },
+      {
+        "label": "Temple District",
+        "url": "https://images.uesp.net/thumb/6/65/ON-place-Temple_District.jpg/1200px-ON-place-Temple_District.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed blue-gray storm-lit stone, gray roofs and green deciduous trees."
+      }
+    ],
+    "confidence": "High visual confidence; not independently paintable on general map.",
+    "implementationNote": "Parent live native export confirms NO separate Imperial City world blob. Use only as tiny detail inside Cyrodiil lake/island."
+  },
+  {
+    "name": "West Weald",
+    "mapKey": "westweald_westwealdoverland_base",
+    "palette": [
+      "#E2A43B",
+      "#DA7041",
+      "#58A34B",
+      "#779F65",
+      "#91918A"
+    ],
+    "subzones": [
+      {
+        "name": "Colovian Highlands",
+        "position": "north",
+        "terrain": "Rocky highland country with warm grass and autumn trees; no broad snow field in native map.",
+        "colors": [
+          "#CBB775",
+          "#DA994A",
+          "#9C9F91"
+        ]
+      },
+      {
+        "name": "Gold Road / Skingrad vineyards",
+        "position": "east and northeast, east-west road arm",
+        "terrain": "Autumn woodland, orange/red canopy and warm golden fields.",
+        "colors": [
+          "#E2A43B",
+          "#DA7041",
+          "#C7B64D"
+        ]
+      },
+      {
+        "name": "Dawnwood",
+        "position": "southwest",
+        "terrain": "Dense fresh green jungle and huge trees, contrasting strongly with gold countryside.",
+        "colors": [
+          "#58A34B",
+          "#307946",
+          "#95C963"
+        ]
+      },
+      {
+        "name": "Wildburn",
+        "position": "central-south transition between Dawnwood and Skingrad",
+        "terrain": "Dead gray-brown plants and ashy ground; small cyan magical accents, not whole-zone purple.",
+        "colors": [
+          "#91918A",
+          "#A6A185",
+          "#5B9B97"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Strid River at south edge",
+      "Skingrad southeast",
+      "Colovian Highlands north",
+      "gray Wildburn band"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/westweald_westwealdoverland_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Gold Road autumn woods",
+        "url": "https://images.mmorpg.com/images/contentImages/142024/eso_gold_road_broll_screen_1.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed yellow-orange canopy, red shrubs, gold grasses, exposed gray rocks."
+      },
+      {
+        "label": "Wildburn frontier official-preview rehost",
+        "url": "https://www.mmobomb.com/file/2024/5/eso-gr-zone-preview3-812x456.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed gray dead vineyard and bare trees beside orange living vegetation; blue-green magical distortion is local."
+      },
+      {
+        "label": "Dawnwood player screenshot",
+        "url": "https://us.v-cdn.net/5020507/uploads/editor/ja/vtapacowvk5m.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed very green dense tree canopy and moss; screenshot viewport chiefly shows upper trees."
+      },
+      {
+        "label": "Zone geography",
+        "url": "https://eso-hub.com/en/zones/west-weald",
+        "kind": "geography",
+        "viewed": false,
+        "observation": "Sub-zones section identifies Dawnwood southwest, Wildburn between Dawnwood and Gold Road, Colovian Highlands north."
+      }
+    ],
+    "confidence": "High for three contrasting visual areas and native Wildburn footprint; medium for exact highland vegetation boundaries.",
+    "implementationNote": "Keep native gray band outline and warm road corridor; do not make entire West Weald orange."
+  },
+  {
+    "name": "Blackwood",
+    "mapKey": "blackwood_blackwood_base",
+    "palette": [
+      "#699F4D",
+      "#A6B75D",
+      "#3F8C6D",
+      "#659FA4",
+      "#C6B08C"
+    ],
+    "subzones": [
+      {
+        "name": "Leyawiin / Niben corridor",
+        "position": "west and southwest",
+        "terrain": "Deciduous woodland, fields, Imperial settlement and broad river.",
+        "colors": [
+          "#699F4D",
+          "#A6B75D",
+          "#C6B08C"
+        ]
+      },
+      {
+        "name": "Northern lakes and reed margins",
+        "position": "north",
+        "terrain": "Blue-green broad waterways around reed-covered banks and green hills.",
+        "colors": [
+          "#659FA4",
+          "#A6B75D",
+          "#699F4D"
+        ]
+      },
+      {
+        "name": "Gideon / eastern marsh",
+        "position": "east and northeast",
+        "terrain": "Wetland with gray mossy stone, pools and denser swamp vegetation.",
+        "colors": [
+          "#3F8C6D",
+          "#659FA4",
+          "#82AE69"
+        ]
+      },
+      {
+        "name": "Deep swamp / Black Marsh transition",
+        "position": "southeast",
+        "terrain": "Dense wet green vegetation with connected small pools.",
+        "colors": [
+          "#3F8C6D",
+          "#699F4D",
+          "#659FA4"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Niben River",
+      "Leyawiin",
+      "Gideon",
+      "northern lake system",
+      "southeastern wetland pools"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/blackwood_blackwood_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Gideon Twyllbek Ruins",
+        "url": "https://images.uesp.net/thumb/b/b8/ON-place-Twyllbek_Ruins_02.jpg/800px-ON-place-Twyllbek_Ruins_02.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed wet dark water, reeds, mossy gray rock, pale stone and green foliage."
+      },
+      {
+        "label": "Leyawiin official preview rehost",
+        "url": "https://lagbt.wiwiland.net/images/a/a0/Leyawin.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed green broadleaf town tree and moss-covered warm brown roofs; establishes settlement rather than open-country color."
+      },
+      {
+        "label": "Original preview rehost article",
+        "url": "https://lagbt.wiwiland.net/index.php?title=TESO%3ABlackwood_preview_-_the_zone",
+        "kind": "source-page",
+        "viewed": false,
+        "observation": "Source page for Leyawiin screenshot."
+      }
+    ],
+    "confidence": "Medium: native map establishes marsh/lake structure; actual images verify Gideon and Leyawiin, but remote country west/southeast not directly viewed.",
+    "implementationNote": ""
+  },
+  {
+    "name": "Shadowfen",
+    "mapKey": "shadowfen_shadowfen_base",
+    "palette": [
+      "#41975D",
+      "#6AA94F",
+      "#8BBB64",
+      "#58A49A",
+      "#B39B67"
+    ],
+    "subzones": [
+      {
+        "name": "Reticulated Spine / Stormhold",
+        "position": "north",
+        "terrain": "Wet forest basin with rocky eastern ridge; river loop.",
+        "colors": [
+          "#6AA94F",
+          "#8BBB64",
+          "#B39B67"
+        ]
+      },
+      {
+        "name": "Leafwater / Hatching Pools / Alten Corimont",
+        "position": "center to southeast",
+        "terrain": "Waterlogged lowlands, cypress-like trees and broad connected pools.",
+        "colors": [
+          "#41975D",
+          "#58A49A",
+          "#8BBB64"
+        ]
+      },
+      {
+        "name": "Venomous Fens / Hissmir / Loriasel",
+        "position": "southwest",
+        "terrain": "Dense swamp vegetation and ruin islands; green canopy rather than brown desert.",
+        "colors": [
+          "#41975D",
+          "#6AA94F",
+          "#58A49A"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Stormhold",
+      "Hatching Pools",
+      "Hissmir",
+      "Alten Corimont",
+      "river and pool network"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/shadowfen_shadowfen_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Shadowfen dense wet forest, exact site not labeled",
+        "url": "https://i.imgur.com/qkxrIST.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed tall moss-draped trees and deep green undergrowth, reflective muddy water."
+      },
+      {
+        "label": "Shadowfen open flooded grove, exact site not labeled",
+        "url": "https://i.imgur.com/QaFbYhi.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed wider pools, thin grassy islands and sparse swamp trees, warm yellow backlight."
+      },
+      {
+        "label": "Photographer attribution",
+        "url": "https://forums.elderscrollsonline.com/en/discussion/172783/tamriel-a-visual-review",
+        "kind": "source-page",
+        "viewed": false,
+        "observation": "Shadowfen section labels these shots; no exact subzone captions."
+      },
+      {
+        "label": "Leafwater subregion",
+        "url": "https://elderscrolls.fandom.com/wiki/Leafwater",
+        "kind": "geography",
+        "viewed": false,
+        "observation": "Southeast subzone, Reticulated Spine to north, Venomous Fens west."
+      },
+      {
+        "label": "Zone map and landmarks",
+        "url": "https://game-maps.com/ESO/Shadowfen-Map.asp",
+        "kind": "map-page",
+        "viewed": false,
+        "observation": "Revealed zone map and named landmarks."
+      }
+    ],
+    "confidence": "High swamp visual confidence; medium exact subzone palette because photos do not name locations.",
+    "implementationNote": ""
+  },
+  {
+    "name": "Murkmire",
+    "mapKey": "murkmire_murkmire_base",
+    "palette": [
+      "#328C64",
+      "#73B052",
+      "#A6BC62",
+      "#58A59E",
+      "#D09B53"
+    ],
+    "subzones": [
+      {
+        "name": "Lilmoth coastal wetlands",
+        "position": "southeast",
+        "terrain": "Low wet coastal ground, reeds, wood settlement and shallow waterways.",
+        "colors": [
+          "#58A59E",
+          "#73B052",
+          "#D09B53"
+        ]
+      },
+      {
+        "name": "Bright-Throat Village / nesting grounds",
+        "position": "east-center",
+        "terrain": "Green marsh and small orange sap/soil patches at nesting pools.",
+        "colors": [
+          "#73B052",
+          "#A6BC62",
+          "#D09B53"
+        ]
+      },
+      {
+        "name": "Dead-Water and western ruins",
+        "position": "west and northwest",
+        "terrain": "Dense jungle, moss-covered gray stone temples and rock ridges.",
+        "colors": [
+          "#328C64",
+          "#73B052",
+          "#A6BC62"
+        ]
+      },
+      {
+        "name": "Root-Whisper / inland pools",
+        "position": "north-center",
+        "terrain": "Connected water and dense Hist forest.",
+        "colors": [
+          "#328C64",
+          "#58A59E",
+          "#73B052"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Lilmoth harbor",
+      "Hist swamps",
+      "central river/pool network",
+      "Xanmeer ruins"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/murkmire_murkmire_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Murkmire nesting grounds",
+        "url": "https://images.mein-mmo.de/magazin/medien/2018/10/ESO-Murkmire-Brutplatz.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed green marsh plants, localized orange shallow pools, blue eggs and dark wet soil; exact village attribution not visually established."
+      },
+      {
+        "label": "Murkmire Xanmeer exterior official preview image",
+        "url": "https://cdn.mos.cms.futurecdn.net/wRna3sJPGCj3AYgYGNAubB.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed green palm/fern vegetation, mossy temple stone, olive water, red ornamental plant accents. Exact ruin unnamed in caption."
+      }
+    ],
+    "confidence": "Medium: distinct marsh and ruin environments viewed, but fine named-location boundaries rely on map and are approximate.",
+    "implementationNote": "Orange nesting-pool color is tiny local accent, never a giant orange regional swath."
+  },
+  {
+    "name": "Stonefalls",
+    "mapKey": "stonefalls_stonefalls_base",
+    "palette": [
+      "#656B79",
+      "#A88375",
+      "#7BA94F",
+      "#D26448",
+      "#F6A139"
+    ],
+    "subzones": [
+      {
+        "name": "Daen Seeth / Davon’s Watch / Ash Mountain",
+        "position": "east",
+        "terrain": "Volcanic ridges, sulfur pools, ash and localized lava; patchy fertile mushroom grassland.",
+        "colors": [
+          "#656B79",
+          "#A88375",
+          "#F6A139"
+        ]
+      },
+      {
+        "name": "Zabamat / Ebonheart / Vivec’s Antlers",
+        "position": "north and center-west coastal belt",
+        "terrain": "Green mushroom grasslands and wetlands between ash rock outcrops.",
+        "colors": [
+          "#7BA94F",
+          "#A88375",
+          "#D26448"
+        ]
+      },
+      {
+        "name": "Varanis / Kragenmoor / Tormented Spire",
+        "position": "southwest",
+        "terrain": "Mountainous volcanic terrain with a second distinct volcanic center; greener farm pockets.",
+        "colors": [
+          "#656B79",
+          "#A88375",
+          "#F6A139",
+          "#7BA94F"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Ash Mountain east-central",
+      "Tormented Spire southwest",
+      "Inner Sea north coast",
+      "Vivec’s Antlers"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/stonefalls_stonefalls_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Stonefalls greener mushroom plain, exact site not labeled",
+        "url": "https://i.imgur.com/OKR4Pvt.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed extensive grass, mushroom trees, greenish low vegetation and a warm brown cap; not uniform volcanic wasteland."
+      },
+      {
+        "label": "Stonefalls volcanic canyon, exact site not labeled",
+        "url": "https://i.imgur.com/uIhZiIG.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed charcoal/purple-gray peaks, brown ash haze and vivid orange lava pools/streams."
+      },
+      {
+        "label": "Photographer attribution",
+        "url": "https://forums.elderscrollsonline.com/en/discussion/172783/tamriel-a-visual-review",
+        "kind": "source-page",
+        "viewed": false,
+        "observation": "Stonefalls section separates green mushroom scene from ash/lava scene."
+      },
+      {
+        "label": "Subregion geography",
+        "url": "https://www.elderscrollsportal.de/almanach/Steinf%C3%A4lle",
+        "kind": "geography",
+        "viewed": false,
+        "observation": "East Daen Seeth, Ebonheart-to-northwest Zabamat, southwest Varanis; two volcanoes and fertile fungal forests."
+      },
+      {
+        "label": "Zone map",
+        "url": "https://game-maps.com/ESO/Stonefalls-Map.asp",
+        "kind": "map-page",
+        "viewed": false,
+        "observation": "Named geography and map."
+      }
+    ],
+    "confidence": "High dual-biome confidence; medium exact screenshot localities.",
+    "implementationNote": "Two discrete native volcano/lava features, not one giant orange zone."
+  },
+  {
+    "name": "Bal Foyen",
+    "mapKey": "stonefalls_balfoyen_base",
+    "palette": [
+      "#82B558",
+      "#65A394",
+      "#B68B65",
+      "#A881A6",
+      "#7C8794"
+    ],
+    "subzones": [
+      {
+        "name": "Foyen Docks",
+        "position": "northwest coast",
+        "terrain": "Gray stone harbor and blue-gray sea beside mushroom-rich green hills.",
+        "colors": [
+          "#65A394",
+          "#7C8794",
+          "#B68B65"
+        ]
+      },
+      {
+        "name": "Dhalmora / saltrice plots",
+        "position": "center and east",
+        "terrain": "Green marsh farmland, pools and mushrooms with pink/brown caps.",
+        "colors": [
+          "#82B558",
+          "#65A394",
+          "#A881A6"
+        ]
+      },
+      {
+        "name": "Fort Zeren / rocky south and west",
+        "position": "southwest",
+        "terrain": "Gray-brown fortress and rocky ridges above green grass.",
+        "colors": [
+          "#7C8794",
+          "#B68B65",
+          "#82B558"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Foyen Docks",
+      "Fort Zeren",
+      "Dhalmora",
+      "central ponds and small streams"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/stonefalls_balfoyen_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Bal Foyen overview toward Fort Zeren",
+        "url": "https://images.uesp.net/1/11/ON-place-Bal_Foyen.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed grassy green rolling plain, exposed brown-gray rock spires, brown and magenta mushrooms; fort on horizon."
+      },
+      {
+        "label": "Foyen Docks",
+        "url": "https://www.elderscrollsportal.de/wiki/images/thumb/6/6e/ESO_Foyen-Docks.jpg/1200px-ESO_Foyen-Docks.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed gray stone bridge, gray water and coastal mushroom cliffs."
+      },
+      {
+        "label": "Wayshrine map",
+        "url": "https://xynodegaming.com/ultimate-bal-foyen-zone-guide/",
+        "kind": "map-page",
+        "viewed": false,
+        "observation": "Foyen Docks, Fort Zeren and Dhalmora named map points."
+      }
+    ],
+    "confidence": "High: native map and two region-specific scenes viewed.",
+    "implementationNote": ""
+  },
+  {
+    "name": "Deshaan",
+    "mapKey": "deshaan_deshaan_base",
+    "palette": [
+      "#83B64E",
+      "#A5BD63",
+      "#62A9A6",
+      "#A687B5",
+      "#878E9B"
+    ],
+    "subzones": [
+      {
+        "name": "Redolent Loam / Narsis basin",
+        "position": "west",
+        "terrain": "Fertile grassy basin with marsh and scattered mushrooms.",
+        "colors": [
+          "#83B64E",
+          "#A5BD63",
+          "#62A9A6"
+        ]
+      },
+      {
+        "name": "Lagomere / Mournhold plain",
+        "position": "center",
+        "terrain": "Greener broad plain, lakes, gray rock and fungal groves.",
+        "colors": [
+          "#A5BD63",
+          "#83B64E",
+          "#A687B5"
+        ]
+      },
+      {
+        "name": "Siltreen / eastern waterways",
+        "position": "east",
+        "terrain": "Wetland channels and mushroom vegetation, gray rock margins.",
+        "colors": [
+          "#62A9A6",
+          "#83B64E",
+          "#878E9B"
+        ]
+      },
+      {
+        "name": "Northern and southern ridge edges",
+        "position": "north and south edges",
+        "terrain": "Narrow rocky ridges enclosing agricultural/wet basin.",
+        "colors": [
+          "#878E9B",
+          "#A5BD63"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Mournhold",
+      "Narsis",
+      "Lake Hlaalu / western water",
+      "eastern river/lake network"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/deshaan_deshaan_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Deshaan pool and mushroom grove, exact site not labeled",
+        "url": "https://i.imgur.com/AAslTqP.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed calm water, green deciduous trees, large blue-violet mushroom cap and gray rock."
+      },
+      {
+        "label": "Deshaan grass/wooded upland, exact site not labeled",
+        "url": "https://i.imgur.com/DM8IlVI.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed grass-covered floor, green trees and tall gray-violet mushrooms, rocky hills."
+      },
+      {
+        "label": "Photographer attribution",
+        "url": "https://forums.elderscrollsonline.com/en/discussion/172783/tamriel-a-visual-review",
+        "kind": "source-page",
+        "viewed": false,
+        "observation": "Deshaan section labels the two images."
+      },
+      {
+        "label": "Zone map",
+        "url": "https://game-maps.com/ESO/Deshaan-Map.asp",
+        "kind": "map-page",
+        "viewed": false,
+        "observation": "Named locations and revealed water/terrain structure."
+      }
+    ],
+    "confidence": "High for green fungal plains and wetlands; medium regional divisions, exact image sites not captioned.",
+    "implementationNote": "Violet is mushroom accent only. Base terrain stays lush green with visible waterways."
+  },
+  {
+    "name": "Vvardenfell",
+    "mapKey": "vvardenfell_vvardenfell_base",
+    "palette": [
+      "#779DA3",
+      "#B08D7E",
+      "#78AC4F",
+      "#B98AB6",
+      "#F4A03A"
+    ],
+    "subzones": [
+      {
+        "name": "Bitter Coast / Balmora / Seyda Neen",
+        "position": "southwest and lower west coast",
+        "terrain": "Wet green swamps, rivers, mossy trees and fungal flora.",
+        "colors": [
+          "#78AC4F",
+          "#4F9D79",
+          "#739FA3"
+        ]
+      },
+      {
+        "name": "West Gash / Gnisis",
+        "position": "west and northwest strip",
+        "terrain": "Broken rocky country and dry green grass, separated from central mountain by ridges.",
+        "colors": [
+          "#AEBB66",
+          "#B08D7E",
+          "#779DA3"
+        ]
+      },
+      {
+        "name": "Ascadian Isles / Vivec / Suran",
+        "position": "south",
+        "terrain": "Green agricultural islands and river/lake lowlands with mushrooms.",
+        "colors": [
+          "#78AC4F",
+          "#A8C36A",
+          "#B98AB6"
+        ]
+      },
+      {
+        "name": "Ashlands / Ald’ruhn and northern interior",
+        "position": "north and north-central",
+        "terrain": "Gray-purple ash, bare dark rocks and sparse plants; avoid brown/olive blanket.",
+        "colors": [
+          "#779DA3",
+          "#958D9F",
+          "#B08D7E"
+        ]
+      },
+      {
+        "name": "Red Mountain",
+        "position": "center, elongated ridge system",
+        "terrain": "Dark gray volcanic slopes; use only native drawn volcano/lava footprint.",
+        "colors": [
+          "#6F7684",
+          "#B08D7E",
+          "#F4A03A"
+        ]
+      },
+      {
+        "name": "Grazelands / Vos and Falensarano approach",
+        "position": "northeast and eastern strip",
+        "terrain": "Greener rolling slopes, leafy trees and scattered mushrooms.",
+        "colors": [
+          "#A8C36A",
+          "#78AC4F",
+          "#B98AB6"
+        ]
+      },
+      {
+        "name": "Molag Amur",
+        "position": "central-east / southeast inner slopes",
+        "terrain": "Rockier ash and lava channels between greener coastal areas.",
+        "colors": [
+          "#B08D7E",
+          "#779DA3",
+          "#F4A03A"
+        ]
+      },
+      {
+        "name": "Azura’s Coast / Sadrith Mora / Tel Branora",
+        "position": "east and southeast coast/islets",
+        "terrain": "Green and rocky mushroom coastline broken by many turquoise water channels.",
+        "colors": [
+          "#78AC4F",
+          "#B98AB6",
+          "#739FA3"
+        ]
+      },
+      {
+        "name": "Northern offshore islands / Sheogorad",
+        "position": "far north offshore",
+        "terrain": "Bare rocky islands; native map geometry only, not inferred accessible overland.",
+        "colors": [
+          "#B08D7E",
+          "#779DA3"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Red Mountain",
+      "Vivec southern canton islands",
+      "Balmora southwest river basin",
+      "Sadrith Mora east islands",
+      "northern archipelago"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/vvardenfell_vvardenfell_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Prima official guide regions",
+        "url": "https://primagames.com/eguides/elder-scrolls-online-morrowind-eguide/the-atlas-of-morrowind/overview",
+        "kind": "geography",
+        "viewed": false,
+        "observation": "Seven accessible regions: southwest Bitter Coast, west West Gash, south Ascadian Isles, north Ashlands, northeast Grazelands, central-east Molag Amur, east Azura’s Coast."
+      },
+      {
+        "label": "Ald’ruhn Ashlands",
+        "url": "https://images.uesp.net/thumb/b/b1/ON-place-Ald%27ruhn.jpg/1200px-ON-place-Ald%27ruhn.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed purple-gray ash, bare gray boulders, sparse brown vegetation and tents; no lush green blanket."
+      },
+      {
+        "label": "Falensarano greener eastern foothills",
+        "url": "https://images.uesp.net/thumb/6/65/ON-place-Falensarano_Ruins.jpg/1200px-ON-place-Falensarano_Ruins.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed green grass slopes and leafy trees, mossy ruins, sparse fungi; very different from Ald’ruhn."
+      },
+      {
+        "label": "Seyda Neen / Breaking Through the Fog quest",
+        "url": "https://assets.rpgsite.net/images/images/000/055/618/original/C-TfvHRUQAAoIjt.jpg",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed wooded swamp settlement, dark blue-gray water, mossy green shore and mushrooms; on-screen quest supports locality."
+      },
+      {
+        "label": "ESO region boundaries differ from TES3",
+        "url": "https://forums.elderscrollsonline.com/en/discussion/345818/vvardenfell-region-map",
+        "kind": "caution",
+        "viewed": false,
+        "observation": "Community cartographer warns ESO Balmora/Molag Mar/Tel Mora vegetation boundaries differ from TES3; use actual ESO terrain."
+      }
+    ],
+    "confidence": "High for major ash/green/swamp contrast and native map geography; medium exact named biome borders; no claim of exhaustive ground coverage.",
+    "implementationNote": "Most critical: retain genuinely green SW/S/NE/E coast, gray ash center/north, small native orange lava channels. Do not overlay invented giant volcano or recolor entire island olive."
+  },
+  {
+    "name": "Telvanni Peninsula",
+    "mapKey": "telvanni_u38_telvannipeninsula_base",
+    "palette": [
+      "#85B353",
+      "#D18BA6",
+      "#BEBCA3",
+      "#7795A6",
+      "#6DA9A2"
+    ],
+    "subzones": [
+      {
+        "name": "Fungal Lowlands / Ald Isra / Camonnaruhn",
+        "position": "north and west",
+        "terrain": "Green rolling lowland with huge pink/orange fungal caps, rocky gullies and waterways.",
+        "colors": [
+          "#85B353",
+          "#D18BA6",
+          "#6DA9A2"
+        ]
+      },
+      {
+        "name": "Central river / Sailenmora",
+        "position": "center",
+        "terrain": "Turquoise-blue river crossing green fungal foothills.",
+        "colors": [
+          "#6DA9A2",
+          "#85B353",
+          "#D18BA6"
+        ]
+      },
+      {
+        "name": "Padomaic Crest",
+        "position": "south and east",
+        "terrain": "Paler gray rock ridges/spires with green pockets and pink mushrooms.",
+        "colors": [
+          "#BEBCA3",
+          "#7795A6",
+          "#85B353"
+        ]
+      },
+      {
+        "name": "Necrom / eastern cliff coastline",
+        "position": "northeast east coast",
+        "terrain": "Pale gray-white stone city and rocky vertical spires; small city highlight.",
+        "colors": [
+          "#BEBCA3",
+          "#D6D7CB",
+          "#7795A6"
+        ]
+      }
+    ],
+    "majorGeographicObjects": [
+      "Necrom",
+      "central river",
+      "Great Arm northern coast",
+      "Padomaic cliff ridge"
+    ],
+    "sources": [
+      {
+        "label": "Native ESO zone map",
+        "url": "/private/tmp/kana-color-map-source/zones/telvanni_u38_telvannipeninsula_base.png",
+        "kind": "native-map",
+        "viewed": true,
+        "observation": "Inspected native map in extracted contact sheet; Vvardenfell and West Weald also individually full-size."
+      },
+      {
+        "label": "Telvanni mushroom grassland",
+        "url": "https://us.v-cdn.net/5020507/uploads/editor/4c/93b1udqdpoy6.png",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed green grass with small magenta patches, pink/orange mushrooms, gray-blue cliffs and leafy trees."
+      },
+      {
+        "label": "Necrom spires",
+        "url": "https://us.v-cdn.net/5020507/uploads/editor/3c/wxneveny07vj.png",
+        "kind": "screenshot",
+        "viewed": true,
+        "observation": "Viewed tall pale gray stone spires and towers against blue haze; markedly less green than fungal lowlands."
+      },
+      {
+        "label": "Photographer zone attribution",
+        "url": "https://forums.elderscrollsonline.com/en/discussion/635460/telvanni-peninsula-world-design-critique-no-bonelords-seriously",
+        "kind": "source-page",
+        "viewed": false,
+        "observation": "Player compares several images from the actual Telvanni zone; no exact GPS for first landscape."
+      },
+      {
+        "label": "Fungal Lowlands geographic extent",
+        "url": "https://elderscrolls.fandom.com/wiki/Fungal_Lowlands",
+        "kind": "geography",
+        "viewed": false,
+        "observation": "North and west, bordered south/east by Padomaic Crest."
+      }
+    ],
+    "confidence": "High for visual lowland/cliff contrast; medium for biome boundary precision.",
+    "implementationNote": "Color only currently playable southern Telvanni blob. Do not color entire remote geographic peninsula or northern islands."
+  }
+]

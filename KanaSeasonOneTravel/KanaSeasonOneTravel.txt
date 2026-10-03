@@ -1,0 +1,11 @@
+## Title: KanaSeasonOneTravel
+## Description: Season One map tab with encounter and Freerunner travel and daily completion checks.
+## Author: Kana
+## Version: 1.2.3
+## APIVersion: 101050 101051
+## DependsOn: LibWorldMapInfoTab>=127
+## SavedVariables: KanaSeasonOneTravelSaved
+
+Core.lua
+Tracking.lua
+UI.lua

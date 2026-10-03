@@ -1,0 +1,7 @@
+## Title: KanaCurrentlyEquipped
+## Author: Kana
+## DependsOn: CurrentlyEquipped
+## APIVersion: 101045
+## AddOnVersion: 1.0.0
+
+KanaCurrentlyEquipped.lua

@@ -1,0 +1,12 @@
+## Title: KanaSlowAddon
+## Author: Shinni; Kana (local patch)
+## Version: 1.14-kana
+## APIVersion: 101050 101051
+## Description: Personal SlowDialogs fork. /kslow toggles instant text for the current speaker.
+## SavedVariables: KanaSlowAddon_SavedVariables
+## DependsOn: LibAddonMenu-2.0
+
+KanaSlowAddon.lua
+Localization_en.lua
+Localization_$(language).lua
+KanaSlowAddonOptions.lua

@@ -1,0 +1,8 @@
+## Title: KanaWaypointBeam
+## APIVersion: 101051 101050
+## Version: 0.1.0
+## Author: Kana
+## Description: A tall blue world beam at the ordinary player waypoint.
+## DependsOn: LibGPS
+
+KanaWaypointBeam.lua

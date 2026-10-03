@@ -1,0 +1,7 @@
+## Title: KanaReadBook
+## Author: kana
+## Version: 1.0.1
+## APIVersion: 101050
+## Description: Open learned library books by title with /readbook.
+## OptionalDependsOn: LoreBooks
+KanaReadBook.lua

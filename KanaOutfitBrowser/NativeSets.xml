@@ -1,0 +1,24 @@
+<GuiXml>
+    <Controls>
+        <Control name="KanaOutfitSetHeader" virtual="true" mouseEnabled="false">
+            <Dimensions x="504" y="34"/>
+            <Controls>
+                <Button name="$(parent)ExpandedState" inherits="ZO_TreeButtonArrow">
+                    <Anchor point="LEFT"/>
+                </Button>
+                <Label name="$(parent)Title" mouseEnabled="true" font="ZoFontWinH4" wrapMode="ELLIPSIS" maxLineCount="1">
+                    <Anchor point="LEFT" relativeTo="$(parent)ExpandedState" relativePoint="RIGHT"/>
+                    <Dimensions x="392" y="30"/>
+                </Label>
+                <Button name="$(parent)Hide" mouseEnabled="true">
+                    <Anchor point="LEFT" relativeTo="$(parent)Title" relativePoint="RIGHT" offsetX="6"/>
+                    <Dimensions x="28" y="28"/>
+                </Button>
+                <Button name="$(parent)Favorite" mouseEnabled="true">
+                    <Anchor point="LEFT" relativeTo="$(parent)Hide" relativePoint="RIGHT" offsetX="8"/>
+                    <Dimensions x="28" y="28"/>
+                </Button>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>

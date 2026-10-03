@@ -1,0 +1,10 @@
+## Title: KanaColorMap
+## Author: Kana
+## Description: Colorful biome artwork for the general Tamriel map.
+## Version: 2.0.9
+## AddOnVersion: 20009
+## APIVersion: 101050
+## SavedVariables: KanaColorMapSV
+
+Zones.lua
+KanaColorMap.lua

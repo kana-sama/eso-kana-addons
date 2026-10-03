@@ -1,0 +1,123 @@
+dofile("KanaOutfitBrowser/NativeSetModel.lua")
+local Model = assert(KanaOutfitBrowser.NativeSetModel)
+local count = 0
+local function test(name, fn)
+    fn()
+    count = count + 1
+    print("PASS native set model: " .. name)
+end
+local function equal(a, b)
+    assert(a == b, tostring(a) .. " ~= " .. tostring(b))
+end
+local function v(key, name, weight)
+    return {key=key .. ":" .. weight, styleKey=key, name=name, weight=weight, slots={head=weight}}
+end
+local function fixture(prefs)
+    local variants = {v("b", "Breton", 3), v("a", "Altmer", 2), v("b", "Breton", 1), v("a", "Altmer", 1), v("c", "Dunmer", 4)}
+    local model = Model.New(variants, prefs or {})
+    model:Open()
+    return model, variants
+end
+local function keys(model)
+    local result = {}
+    for _, entry in ipairs(model:GetSets()) do result[#result+1]=entry.key end
+    return table.concat(result, ",")
+end
+test("families appear once with ordered original variants and slots", function()
+    local model, variants = fixture()
+    equal(keys(model), "a,b,c")
+    local sets = model:GetSets()
+    equal(#sets[2].variants, 2)
+    equal(sets[2].variants[1], variants[3])
+    equal(sets[2].variants[2], variants[1])
+    equal(sets[2].variants[1].slots, variants[3].slots)
+    equal(sets[3].variants[1].weight, 4)
+end)
+test("favorites update live flag but reorder only on next entry", function()
+    local prefs = {}
+    local model = fixture(prefs)
+    equal(model:ToggleFavorite("c"), true)
+    equal(prefs.favorites.c, true)
+    equal(keys(model), "a,b,c")
+    equal(model:GetSets()[3].favorite, true)
+    model:Open()
+    equal(keys(model), "c,a,b")
+    model:ToggleFavorite("c")
+    equal(model:GetSets()[1].favorite, false)
+    equal(keys(model), "c,a,b")
+    model:Open()
+    equal(keys(model), "a,b,c")
+end)
+test("hidden updates live flag but membership changes only next entry", function()
+    local model = fixture()
+    equal(model:ToggleHidden("a"), true)
+    equal(keys(model), "a,b,c")
+    equal(model:GetSets()[1].hidden, true)
+    model:SetShowHidden(true)
+    model:SetShowHidden(false)
+    equal(keys(model), "a,b,c")
+    model:Open()
+    equal(keys(model), "b,c")
+end)
+test("show hidden recovers saved hidden family and unhide is deferred", function()
+    local prefs = {hidden={a=true}}
+    local model = fixture(prefs)
+    equal(keys(model), "b,c")
+    model:SetShowHidden(true)
+    equal(keys(model), "a,b,c")
+    equal(model:GetSets()[1].hidden, true)
+    model:ToggleHidden("a")
+    equal(model:GetSets()[1].hidden, false)
+    model:SetShowHidden(false)
+    equal(keys(model), "b,c")
+    model:Open()
+    equal(keys(model), "a,b,c")
+end)
+test("duplicate variant keys do not duplicate buttons", function()
+    local entry = v("a", "A", 1)
+    local model = Model.New({entry, entry}, {})
+    model:Open()
+    equal(#model:GetSets(), 1)
+    equal(#model:GetSets()[1].variants, 1)
+end)
+test("name sort is case normalized and stable by family key", function()
+    local model = Model.New({v("z", "alpha", 1), v("b", "Beta", 1), v("a", "ALPHA", 1)}, {})
+    model:Open()
+    equal(keys(model), "a,z,b")
+end)
+test("invalid keys do not modify preferences", function()
+    local prefs = {}
+    local model = fixture(prefs)
+    equal(model:ToggleFavorite("missing"), false)
+    equal(model:ToggleHidden("missing"), false)
+    equal(prefs.favorites.missing, nil)
+    equal(prefs.hidden.missing, nil)
+end)
+test("empty catalog is usable", function()
+    local model = Model.New({}, {})
+    model:Open()
+    equal(#model:GetSets(), 0)
+    model:SetShowHidden(true)
+    equal(#model:GetSets(), 0)
+end)
+test("saved order survives renamed styles reversed enumeration and new arrivals", function()
+    local prefs = {}
+    local first = Model.New({
+        {key="a:1",styleKey="a",name="Alpha",weight=1},
+        {key="b:1",styleKey="b",name="Beta",weight=1},
+    }, prefs)
+    first:Open()
+    equal(keys(first), "a,b")
+    local reopened = Model.New({
+        {key="b:1",styleKey="b",name="Aardvark",weight=1},
+        {key="c:1",styleKey="c",name="AAA new",weight=1},
+        {key="a:1",styleKey="a",name="Zulu",weight=1},
+    }, prefs)
+    reopened:Open()
+    equal(keys(reopened), "a,b,c")
+    reopened:ToggleFavorite("b")
+    equal(keys(reopened), "a,b,c")
+    reopened:Open()
+    equal(keys(reopened), "b,a,c")
+end)
+print("Native set model tests passed: " .. count)

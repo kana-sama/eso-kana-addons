@@ -1,0 +1,224 @@
+Use case: style-transfer. Asset: precise ESO Tamriel world-map background artwork, square 2048x2048 requested.
+EDIT TARGET image1 is the exact original general Tamriel atlas. Preserve its entire geographic layout, outer coastlines, islands, zone boundaries, sizes and positions. Do NOT rotate, warp, crop or rearrange anything.
+Image2 is ONLY a geometric locator for the 40 existing playable zones, identified by numeric IDs. Its arbitrary flat diagnostic colors are NOT palette references. Never reproduce labels/numbers. Territories outside those40 outlined zones must remain desaturated neutral gray parchment, ocean gray-blue very low saturation.
+Images3-4 are contact sheets of actual detailed ESO zone maps: use each named map for internal geography, placement of mountain rims, valleys, lakes, rivers and wetlands. They are structure references, NOT final layout: paint every zone at its original position in image1, never as contact sheet. Non-Tamriel maps shown (Coldharbour, Artaeum, Blackreach, Apocrypha etc.) excluded.
+Image5 is the user's detailed Wrothgar screenshot. Essential: Wrothgar is zone667 in image2 at normalized rectangle x=.184,y=.186,w=.14014,h=.11572, NOT territory to its east. Its north/east half is snow WHITE with icy BLUE shadows; southwest half straw YELLOW/OCHRE tundra. No green blanket.
+Art direction: vivid legible hand-painted WoW-style illustrated top-down atlas. Brightest plausible sunlit colors of actual ESO biomes, enriched saturation but faithful real hues. Distinct snow, autumn, desert, forest, volcanic ash, marsh and water. Natural transitions within each zone, detailed small relief/rivers according to source zone maps, no flat single-color regions. Fine linework and small terrain features, never huge invented mountains. Relief compact at world-map scale. No labels, text, pins, icons, UI, political borders, numbers, grids or legend. Don't invent settlements/roads. No overall sepia/brown filter. No red giant volcano consuming Vvardenfell; lava only narrow existing channels. Pink mushrooms/flowers are small accents, not whole pink zones.
+Coordinates below are normalized bounding rectangles (x,y,width,height) on image1, include transparent margins; actual shape is image2 mask. Apply independently; never spread color into unlisted neighbors. Each palette is an observed hue family; brighten artistically without changing biome. Subzone directions refer to within that zone. Research directions for ALL40 zones follow:
+
+ID 1 Glenumbra; rectangle (0.0413,0.2687,0.1167,0.1509). Hue anchors #617044, #87925A, #A19563, #777D73, #454F43.
+- south and southwest (Daenia / Beldama Wyrd / Daggerfall): Temperate green and yellow-green broadleaf woodland with grassy openings; Daggerfall coastal stone city.
+- central (Cambray Hills / Westtry): Rolling mixed woodland; Westtry is locally grey, sparse and dead-wooded. Do not extend its blight across all Glenumbra.
+- east-central wet lowland; rocky northern/northeastern spine (Hag Fen and northern uplands): Dark wet lowland inferred from native map; upland crags and forest farther north. Preserve the native peninsula and bays.
+
+ID 7 Stonefalls; rectangle (0.6616,0.3800,0.1445,0.1133). Hue anchors #656B79, #A88375, #7BA94F, #D26448, #F6A139.
+- east (Daen Seeth / Davon’s Watch / Ash Mountain): Volcanic ridges, sulfur pools, ash and localized lava; patchy fertile mushroom grassland.
+- north and center-west coastal belt (Zabamat / Ebonheart / Vivec’s Antlers): Green mushroom grasslands and wetlands between ash rock outcrops.
+- southwest (Varanis / Kragenmoor / Tormented Spire): Mountainous volcanic terrain with a second distinct volcanic center; greener farm pockets.
+
+ID 9 Grahtwood; rectangle (0.3713,0.6713,0.1143,0.1265). Hue anchors #255A3B, #458147, #8DAB5B, #777B65, #3C7777.
+- northwest (Tarlain Heights): Dense jungle and rocky woodland, interrupted locally by ruined Gil-Var-Delle
+- northeast and center (Green Hall / Elden Root): Huge graht-oaks, dense dark canopy, streams and pond pockets
+- south (Long Coast / Haven / Southpoint): Greener open edges around settlements, coast and marsh pools
+
+ID 10 Rivenspire; rectangle (0.1226,0.1926,0.1050,0.0918). Hue anchors #77766A, #A29373, #666A52, #85845A, #4B5348.
+- south / central rocky interior (Southern and central moors): Grey and ochre exposed ground, jagged rock spires, narrow valleys, sparse or dead trees.
+- east to northeast (Fell's Run basin): Noticeably greener pasture around settlement and brook, mixed light grass and dark trees; small area, not a province-wide green blanket.
+- north and northeast edge (Northern coast / Northpoint approach): Coastal strip within rugged crag country; retain native peninsula, inlets and ridges.
+
+ID 12 Stormhaven; rectangle (0.1539,0.2713,0.1240,0.0767). Hue anchors #74814E, #929761, #576A49, #8A8976, #AD9F71.
+- west (Alcaire / Koeglin): Green coastal pasture and mixed broadleaf trees, pale-grey rocky rises.
+- center and southern coast (Menevia / Wayrest hinterland): Grassy farm/woodland mosaic; city and shoreline locally stone-grey, fields light olive.
+- east (Gavaudon / Weeping Giant): Wooded river and waterfall country, green canopy with some gold/orange deciduous accents and tall grey rocks.
+
+ID 13 Deshaan; rectangle (0.6961,0.4600,0.1538,0.0791). Hue anchors #83B64E, #A5BD63, #62A9A6, #A687B5, #878E9B.
+- west (Redolent Loam / Narsis basin): Fertile grassy basin with marsh and scattered mushrooms.
+- center (Lagomere / Mournhold plain): Greener broad plain, lakes, gray rock and fungal groves.
+- east (Siltreen / eastern waterways): Wetland channels and mushroom vegetation, gray rock margins.
+- north and south edges (Northern and southern ridge edges): Narrow rocky ridges enclosing agricultural/wet basin.
+
+ID 16 Cyrodiil; rectangle (0.4513,0.3574,0.2461,0.2461). Hue anchors #56A24B, #B7C960, #D9A24B, #E5F1EF, #398FAD.
+- north (Jerall foothills / Bruma): Snowy mountain rim and conifers; snow concentrated at the northern edge.
+- west (Great Forest / Chorrol approaches): Forest green hills, localized Chorrol scar must remain small.
+- center (Heartlands / Lake Rumare): Green lowland around clearly defined blue lake, Imperial City island in center.
+- east and southeast (Nibenay / Cropsford): Grass plains and autumn deciduous woods; Cropsford screenshot shows ochre foliage and gray-brown soil.
+- south (Southern river corridor): Niben river leaves lake southwards through greener lowlands.
+
+ID 20 Bangkorai; rectangle (0.2500,0.2674,0.0869,0.1289). Hue anchors #778052, #A69864, #877F6A, #BB9060, #A56B48.
+- north (Mournoth / Evermore hinterland): Green and gold temperate trees/grass around a stone city and wet lowlands.
+- center (Central lake and Bangkorai Garrison barrier): Rocky dividing ridge and constrained passage; vegetation thins toward southern side.
+- south (Fallen Wastes / southern Craglorn gate): Dry yellow-ochre to rusty sandstone canyon land with sparse bushes; distinctly different from green north.
+
+ID 22 Malabal Tor; rectangle (0.3000,0.5674,0.1221,0.1099). Hue anchors #234F37, #477647, #849957, #6D756C, #448C87.
+- west and northwest coast (Broken Coast / Velyn Harbor): Indented shore and humid broadleaf canopy with port clearings
+- south and center (Xylo River Basin / Vulkwasten / Tanglehaven): Shadowed jungle, river channels and huge trunks with mossy rocks
+- east and northeast (Silvenar Vale / Treehenge / Baandari): Heavily wooded vale with localized ridges and clearings; Silvenar southeast of the eastern lobe
+
+ID 26 Shadowfen; rectangle (0.6939,0.5313,0.1138,0.0962). Hue anchors #41975D, #6AA94F, #8BBB64, #58A49A, #B39B67.
+- north (Reticulated Spine / Stormhold): Wet forest basin with rocky eastern ridge; river loop.
+- center to southeast (Leafwater / Hatching Pools / Alten Corimont): Waterlogged lowlands, cypress-like trees and broad connected pools.
+- southwest (Venomous Fens / Hissmir / Loriasel): Dense swamp vegetation and ruin islands; green canopy rather than brown desert.
+
+ID 30 Alik'r Desert; rectangle (0.1139,0.3426,0.1436,0.0947). Hue anchors #CBB783, #AF9564, #82755A, #657050, #758B83.
+- west, northwest coastal city (Myrkwasa / Sentinel): Pale desert and weathered stone; palms are isolated accents near habitation and water.
+- central (Hollow Wastes): Wide light sand dunes, dark flat-topped rock mesas and sparse palms.
+- east (Tigonus): Arid rocky desert continuing to eastern mountain rim; follow native rock bands rather than inventing uniform dunes.
+
+ID 61 Eastmarch; rectangle (0.5700,0.2452,0.1289,0.0923). Hue anchors #DDE2DE, #A4AEAA, #A59772, #717461, #536451.
+- north (Giant's Run / Lower Yorgrim / Windhelm country): Broad snow cover, cold lakes and snow-dusted conifers; grey mountain rock.
+- central and south, inside snowy rim (Central-southern geothermal basin / Wittestadr): Snow-free tan/grey mud and exposed rock, shallow water, sparse vegetation/dead trees. Keep a large visibly different inland basin.
+- southwest and southeast respectively (Frostwater Tundra and Icewind Peaks edges): Transition back toward snowy high perimeter; darker sparse forest patches and exposed rock.
+
+ID 74 Bleakrock Isle; rectangle (0.6739,0.2552,0.0186,0.0176). Hue anchors #DEE3DF, #A2B1B0, #747E7A, #466052, #567A80.
+- center / south (Village and central/southern island): Continuous snow interrupted by grey stone and sparse snowy conifers.
+- northwest and eastern high ground (Hozzin's Folly and Skyshroud uplands): Rocky snow-covered ridges; retain narrow dark spines and local tree patches.
+- perimeter (Rocky coasts and offshore islets): Cold blue-green sea borders pale snowy shores; keep coastline exact.
+
+ID 75 Bal Foyen; rectangle (0.7940,0.4288,0.0322,0.0322). Hue anchors #82B558, #65A394, #B68B65, #A881A6, #7C8794.
+- northwest coast (Foyen Docks): Gray stone harbor and blue-gray sea beside mushroom-rich green hills.
+- center and east (Dhalmora / saltrice plots): Green marsh farmland, pools and mushrooms with pink/brown caps.
+- southwest (Fort Zeren / rocky south and west): Gray-brown fortress and rocky ridges above green grass.
+
+ID 125 The Rift; rectangle (0.5387,0.3226,0.1533,0.0938). Hue anchors #B39D53, #938C4E, #64704C, #818173, #D3D8D2.
+- west, below high mountain wall (Ivarstead and western valley): Golden birch and olive meadow terraces, grey exposed rock and waterfalls; snow stays on far high peaks.
+- central/east lower country (Central and eastern autumn woodland / Riften surroundings): Gold and green birch mixed with dark conifers; olive/brown floor, lakes and grey boulders.
+- southern and other high perimeter ridges visible on native map (High border ridges / Smokefrost heights): Pale snow on high rim with grey rock; keep it peripheral to large autumn lowlands.
+
+ID 143 Auridon; rectangle (0.1574,0.5948,0.1167,0.1602). Hue anchors #56883D, #2E653F, #B2B995, #CB87A4, #659DA1.
+- south (Iluvamir / Vulkhel Guard): Green lawns, broadleaf trees, pink-white flowering crowns, pale stone ports; narrow rocky coast
+- middle and east-central (Calambar / Skywatch): Wooded rolling terrain cut by local rock ridges and streams; pale city at eastern shore
+- north (Vafe / Firsthold): Same fertile green island with abundant pink, red and white blossom trees; no snow biome
+
+ID 201 Stros M'Kai; rectangle (0.1487,0.5339,0.0215,0.0205). Hue anchors #CEBD8C, #B69B6B, #917F64, #778051, #60908C.
+- north (Northern rocky desert / goblin country): Pale sand, tall banded ochre sandstone, isolated palms/cacti.
+- east/central coast (Port Hunding and main harbour): Pale stone and sand around sheltered blue-green water; palms remain small accents.
+- south / perimeter (Southern palace headland and exposed coast): Beige grey rock, sandy pockets, scattered palms and clear turquoise coast.
+
+ID 227 Betnikh; rectangle (0.0697,0.4248,0.0220,0.0234). Hue anchors #758253, #53694C, #98916A, #80867B, #78938A.
+- most lower island (Woodland and meadow island): Temperate green grass and mixed broadleaf trees; patches of bare earthy ground, not jungle.
+- western sector (Grimfield burial grounds): Grassy stone graves/ruins under broadleaf canopy; grey stone locally visible.
+- central stronghold / island perimeter (Stonetooth and rocky coastal headlands): Grey rock and stone interspersed with green vegetation, blue-green coastal water.
+
+ID 256 Reaper's March; rectangle (0.4090,0.5465,0.1006,0.1309). Hue anchors #879346, #B7A460, #C1AD84, #627949, #5D8981.
+- northwest (Northern Woods / Arenthia): Drier open woodland, olive grass, reddish earth and pale tan outcrops
+- northeast through east-central (Dawnmead / Dune): Open tawny savanna and pale dry rocky terrain, scattered trees
+- south (Jodewood / Rawlkha): Grassland-woodland transition with river and lake pockets; greener western fringe
+
+ID 258 Khenarthi's Roost; rectangle (0.4916,0.7839,0.0244,0.0283). Hue anchors #578749, #91A85E, #D5C18E, #7E826C, #4FACA7.
+- north and north-central inlet (Mistral / Cats Eye Quay): Palms and tropical green lowlands around sheltered blue-green harbor
+- center and east (Plantations and moon temples): Grass and palms, sandy paths, pale brown stone temple ruins
+- south and southwest (Eagles Strand / Shattered Shoals): Sandy/rocky littoral and palms, ruined fort and wreck-strewn shore
+
+ID 300 Greenshade; rectangle (0.2765,0.6400,0.1025,0.1104). Hue anchors #2D6240, #5D9348, #93AC66, #7A8170, #548E82.
+- north (Greens Marrow / Hectahame): Dense broadleaf forest, mossy boulders and giant trees
+- west and west-central wedge (Drowned Coast / Woodhearth / Shademist Moors): Damp lowlands, marsh pools, reeds and palms mixed with giant forest trees
+- south, with Marbruk at its north tip (Wilderking Court / Greenheart): Lush wooded low hills, local rocky rises and streams
+
+ID 667 Wrothgar; rectangle (0.1840,0.1860,0.1401,0.1157). Hue anchors #DCE2DE, #A7B3B1, #777B72, #B7A064, #777653.
+- north and east, approximately half the zone visually (Northern and eastern snow country / Orsinium): White and blue-grey snow across uplands, frozen falls and city environs; dark grey exposed crags and sparse pines.
+- southwest / west below snowline (Southwestern and lower western tundra): Dry straw-yellow and ochre grass, brown/grey rock, sparse conifers. This is the principal snow-free colour field; do not make it lush green.
+- west/northwest coastal lower elevations and local ravines (Lower coast and waterfall gullies): Patchy muted olive/brown vegetation among grey stone; keep these small, subordinate to tundra and snowy uplands.
+
+ID 994 Hew's Bane; rectangle (0.2020,0.4860,0.0620,0.0562). Hue anchors #CEB68B, #B59770, #879659, #637B54, #548E8C.
+- north and northwest (Northern hook / brackish bay): Barren tan rocky hook around large blue-green bay; sparse scrub
+- east-central (Abahs Landing): Dense pale sandstone port attached to coast
+- south and southwest (Southern wilderness / wet pockets): Layered sandstone, sparse green trees and shallow brackish streams or pools
+
+ID 1006 Gold Coast; rectangle (0.3020,0.5180,0.0854,0.0918). Hue anchors #B5A15B, #8D944F, #D1C5A0, #6F8054, #598E96.
+- west and southwest (Anvil / Abecean coast): Golden dry grasses, olive trees, pale limestone and sea blue
+- east (Kvatch highlands): Dry olive/golden woodland and pale gray-tan rock; raised city platform
+- north and center (Northern and central country): Rolling open grassland punctuated by local cliff shelves and trees
+
+ID 1060 Vvardenfell; rectangle (0.6978,0.2309,0.1489,0.1611). Hue anchors #779DA3, #B08D7E, #78AC4F, #B98AB6, #F4A03A.
+- southwest and lower west coast (Bitter Coast / Balmora / Seyda Neen): Wet green swamps, rivers, mossy trees and fungal flora.
+- west and northwest strip (West Gash / Gnisis): Broken rocky country and dry green grass, separated from central mountain by ridges.
+- south (Ascadian Isles / Vivec / Suran): Green agricultural islands and river/lake lowlands with mushrooms.
+- north and north-central (Ashlands / Ald’ruhn and northern interior): Gray-purple ash, bare dark rocks and sparse plants; avoid brown/olive blanket.
+- center, elongated ridge system (Red Mountain): Dark gray volcanic slopes; use only native drawn volcano/lava footprint.
+- northeast and eastern strip (Grazelands / Vos and Falensarano approach): Greener rolling slopes, leafy trees and scattered mushrooms.
+- central-east / southeast inner slopes (Molag Amur): Rockier ash and lava channels between greener coastal areas.
+- east and southeast coast/islets (Azura’s Coast / Sadrith Mora / Tel Branora): Green and rocky mushroom coastline broken by many turquoise water channels.
+- far north offshore (Northern offshore islands / Sheogorad): Bare rocky islands; native map geometry only, not inferred accessible overland.
+
+ID 1126 Craglorn; rectangle (0.3237,0.3140,0.1763,0.1187). Hue anchors #9F8E6B, #77786B, #69745B, #B5A47F, #687D76.
+- south and central (Lower Craglorn / Belkarth): Dry rocky uplands and sparse trees; Belkarth lake grey-green water and grey escarpments.
+- east (Balamath and eastern dry ruin country): Bare grey/beige stone, low dry vegetation and leafless trees around ruins.
+- north / northwest (Upper Craglorn / Dragonstar approaches): Rugged northern valleys, river and some greener sparse vegetation on native map; avoid turning the whole zone into sand dunes.
+
+ID 1349 Summerset; rectangle (0.0163,0.6300,0.1807,0.1924). Hue anchors #51884A, #87A85A, #DDD3B4, #AC789E, #49939A.
+- north-central (Eton Nir / Cloudrest): Localized high pale-rock massif; northern woods and valleys around it
+- northwest and west (Lillandril / western coast): Green coastal woodland, pale sea cliffs and wet pockets
+- east and center (Shimmerene / central rivers): Lush meadows, wooded rivers, scattered pink/lilac blossoms
+- southwest and south (Alinor / Sunhold / Sil-Var-Woad): Fertile meadows and woodland, pale architectural and cliff accents, blue-green streams
+
+ID 1484 Murkmire; rectangle (0.6812,0.7200,0.1045,0.0928). Hue anchors #328C64, #73B052, #A6BC62, #58A59E, #D09B53.
+- southeast (Lilmoth coastal wetlands): Low wet coastal ground, reeds, wood settlement and shallow waterways.
+- east-center (Bright-Throat Village / nesting grounds): Green marsh and small orange sap/soil patches at nesting pools.
+- west and northwest (Dead-Water and western ruins): Dense jungle, moss-covered gray stone temples and rock ridges.
+- north-center (Root-Whisper / inland pools): Connected water and dense Hist forest.
+
+ID 1552 Norg-Tzel; rectangle (0.7991,0.7919,0.0156,0.0156). Hue anchors #365D42, #758650, #8E8B67, #427D78, #746A51.
+- southeast and east (Eastern landing shore): Tropical low shoreline leading into muddy wetland
+- south to north center (Central swamp corridor): Connected shallow pools, reeds and dense humid canopy
+- northwest (Xanmeer ruins): Moss-covered Argonian stone complex amid wooded local rocky rim
+
+ID 1555 Northern Elsweyr; rectangle (0.4445,0.5845,0.1514,0.1187). Hue anchors #BE8751, #D3AC72, #A69B50, #568744, #2E6745.
+- north and northeast (Northern savanna / Rimmen): Dry grassland and scattered trees; Rimmen pale sandstone buildings and canals
+- center (The Scar / The Stitches): Layered warm sandstone cliffs, canyon terraces, dry brown ground with scattered scrub
+- south (Tenmar fringe): Denser green tropical forest transitioning from dry central plateau
+
+ID 1654 Southern Elsweyr; rectangle (0.4977,0.6966,0.1265,0.1152). Hue anchors #51864A, #8BA359, #C3B68B, #737C68, #4A9292.
+- north and northwest (Northern heights / Zhan Khaj Crest): Tropical green hills, broken dark-gray rock ledges and scattered umbrella-canopy trees
+- east-central and southeast coast (Senchal / coastal peninsula): Tan stone city, green and gold ground, palms; ruined/burnt districts remain localized
+- west and south (Western jungle and southern coast): Wooded tropical landscape threaded with streams and sheltered coves
+
+ID 1719 Western Skyrim; rectangle (0.3411,0.1834,0.1514,0.1025). Hue anchors #D7DEDC, #99A8A7, #777A68, #6E7954, #536653.
+- north; eastern high elevations (Haafingar coast and high ridges): Snow fields, exposed grey rock and conifers; strong white band/patches visible on native map.
+- west and southwest lower country (Karthald / Dragon Bridge approaches): Grey rocky river valley, green/olive slopes, conifer and birch vegetation; snow remains on higher distant ridges.
+- central and southern low country (Hjaalmarch / Morthal lowlands): Wet dark-olive/brown basin inferred from native map; preserve water channels, avoid uniformly snowy lowlands.
+
+ID 1814 The Reach; rectangle (0.3261,0.2444,0.0996,0.0854). Hue anchors #868374, #A39772, #747A59, #546B54, #657D78.
+- north through center toward southeast (Karth river / waterfall valleys): Grey/brown crag walls, pale water and sparse olive greenery; river valley is narrow, not broad tropical forest.
+- north/northeast of central Reach (Karthwasten slopes): Grey rocky slopes and tan grassy openings around wooden village.
+- western city; rugged ridges around zone (Markarth and western/eastern uplands): Exposed grey-brown stone dominates, sparse green conifers and dry grass; no continuous surface snow blanket.
+
+ID 1864 Greyhome; rectangle (0.2428,0.1263,0.0171,0.0161). Hue anchors #D5DEDE, #A7B6B8, #626F70, #344A45.
+- south (Snowy approach / southern promontory): White snow with exposed blue-grey rock and dark conifers.
+- north/center (Castle island and northern heights): Dark gothic castle and grey rock amid snow; tiny dark structural accent within pale island.
+
+ID 1887 Blackwood; rectangle (0.5835,0.6003,0.1309,0.1611). Hue anchors #699F4D, #A6B75D, #3F8C6D, #659FA4, #C6B08C.
+- west and southwest (Leyawiin / Niben corridor): Deciduous woodland, fields, Imperial settlement and broad river.
+- north (Northern lakes and reed margins): Blue-green broad waterways around reed-covered banks and green hills.
+- east and northeast (Gideon / eastern marsh): Wetland with gray mossy stone, pools and denser swamp vegetation.
+- southeast (Deep swamp / Black Marsh transition): Dense wet green vegetation with connected small pools.
+
+ID 2114 High Isle; rectangle (0.0490,0.5664,0.0415,0.0444). Hue anchors #66964E, #2D6946, #D4C9AA, #4BA0A0, #B66D44.
+- north of southwestern main island (Oakenvald): Wooded hills with localized volcanic vents and pale outcrops
+- south of southwestern main island (Sapphire Coast): Temperate open green coast, chalky pale cliffs, turquoise inlets
+- separate northeastern island (Amenos Jungle): Darker humid forest, mossy rock and pooled water
+
+ID 2212 Galen; rectangle (0.0438,0.5542,0.0190,0.0195). Hue anchors #4D8347, #8BA45B, #D1C4A6, #565D50, #E28537.
+- north of main island (Northern Galen jungle): Dense woodland among local pale rocky outcrops
+- south and southwest (Vastyr and southern Galen): Grassland/woodland mosaic, pale steep coastal rock, tan city walls
+- east of main island (Eastern Galen volcanic patch): Dark volcanic ground and narrow orange lava channels shown by native map
+- separate island southeast (Yffelon / Mount Firesong): Volcanic island with lava; northern reachable area has real green vegetation
+
+ID 2274 Telvanni Peninsula; rectangle (0.7812,0.3563,0.1753,0.1455). Hue anchors #85B353, #D18BA6, #BEBCA3, #7795A6, #6DA9A2.
+- north and west (Fungal Lowlands / Ald Isra / Camonnaruhn): Green rolling lowland with huge pink/orange fungal caps, rocky gullies and waterways.
+- center (Central river / Sailenmora): Turquoise-blue river crossing green fungal foothills.
+- south and east (Padomaic Crest): Paler gray rock ridges/spires with green pockets and pink mushrooms.
+- northeast east coast (Necrom / eastern cliff coastline): Pale gray-white stone city and rocky vertical spires; small city highlight.
+
+ID 2427 West Weald; rectangle (0.3203,0.4218,0.1704,0.1548). Hue anchors #E2A43B, #DA7041, #58A34B, #779F65, #91918A.
+- north (Colovian Highlands): Rocky highland country with warm grass and autumn trees; no broad snow field in native map.
+- east and northeast, east-west road arm (Gold Road / Skingrad vineyards): Autumn woodland, orange/red canopy and warm golden fields.
+- southwest (Dawnwood): Dense fresh green jungle and huge trees, contrasting strongly with gold countryside.
+- central-south transition between Dawnwood and Skingrad (Wildburn): Dead gray-brown plants and ashy ground; small cyan magical accents, not whole-zone purple.
+
+ID 2603 Solstice; rectangle (0.6346,0.8911,0.0854,0.0649). Hue anchors #4C864C, #91A966, #D5C49D, #747C70, #4C668E.
+- west and southwest shoreline (Western coast dunes): Pale sand dunes, scattered palms and shells; blue-green sea
+- west/central, south of Sunport (Sunport Bay forests): Bright grassy tropical woodland with violet flower accents and stone outcrops
+- central division (Solstice Range): Existing local mountainous ridge separating west/east; use native shaded relief only
+- east (Eastern Solstice): Green tropical ground mixed with local blue-black Coldharbour rock and dead vegetation from Reverse Planemeld
+
+Final output: one clean complete square Tamriel map with original geography registered exactly to image1. Unchanged full-canvas margins. No contact sheet, no reference labels. Wrothgar half white/blue and half golden yellow is mandatory.

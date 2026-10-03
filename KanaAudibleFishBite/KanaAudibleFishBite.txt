@@ -1,0 +1,20 @@
+; This Add-on is not created by, affiliated with or sponsored by ZeniMax
+; Media Inc. or its affiliates. The Elder Scrolls® and related logos are
+; registered trademarks or trademarks of ZeniMax Media Inc. in the United
+; States and/or other countries. All rights reserved.
+; You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
+
+## Title: Kana Audible Fish Bite
+## APIVersion: 101048 101049 101050
+## Version: 1.0.1
+## SavedVariables: KanaAudibleFishBite_Settings
+## Author: otac0n; Kana
+## Description: Lets you hear fish on the line.
+## OptionalDependsOn:
+## DependsOn: LibSavedVars LibAddonMenu-2.0>=32 LibAddonMenuSoundSlider
+
+KanaAudibleFishBite_Shared.lua
+KanaAudibleFishBite_Strings.lua
+KanaAudibleFishBite_Settings.lua
+KanaAudibleFishBite_SettingsMenu.lua
+KanaAudibleFishBite.lua

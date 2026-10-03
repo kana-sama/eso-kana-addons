@@ -1,0 +1,6 @@
+## Title: Kana No Repeat
+## Author: kana
+## Version: 1.0.0
+## APIVersion: 101050
+
+KanaNoRepeat.lua

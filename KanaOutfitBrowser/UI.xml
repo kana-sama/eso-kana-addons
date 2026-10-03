@@ -1,0 +1,46 @@
+<GuiXml>
+    <Controls>
+        <TopLevelControl name="KanaOutfitBrowserRoot" hidden="true" mouseEnabled="false" keyboardEnabled="true">
+            <Anchor point="TOPLEFT" relativeTo="GuiRoot"/>
+            <Anchor point="BOTTOMRIGHT" relativeTo="GuiRoot"/>
+            <OnKeyDown>
+                return KanaOutfitBrowser.HandleKeyDown(key)
+            </OnKeyDown>
+        </TopLevelControl>
+
+        <Control name="KanaOutfitBrowserHeaderRow" virtual="true" mouseEnabled="false">
+            <Dimensions x="800" y="32"/>
+            <Controls>
+                <Label name="$(parent)Title" font="ZoFontWinH4" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_SELECTED" modifyTextType="UPPERCASE">
+                    <Anchor point="LEFT" offsetX="8"/>
+                </Label>
+            </Controls>
+        </Control>
+
+        <Control name="KanaOutfitBrowserStyleRow" virtual="true" mouseEnabled="false">
+            <Dimensions x="800" y="46"/>
+            <Controls>
+                <Button name="$(parent)Style" inherits="ZO_DefaultTextButton" horizontalAlignment="LEFT">
+                    <Dimensions x="350" y="38"/>
+                    <Anchor point="LEFT" offsetX="8"/>
+                </Button>
+                <Button name="$(parent)Light" inherits="ZO_DefaultButton">
+                    <Dimensions x="132" y="32"/>
+                    <Anchor point="LEFT" relativeTo="$(parent)Style" relativePoint="RIGHT" offsetX="6"/>
+                </Button>
+                <Button name="$(parent)Medium" inherits="ZO_DefaultButton">
+                    <Dimensions x="132" y="32"/>
+                    <Anchor point="LEFT" relativeTo="$(parent)Light" relativePoint="RIGHT" offsetX="6"/>
+                </Button>
+                <Button name="$(parent)Heavy" inherits="ZO_DefaultButton">
+                    <Dimensions x="132" y="32"/>
+                    <Anchor point="LEFT" relativeTo="$(parent)Medium" relativePoint="RIGHT" offsetX="6"/>
+                </Button>
+                <Button name="$(parent)Unified" inherits="ZO_DefaultButton" hidden="true">
+                    <Dimensions x="408" y="32"/>
+                    <Anchor point="LEFT" relativeTo="$(parent)Style" relativePoint="RIGHT" offsetX="6"/>
+                </Button>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>

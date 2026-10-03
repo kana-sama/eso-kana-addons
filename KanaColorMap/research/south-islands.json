@@ -1,0 +1,1241 @@
+[
+  {
+    "name": "Auridon",
+    "mapKey": "auridon_auridon_base",
+    "mapId": 143,
+    "palette": [
+      "#56883D",
+      "#2E653F",
+      "#B2B995",
+      "#CB87A4",
+      "#659DA1"
+    ],
+    "subzones": [
+      {
+        "name": "Iluvamir / Vulkhel Guard",
+        "position": "south",
+        "terrain": "Green lawns, broadleaf trees, pink-white flowering crowns, pale stone ports; narrow rocky coast",
+        "colors": [
+          "#56883D",
+          "#CB87A4",
+          "#B2B995"
+        ]
+      },
+      {
+        "name": "Calambar / Skywatch",
+        "position": "middle and east-central",
+        "terrain": "Wooded rolling terrain cut by local rock ridges and streams; pale city at eastern shore",
+        "colors": [
+          "#2E653F",
+          "#56883D",
+          "#B2B995"
+        ]
+      },
+      {
+        "name": "Vafe / Firsthold",
+        "position": "north",
+        "terrain": "Same fertile green island with abundant pink, red and white blossom trees; no snow biome",
+        "colors": [
+          "#56883D",
+          "#CB87A4",
+          "#B2B995"
+        ]
+      }
+    ],
+    "majorObjects": "Long north-south island; Firsthold NW, Skywatch middle east, Vulkhel Guard southern tip. Preserve native bays and local central ridges; blossoms are sparse accents, not pink ground.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/auridon_auridon_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Auridon",
+        "locations": "Zone description",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Vafe",
+        "locations": "Northern region placement",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/e/e7/ON-place-Firsthold.jpg",
+        "locations": "Firsthold, northern Auridon; screenshot pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/d/dc/ON-place-Vulkhel_Guard.jpg/1200px-ON-place-Vulkhel_Guard.jpg",
+        "locations": "Vulkhel Guard, southern Auridon; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High for north/south palette; medium for central interpolation",
+    "gaps": "Central terrain uses native-map structure; no separate central wilderness screenshot was inspected. City photos do not measure forest proportions."
+  },
+  {
+    "name": "Summerset",
+    "mapKey": "summerset_summerset_base",
+    "mapId": 1349,
+    "palette": [
+      "#51884A",
+      "#87A85A",
+      "#DDD3B4",
+      "#AC789E",
+      "#49939A"
+    ],
+    "subzones": [
+      {
+        "name": "Eton Nir / Cloudrest",
+        "position": "north-central",
+        "terrain": "Localized high pale-rock massif; northern woods and valleys around it",
+        "colors": [
+          "#DDD3B4",
+          "#51884A"
+        ]
+      },
+      {
+        "name": "Lillandril / western coast",
+        "position": "northwest and west",
+        "terrain": "Green coastal woodland, pale sea cliffs and wet pockets",
+        "colors": [
+          "#51884A",
+          "#49939A",
+          "#DDD3B4"
+        ]
+      },
+      {
+        "name": "Shimmerene / central rivers",
+        "position": "east and center",
+        "terrain": "Lush meadows, wooded rivers, scattered pink/lilac blossoms",
+        "colors": [
+          "#87A85A",
+          "#51884A",
+          "#AC789E"
+        ]
+      },
+      {
+        "name": "Alinor / Sunhold / Sil-Var-Woad",
+        "position": "southwest and south",
+        "terrain": "Fertile meadows and woodland, pale architectural and cliff accents, blue-green streams",
+        "colors": [
+          "#87A85A",
+          "#DDD3B4",
+          "#49939A"
+        ]
+      }
+    ],
+    "majorObjects": "North massif belongs around Eton Nir, not an island-long invented mountain spine. Alinor SW, Shimmerene E, Sunhold S. Native river shapes take precedence over scenic foreground cliffs.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/summerset_summerset_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Summerset",
+        "locations": "Places list and Gallery; actual screenshot thumbnails inspected",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/4/48/ON-place-Alaxon%27ald_02.jpg/200px-ON-place-Alaxon%27ald_02.jpg",
+        "locations": "Path toward Alaxonald; viewed in gallery",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/f/f2/ON-place-Sunhold_Wayshrine_02.jpg/200px-ON-place-Sunhold_Wayshrine_02.jpg",
+        "locations": "Southern brook near Sunhold; viewed in gallery",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/a/ad/ON-place-Clott_River.jpg/200px-ON-place-Clott_River.jpg",
+        "locations": "Clott River and pale peaks; viewed in gallery",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/c/c6/ON-place-Liriel_River.jpg/200px-ON-place-Liriel_River.jpg",
+        "locations": "Wooded Liriel River; viewed in gallery",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/f/fd/ON-place-Holly_Falls.jpg/200px-ON-place-Holly_Falls.jpg",
+        "locations": "Holly Falls pale cliffs; viewed in gallery",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High for landcover contrast; medium for exact color balance",
+    "gaps": "Gallery images were inspected as 200-pixel thumbnails. Cinematic/concept art was excluded. Do not turn distant pale rock into a wide snow field."
+  },
+  {
+    "name": "Grahtwood",
+    "mapKey": "grahtwood_grahtwood_base",
+    "mapId": 9,
+    "palette": [
+      "#255A3B",
+      "#458147",
+      "#8DAB5B",
+      "#777B65",
+      "#3C7777"
+    ],
+    "subzones": [
+      {
+        "name": "Tarlain Heights",
+        "position": "northwest",
+        "terrain": "Dense jungle and rocky woodland, interrupted locally by ruined Gil-Var-Delle",
+        "colors": [
+          "#255A3B",
+          "#458147",
+          "#777B65"
+        ]
+      },
+      {
+        "name": "Green Hall / Elden Root",
+        "position": "northeast and center",
+        "terrain": "Huge graht-oaks, dense dark canopy, streams and pond pockets",
+        "colors": [
+          "#255A3B",
+          "#458147",
+          "#3C7777"
+        ]
+      },
+      {
+        "name": "Long Coast / Haven / Southpoint",
+        "position": "south",
+        "terrain": "Greener open edges around settlements, coast and marsh pools",
+        "colors": [
+          "#458147",
+          "#8DAB5B",
+          "#3C7777"
+        ]
+      }
+    ],
+    "majorObjects": "Elden Root is the major central tree landmark, not a mountain. Native map shows irregular river/pool system at its foot. Preserve southern sea inlets, Haven SE and Southpoint SW.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/grahtwood_grahtwood_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Grahtwood",
+        "locations": "Forest zone description",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Tarlain_Heights",
+        "locations": "NW region boundaries",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Green_Hall",
+        "locations": "NE and central region boundaries",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/1/11/ON-place-Haven.jpg",
+        "locations": "Haven SE, pale buildings, broadleaf foliage and humid ground; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/b/bf/ON-place-Burroot_Kwama_Mine.jpg",
+        "locations": "West of Elden Root, flooded jungle floor, dark mossy boulders and huge trees; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "Medium-high",
+    "gaps": "NW Gil-Var-Delle ruin state not visually inspected. Elden Root MMORPG image was blocked and is not counted as inspected."
+  },
+  {
+    "name": "Greenshade",
+    "mapKey": "greenshade_greenshade_base",
+    "mapId": 300,
+    "palette": [
+      "#2D6240",
+      "#5D9348",
+      "#93AC66",
+      "#7A8170",
+      "#548E82"
+    ],
+    "subzones": [
+      {
+        "name": "Greens Marrow / Hectahame",
+        "position": "north",
+        "terrain": "Dense broadleaf forest, mossy boulders and giant trees",
+        "colors": [
+          "#2D6240",
+          "#5D9348",
+          "#7A8170"
+        ]
+      },
+      {
+        "name": "Drowned Coast / Woodhearth / Shademist Moors",
+        "position": "west and west-central wedge",
+        "terrain": "Damp lowlands, marsh pools, reeds and palms mixed with giant forest trees",
+        "colors": [
+          "#548E82",
+          "#93AC66",
+          "#2D6240"
+        ]
+      },
+      {
+        "name": "Wilderking Court / Greenheart",
+        "position": "south, with Marbruk at its north tip",
+        "terrain": "Lush wooded low hills, local rocky rises and streams",
+        "colors": [
+          "#5D9348",
+          "#93AC66",
+          "#7A8170"
+        ]
+      }
+    ],
+    "majorObjects": "Keep the wooded northern interior distinct from western wetland/coast. Marbruk is inland near the middle east; Woodhearth on west coast. No snow or continental mountain belt.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/greenshade_greenshade_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Greenshade",
+        "locations": "Zone description and labeled gallery",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Wilderking_Court",
+        "locations": "Southern region boundaries",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Drowned_Coast",
+        "locations": "Western wedge and coastal localities",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/1/1e/ON-place-Greenshade_02.jpg",
+        "locations": "Forest near Hectahame, north; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/b/b1/ON-place-Greenshade_03.jpg",
+        "locations": "Between Longhaven and Woodhearth: marsh pools, reeds, palms, giant trees; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High for northern forest/western wetland contrast",
+    "gaps": "Far-southern Greenheart not separately photographed in this pass."
+  },
+  {
+    "name": "Malabal Tor",
+    "mapKey": "malabaltor_malabaltor_base",
+    "mapId": 22,
+    "palette": [
+      "#234F37",
+      "#477647",
+      "#849957",
+      "#6D756C",
+      "#448C87"
+    ],
+    "subzones": [
+      {
+        "name": "Broken Coast / Velyn Harbor",
+        "position": "west and northwest coast",
+        "terrain": "Indented shore and humid broadleaf canopy with port clearings",
+        "colors": [
+          "#477647",
+          "#448C87",
+          "#6D756C"
+        ]
+      },
+      {
+        "name": "Xylo River Basin / Vulkwasten / Tanglehaven",
+        "position": "south and center",
+        "terrain": "Shadowed jungle, river channels and huge trunks with mossy rocks",
+        "colors": [
+          "#234F37",
+          "#477647",
+          "#448C87"
+        ]
+      },
+      {
+        "name": "Silvenar Vale / Treehenge / Baandari",
+        "position": "east and northeast",
+        "terrain": "Heavily wooded vale with localized ridges and clearings; Silvenar southeast of the eastern lobe",
+        "colors": [
+          "#234F37",
+          "#477647",
+          "#849957"
+        ]
+      }
+    ],
+    "majorObjects": "Native map shows a broken northern coast and river system in the east/south. Preserve real ridges but canopy should visually dominate. Xylo River Basin is south, not northeast.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/malabaltor_malabaltor_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Malabal_Tor",
+        "locations": "Dark jungle description",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Silvenar_Vale",
+        "locations": "Eastern region boundaries",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Xylo_River_Basin",
+        "locations": "Southern region boundaries",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/7/73/ON-place-Velyn_Harbor.jpg",
+        "locations": "Velyn Harbor west coast at dusk; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/1/17/ON-place-Malabal_Tor.jpg",
+        "locations": "Generic Malabal Tor jungle: huge trunks, dark mossy ground; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "Medium",
+    "gaps": "Second screenshot location within jungle is unspecified; no separate eastern Silvenar photo inspected. Dusk port colors are not treated as daytime ground colors."
+  },
+  {
+    "name": "Reapers March",
+    "mapKey": "reapersmarch_reapersmarch_base",
+    "mapId": 256,
+    "palette": [
+      "#879346",
+      "#B7A460",
+      "#C1AD84",
+      "#627949",
+      "#5D8981"
+    ],
+    "subzones": [
+      {
+        "name": "Northern Woods / Arenthia",
+        "position": "northwest",
+        "terrain": "Drier open woodland, olive grass, reddish earth and pale tan outcrops",
+        "colors": [
+          "#627949",
+          "#879346",
+          "#C1AD84"
+        ]
+      },
+      {
+        "name": "Dawnmead / Dune",
+        "position": "northeast through east-central",
+        "terrain": "Open tawny savanna and pale dry rocky terrain, scattered trees",
+        "colors": [
+          "#B7A460",
+          "#C1AD84",
+          "#879346"
+        ]
+      },
+      {
+        "name": "Jodewood / Rawlkha",
+        "position": "south",
+        "terrain": "Grassland-woodland transition with river and lake pockets; greener western fringe",
+        "colors": [
+          "#879346",
+          "#627949",
+          "#5D8981"
+        ]
+      }
+    ],
+    "majorObjects": "Northern boundary is Strid River, bounded by tan rock formations. Native map has river flowing through western/central zone. Arenthia N, Dune NE, Rawlkha south-central. This is savanna/woodland, not an orange dune sea.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/reapersmarch_reapersmarch_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Reaper%27s_March",
+        "locations": "Transition zone description and gallery labels",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Dawnmead",
+        "locations": "NE region boundaries",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/3/31/ON-place-Western_Reaper%27s_March.jpg",
+        "locations": "Western open woodland and olive grass; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/c/c1/ON-place-Strid_River.jpg",
+        "locations": "Northern boundary river, pale tan layered rocks; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "Medium-high",
+    "gaps": "Dune eastern grassland color extrapolates native-map landcover and zone text; no Dune wilderness screenshot inspected."
+  },
+  {
+    "name": "Khenarthis Roost",
+    "mapKey": "auridon_khenarthisroost_base",
+    "mapId": 258,
+    "palette": [
+      "#578749",
+      "#91A85E",
+      "#D5C18E",
+      "#7E826C",
+      "#4FACA7"
+    ],
+    "subzones": [
+      {
+        "name": "Mistral / Cats Eye Quay",
+        "position": "north and north-central inlet",
+        "terrain": "Palms and tropical green lowlands around sheltered blue-green harbor",
+        "colors": [
+          "#578749",
+          "#4FACA7",
+          "#D5C18E"
+        ]
+      },
+      {
+        "name": "Plantations and moon temples",
+        "position": "center and east",
+        "terrain": "Grass and palms, sandy paths, pale brown stone temple ruins",
+        "colors": [
+          "#91A85E",
+          "#D5C18E",
+          "#7E826C"
+        ]
+      },
+      {
+        "name": "Eagles Strand / Shattered Shoals",
+        "position": "south and southwest",
+        "terrain": "Sandy/rocky littoral and palms, ruined fort and wreck-strewn shore",
+        "colors": [
+          "#D5C18E",
+          "#578749",
+          "#4FACA7"
+        ]
+      }
+    ],
+    "majorObjects": "Compact low island around the northern harbor inlet. Temples and plantations are small clearings; no mountain chain. Eastern Temple of Mourning Springs gives daylight palm/stone reference.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/auridon_khenarthisroost_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Khenarthi%27s_Roost",
+        "locations": "Island, plantation and wreck positions",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/a/ae/ON-place-Eagle%27s_Strand.jpg",
+        "locations": "Southern arrival ruins and palms, night; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/0/0c/ON-place-Temple_of_the_Mourning_Springs.jpg/1200px-ON-place-Temple_of_the_Mourning_Springs.jpg",
+        "locations": "Eastern temple and tropical canopy, daylight; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "Medium-high",
+    "gaps": "North harbor not separately inspected. Older screenshots may precede the starter-island art refresh; broad biome is supported, fine terrain textures may differ."
+  },
+  {
+    "name": "Northern Elsweyr",
+    "mapKey": "elsweyr_elsweyr_base",
+    "mapId": 1555,
+    "palette": [
+      "#BE8751",
+      "#D3AC72",
+      "#A69B50",
+      "#568744",
+      "#2E6745"
+    ],
+    "subzones": [
+      {
+        "name": "Northern savanna / Rimmen",
+        "position": "north and northeast",
+        "terrain": "Dry grassland and scattered trees; Rimmen pale sandstone buildings and canals",
+        "colors": [
+          "#A69B50",
+          "#D3AC72",
+          "#568744"
+        ]
+      },
+      {
+        "name": "The Scar / The Stitches",
+        "position": "center",
+        "terrain": "Layered warm sandstone cliffs, canyon terraces, dry brown ground with scattered scrub",
+        "colors": [
+          "#BE8751",
+          "#D3AC72",
+          "#A69B50"
+        ]
+      },
+      {
+        "name": "Tenmar fringe",
+        "position": "south",
+        "terrain": "Denser green tropical forest transitioning from dry central plateau",
+        "colors": [
+          "#2E6745",
+          "#568744",
+          "#A69B50"
+        ]
+      }
+    ],
+    "majorObjects": "Central canyon system should read as terraces/incised valleys, not snowy triangular mountains. Rimmen NE, Stitches center, greener southern perimeter. Retain native map deep canyon lines and edge escarpments.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/elsweyr_elsweyr_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Northern_Elsweyr",
+        "locations": "Explicit north savanna / center Scar / south Tenmar zoning",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:The_Stitches",
+        "locations": "Central vertical canyon settlement",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/1/11/ON-place-The_Stitches.jpg",
+        "locations": "Central sandstone terraces and scrub; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/6/60/ON-place-Rimmen_02.jpg",
+        "locations": "NE Rimmen tan architecture, green trees and canal; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High for north/central differences; medium for south",
+    "gaps": "Southern Tenmar forest supported by zone text/native map; a separate Tenmar woodland image was not obtained."
+  },
+  {
+    "name": "Southern Elsweyr",
+    "mapKey": "southernelsweyr_southernelsweyr_base",
+    "mapId": 1654,
+    "palette": [
+      "#51864A",
+      "#8BA359",
+      "#C3B68B",
+      "#737C68",
+      "#4A9292"
+    ],
+    "subzones": [
+      {
+        "name": "Northern heights / Zhan Khaj Crest",
+        "position": "north and northwest",
+        "terrain": "Tropical green hills, broken dark-gray rock ledges and scattered umbrella-canopy trees",
+        "colors": [
+          "#51864A",
+          "#8BA359",
+          "#737C68"
+        ]
+      },
+      {
+        "name": "Senchal / coastal peninsula",
+        "position": "east-central and southeast coast",
+        "terrain": "Tan stone city, green and gold ground, palms; ruined/burnt districts remain localized",
+        "colors": [
+          "#C3B68B",
+          "#8BA359",
+          "#737C68"
+        ]
+      },
+      {
+        "name": "Western jungle and southern coast",
+        "position": "west and south",
+        "terrain": "Wooded tropical landscape threaded with streams and sheltered coves",
+        "colors": [
+          "#51864A",
+          "#4A9292",
+          "#8BA359"
+        ]
+      }
+    ],
+    "majorObjects": "Native map is a coastal peninsula with Senchal on its eastern/southeastern shore; no desert-wide orange fill. Keep rock escarpments but grass and trees dominate viewed northern hills.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/southernelsweyr_southernelsweyr_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Southern_Elsweyr",
+        "locations": "Tropical Pellitine/Quinrawl peninsula and gallery",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/7/77/ON-place-Senchal.jpg",
+        "locations": "Senchal green outskirts and tan city; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/0/00/ON-place-Southern_Elsweyr_02.jpg",
+        "locations": "Northern half viewed from Zhan Khaj Crest; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High for north/coastal visual contrast",
+    "gaps": "Western jungle and Black Heights not separately photographed; color interpolation follows native map and zone description."
+  },
+  {
+    "name": "Hews Bane",
+    "mapKey": "thievesguild_hewsbane_base",
+    "mapId": 994,
+    "palette": [
+      "#CEB68B",
+      "#B59770",
+      "#879659",
+      "#637B54",
+      "#548E8C"
+    ],
+    "subzones": [
+      {
+        "name": "Northern hook / brackish bay",
+        "position": "north and northwest",
+        "terrain": "Barren tan rocky hook around large blue-green bay; sparse scrub",
+        "colors": [
+          "#CEB68B",
+          "#B59770",
+          "#548E8C"
+        ]
+      },
+      {
+        "name": "Abahs Landing",
+        "position": "east-central",
+        "terrain": "Dense pale sandstone port attached to coast",
+        "colors": [
+          "#CEB68B",
+          "#B59770"
+        ]
+      },
+      {
+        "name": "Southern wilderness / wet pockets",
+        "position": "south and southwest",
+        "terrain": "Layered sandstone, sparse green trees and shallow brackish streams or pools",
+        "colors": [
+          "#CEB68B",
+          "#879659",
+          "#548E8C"
+        ]
+      }
+    ],
+    "majorObjects": "Native map northern hook and enclosed bay are essential. Dry pale sandstone dominates but waterways and vegetation are real; not uniform orange dunes or lush forest.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/thievesguild_hewsbane_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Hew%27s_Bane",
+        "locations": "Seasonal flooding/brackish ground description and gallery",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/0/0b/ON-place-Hew%27s_Bane.jpg",
+        "locations": "Generic rocky wilderness, tan layered boulders and sparse trees; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/7/7a/ON-place-Hew%27s_Bane_05.jpg",
+        "locations": "Waterfall and shallow pool between tan boulders; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "Medium",
+    "gaps": "Screenshot exact coordinates are uncaptioned. Distinct dry/wet landcover observed but their per-pixel placement must follow original map; do not invent a river from the photo alone."
+  },
+  {
+    "name": "Gold Coast",
+    "mapKey": "darkbrotherhood_goldcoast_base",
+    "mapId": 1006,
+    "palette": [
+      "#B5A15B",
+      "#8D944F",
+      "#D1C5A0",
+      "#6F8054",
+      "#598E96"
+    ],
+    "subzones": [
+      {
+        "name": "Anvil / Abecean coast",
+        "position": "west and southwest",
+        "terrain": "Golden dry grasses, olive trees, pale limestone and sea blue",
+        "colors": [
+          "#B5A15B",
+          "#8D944F",
+          "#D1C5A0"
+        ]
+      },
+      {
+        "name": "Kvatch highlands",
+        "position": "east",
+        "terrain": "Dry olive/golden woodland and pale gray-tan rock; raised city platform",
+        "colors": [
+          "#8D944F",
+          "#D1C5A0",
+          "#6F8054"
+        ]
+      },
+      {
+        "name": "Northern and central country",
+        "position": "north and center",
+        "terrain": "Rolling open grassland punctuated by local cliff shelves and trees",
+        "colors": [
+          "#B5A15B",
+          "#8D944F",
+          "#D1C5A0"
+        ]
+      }
+    ],
+    "majorObjects": "Anvil SW port and Kvatch E city anchor the layout. Preserve the modest northern escarpment on native map; Mediterranean gold/olive landscape, not jungle or glaciated mountains.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/darkbrotherhood_goldcoast_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Gold_Coast",
+        "locations": "Region and city context",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Kvatch",
+        "locations": "Eastern highlands location",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/2/25/ON-place-Gold_Coast.jpg",
+        "locations": "Country view with Anvil skyline, pale limestone and tawny grass; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/4/4a/ON-place-Kvatch.jpg",
+        "locations": "Eastern Kvatch: gray stone, olive trees, dry ground; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "Medium-high",
+    "gaps": "Kvatch source is urban rather than a wide upland landscape; open-ground distribution taken from native map."
+  },
+  {
+    "name": "High Isle and Amenos",
+    "mapKey": "systres_u34_systreszone_base",
+    "mapId": 2114,
+    "palette": [
+      "#66964E",
+      "#2D6946",
+      "#D4C9AA",
+      "#4BA0A0",
+      "#B66D44"
+    ],
+    "subzones": [
+      {
+        "name": "Oakenvald",
+        "position": "north of southwestern main island",
+        "terrain": "Wooded hills with localized volcanic vents and pale outcrops",
+        "colors": [
+          "#2D6946",
+          "#66964E",
+          "#B66D44"
+        ]
+      },
+      {
+        "name": "Sapphire Coast",
+        "position": "south of southwestern main island",
+        "terrain": "Temperate open green coast, chalky pale cliffs, turquoise inlets",
+        "colors": [
+          "#66964E",
+          "#D4C9AA",
+          "#4BA0A0"
+        ]
+      },
+      {
+        "name": "Amenos Jungle",
+        "position": "separate northeastern island",
+        "terrain": "Darker humid forest, mossy rock and pooled water",
+        "colors": [
+          "#2D6946",
+          "#66964E",
+          "#4BA0A0"
+        ]
+      }
+    ],
+    "majorObjects": "Preserve two main islands and the large bay/lake-like inlet in High Isle. Separate green Amenos from main island; volcanic orange is restricted to observed/map-marked vents, not the entire northern island.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/systres_u34_systreszone_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:High_Isle",
+        "locations": "Oakenvald north/Sapphire Coast south",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Amenos",
+        "locations": "Separate jungle island",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Sapphire_Coast",
+        "locations": "Temperate southern half",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/9/92/ON-place-High_Isle.jpg",
+        "locations": "High Isle north volcanic patch amid pale rocks and water; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/5/50/ON-place-Sapphire_Coast.jpg",
+        "locations": "Southern cliff-coast and castle, pale rock and grass; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/8/89/ON-place-Amenos_02.jpg",
+        "locations": "Amenos jungle, dense trees and wet basin; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High",
+    "gaps": "High Isle overview has rain/haze; daytime saturation raised carefully rather than reproducing gray weather veil."
+  },
+  {
+    "name": "Galen and Yffelon",
+    "mapKey": "galen_u36_galenisland_base",
+    "mapId": 2212,
+    "palette": [
+      "#4D8347",
+      "#8BA45B",
+      "#D1C4A6",
+      "#565D50",
+      "#E28537"
+    ],
+    "subzones": [
+      {
+        "name": "Northern Galen jungle",
+        "position": "north of main island",
+        "terrain": "Dense woodland among local pale rocky outcrops",
+        "colors": [
+          "#4D8347",
+          "#8BA45B",
+          "#D1C4A6"
+        ]
+      },
+      {
+        "name": "Vastyr and southern Galen",
+        "position": "south and southwest",
+        "terrain": "Grassland/woodland mosaic, pale steep coastal rock, tan city walls",
+        "colors": [
+          "#8BA45B",
+          "#D1C4A6",
+          "#4D8347"
+        ]
+      },
+      {
+        "name": "Eastern Galen volcanic patch",
+        "position": "east of main island",
+        "terrain": "Dark volcanic ground and narrow orange lava channels shown by native map",
+        "colors": [
+          "#565D50",
+          "#E28537"
+        ]
+      },
+      {
+        "name": "Yffelon / Mount Firesong",
+        "position": "separate island southeast",
+        "terrain": "Volcanic island with lava; northern reachable area has real green vegetation",
+        "colors": [
+          "#565D50",
+          "#E28537",
+          "#4D8347"
+        ]
+      }
+    ],
+    "majorObjects": "Do not color all Galen as lava. Native map puts lava only on east of main island and Yffelon SE. Vastyr at south; pale limestone cliffs and green forest remain dominant.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/galen_u36_galenisland_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Galen",
+        "locations": "Northern jungle and separate volcanic island",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Y%27ffelon",
+        "locations": "SE location, barren majority and green north",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Vastyr",
+        "locations": "Southern city location",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/7/78/ON-place-Galen_Landscape.jpg",
+        "locations": "Galen wooded limestone landscape; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/0/0f/ON-place-Galen_03.jpg",
+        "locations": "Vastyr southern city and pale cliffs; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/7/7f/ON-place-Y%27ffelon_02.jpg",
+        "locations": "Vegetated northern Yffelon with lava river; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High for island contrast; medium for northern jungle coverage",
+    "gaps": "Generic Galen landscape lacks exact coordinates. Night silhouette Galen.jpg inspected but excluded from color inference."
+  },
+  {
+    "name": "Solstice",
+    "mapKey": "solstice_u48_overland_base",
+    "mapId": 2603,
+    "palette": [
+      "#4C864C",
+      "#91A966",
+      "#D5C49D",
+      "#747C70",
+      "#4C668E"
+    ],
+    "subzones": [
+      {
+        "name": "Western coast dunes",
+        "position": "west and southwest shoreline",
+        "terrain": "Pale sand dunes, scattered palms and shells; blue-green sea",
+        "colors": [
+          "#D5C49D",
+          "#91A966"
+        ]
+      },
+      {
+        "name": "Sunport Bay forests",
+        "position": "west/central, south of Sunport",
+        "terrain": "Bright grassy tropical woodland with violet flower accents and stone outcrops",
+        "colors": [
+          "#4C864C",
+          "#91A966",
+          "#747C70"
+        ]
+      },
+      {
+        "name": "Solstice Range",
+        "position": "central division",
+        "terrain": "Existing local mountainous ridge separating west/east; use native shaded relief only",
+        "colors": [
+          "#747C70"
+        ]
+      },
+      {
+        "name": "Eastern Solstice",
+        "position": "east",
+        "terrain": "Green tropical ground mixed with local blue-black Coldharbour rock and dead vegetation from Reverse Planemeld",
+        "colors": [
+          "#4C864C",
+          "#91A966",
+          "#4C668E"
+        ]
+      }
+    ],
+    "majorObjects": "The east really has Coldharbour-blue disturbed patches; keep healthy green alongside them. West really includes broad pale sand dunes, not uniform jungle. Writhing Wall is magical, not a glacier. Native map2603 includes east/west.",
+    "sources": [
+      {
+        "url": "/private/tmp/kana-color-map-source/zones/solstice_u48_overland_base.png",
+        "locations": "Native zone map, inspected in extracted contact sheet",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://en.uesp.net/wiki/Online:Solstice",
+        "locations": "West/east split, range and Reverse Planemeld",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/8/82/ON-place-Western_Solstice_02.jpg",
+        "locations": "Forest south of Sunport; green grass, violet shrubs and magical wall in background; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/c/ce/ON-place-Western_Solstice_06.jpg",
+        "locations": "Western coastal sand dunes and palms; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/1/1c/ON-place-Eastern_Solstice.jpg",
+        "locations": "Eastern mixed green land and blue-black Coldharbour spikes; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High",
+    "gaps": "Images contain story-state effects and older wall state; colors should encode persistent geography and localized corruption, not paint transient sky effects on the terrain."
+  },
+  {
+    "name": "Norg-Tzel",
+    "mapKey": "tutorial_swampisland_base",
+    "mapId": 1552,
+    "palette": [
+      "#365D42",
+      "#758650",
+      "#8E8B67",
+      "#427D78",
+      "#746A51"
+    ],
+    "subzones": [
+      {
+        "name": "Eastern landing shore",
+        "position": "southeast and east",
+        "terrain": "Tropical low shoreline leading into muddy wetland",
+        "colors": [
+          "#427D78",
+          "#758650",
+          "#746A51"
+        ]
+      },
+      {
+        "name": "Central swamp corridor",
+        "position": "south to north center",
+        "terrain": "Connected shallow pools, reeds and dense humid canopy",
+        "colors": [
+          "#365D42",
+          "#427D78",
+          "#758650"
+        ]
+      },
+      {
+        "name": "Xanmeer ruins",
+        "position": "northwest",
+        "terrain": "Moss-covered Argonian stone complex amid wooded local rocky rim",
+        "colors": [
+          "#8E8B67",
+          "#365D42",
+          "#746A51"
+        ]
+      }
+    ],
+    "majorObjects": "Tiny island blob. Native UESP exterior map shows SE landing, road through central pools to NW ruins. Convey moist green/teal with tiny stone accent; no invented giant mountain chain.",
+    "sources": [
+      {
+        "url": "https://en.uesp.net/wiki/Online:Norg-Tzel",
+        "locations": "Tropical island and labeled gallery",
+        "kind": "text",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/thumb/9/91/ON-map-exterior-Norg-Tzel.jpg/800px-ON-map-exterior-Norg-Tzel.jpg",
+        "locations": "Original exterior map, pixels inspected",
+        "kind": "native-map",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/b/b3/ON-place-Norg-Tzel_02.jpg",
+        "locations": "Muddy central wetland, reeds, dense trees; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      },
+      {
+        "url": "https://images.uesp.net/8/8b/ON-place-Norg-Tzel_04.jpg",
+        "locations": "Northern xanmeer ruins and mossy cliffs; pixels inspected",
+        "kind": "screenshot",
+        "viewed": true
+      }
+    ],
+    "confidence": "High at tiny general-map scale",
+    "gaps": "No extracted local-zone PNG; online original exterior map inspected. Exact photo coordinates not established beyond map/ruin association."
+  }
+]

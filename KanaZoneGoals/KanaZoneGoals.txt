@@ -1,0 +1,18 @@
+## Title: KanaZoneGoals
+## Description: Additional zone goals inside the world map exploration panel, with account-wide category settings.
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## DependsOn: LibAddonMenu-2.0 LibSets LibMapData LeadList
+## OptionalDependsOn: RareFishTracker LibQuestData
+## SavedVariables: KanaZoneGoalsSavedVariables
+
+Core.lua
+Data.lua
+ExtraData.lua
+Providers.lua
+UI.lua
+UI.xml
+Settings.lua
+Main.lua

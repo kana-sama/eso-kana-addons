@@ -1,0 +1,9 @@
+<Bindings>
+    <Layer name="KanaEffectsEditor">
+        <Category>
+            <Action name="KANAEFFECTS_EDITOR_ESCAPE" hideAction="true" rebindable="false" inheritsBindFrom="TOGGLE_SYSTEM">
+                <Down>return KanaEffects.HandleEditorEscape()</Down>
+            </Action>
+        </Category>
+    </Layer>
+</Bindings>

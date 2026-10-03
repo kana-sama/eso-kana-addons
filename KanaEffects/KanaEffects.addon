@@ -1,0 +1,47 @@
+## Title: KanaEffects
+## APIVersion: 101051
+## Version: 0.1.0-alpha.1
+## Author: Kana
+## SavedVariables: KanaEffectsSettings
+## Description: Compact event-driven PvE effects HUD.
+
+Namespace.lua
+integration/EsoApi.lua
+localization/en.lua
+localization/ru.lua
+catalog/data/Families.lua
+catalog/data/Categories.lua
+catalog/Selectors.lua
+catalog/Catalog.lua
+catalog/data/Presets.lua
+model/Schema.lua
+effects/History.lua
+effects/Store.lua
+effects/Sources.lua
+rules/Rules.lua
+widgets/Projector.lua
+widgets/Layout.lua
+integration/Anchors.lua
+integration/TargetView.lua
+integration/NativeHUD.lua
+ui/Timers.lua
+ui/Controls.lua
+ui/FontMetrics.lua
+ui/Renderer.lua
+ui/Tooltip.lua
+dev/ApiProbe.lua
+dev/Diagnostics.lua
+Runtime.lua
+dev/Replay.lua
+editor/Storage.lua
+editor/Session.lua
+editor/Demo.lua
+ui/Templates.xml
+editor/Picker.lua
+editor/HiddenList.lua
+editor/Inspector.lua
+editor/SetEditor.lua
+editor/Editor.lua
+editor/Gestures.lua
+Bindings.xml
+Bootstrap.lua

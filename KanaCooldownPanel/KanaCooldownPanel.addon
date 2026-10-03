@@ -1,0 +1,11 @@
+## Title: KanaCooldownPanel
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## Description: Compact native action-bar timers with per-skill uptime reminders.
+## SavedVariables: KanaCooldownPanelSettings
+
+Model.lua
+KanaCooldownPanel.lua
+Menu.lua

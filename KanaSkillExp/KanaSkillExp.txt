@@ -1,0 +1,10 @@
+## Title: KanaSkillExp - Manual Selection
+## APIVersion: 101048 101049
+## Version: 1.1.0
+## Author: Kana
+## Description: Manual, ordered selection of skills and skill lines for SkillExp.
+## DependsOn: SkillExp
+## SavedVariables: KanaSkillExp_Data
+
+Selection.lua
+KanaSkillExp.lua
