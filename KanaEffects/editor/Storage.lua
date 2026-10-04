@@ -33,6 +33,15 @@ local function validate(profile)
     local compiled; compiled,diag=KanaEffects.Rules.Compile(profile.sets,profile.longThreshold,profile.widgets); if not compiled then return false,diag end
     return #diag==0,diag
 end
+local function normalizedProfile(profile)
+    local valid,diag=KanaEffects.Schema.Validate(profile)
+    if not valid then return nil,diag end
+    local candidate=KanaEffects.Schema.CopyProfile(profile)
+    KanaEffects.Rules.NormalizePanelFunctions(candidate)
+    local ok,issues=validate(candidate)
+    if not ok then return nil,issues end
+    return candidate,issues
+end
 local function dense(value)
     if type(value)~='table' then return false end
     local n,max=0,0; for k in pairs(value) do
@@ -153,8 +162,8 @@ function Storage:Load()
     self:_Open()
     local profile=self.proxy and self.proxy.profile
     if profile~=nil then
-        local ok,diag=validate(profile)
-        if ok then return KanaEffects.Schema.CopyProfile(profile),copy(self.diagnostics) end
+        local candidate,diag=normalizedProfile(profile)
+        if candidate then return candidate,copy(self.diagnostics) end
         self:_Preserve(self.envelope,'profile',profile,diag)
         local diagnostics=copy(self.diagnostics); append(diagnostics,diag)
         local fallback=self.defaultsProvider(); local valid=validate(fallback); assert(valid,'Invalid Storage defaults')
@@ -164,8 +173,8 @@ function Storage:Load()
     return KanaEffects.Schema.CopyProfile(fallback),copy(self.diagnostics)
 end
 function Storage:Write(profile)
-    local ok,diag=validate(profile); if not ok then return false,diag end
-    local candidate=KanaEffects.Schema.CopyProfile(profile); self:_Open()
+    local candidate,diag=normalizedProfile(profile); if not candidate then return false,diag end
+    self:_Open()
     if not self.proxy then return false,copy(self.diagnostics) end
     self.proxy.profile=candidate; return true,{}
 end

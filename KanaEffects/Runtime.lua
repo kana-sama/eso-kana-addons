@@ -26,7 +26,7 @@ end
 function Runtime:GetView(id)
     if self.disposed then return nil end
     local view=self.views[id]; if not view then return nil end
-    return copy({widget=view.widget,entries=view.entries,layout=view.layout,editorOverlay=view.editorOverlay,snapshot=view.snapshot})
+    return copy({widget=view.widget,entries=view.entries,layout=view.layout,editorOverlay=view.editorOverlay,snapshot=view.snapshot,ruleDiagnostics=view.ruleDiagnostics})
 end
 function Runtime:SubscribeViews(callback)
     if self.disposed then return function() end end
@@ -42,7 +42,7 @@ function Runtime:SetEditorOverlay(id,selected)
     view.editorOverlay=selected; self.deps.renderer:SetEditorOverlay(id,selected); self:_Notify(id)
 end
 local function displayFor(view)
-    return view.snapshot and {frozenAt=view.snapshot.observedAt,snapshot=view.snapshot} or nil
+    return {frozenAt=view.snapshot and view.snapshot.observedAt,snapshot=view.snapshot,ruleDiagnostics=view.ruleDiagnostics}
 end
 local function overflowing(layout)
     for _,value in pairs(layout.overflow) do if value then return true end end
@@ -163,6 +163,8 @@ function Runtime:_Flush()
             if deps.diagnostics then deps.diagnostics:Count("widget_builds") end
             local entries=deps.projector.BuildWidget(widget,self.profile,self.compiled,provider,self.previewCatalog or deps.catalog,projectionTime)
             if display then for _,entry in ipairs(entries) do entry.snapshot={observedAt=display.snapshot.observedAt,openedAt=display.snapshot.openedAt,title=display.snapshot.title} end end
+            local issues=self.compiled:PanelDiagnostics(widget.id)
+            display=display or {}; display.ruleDiagnostics=issues
             local view=self.views[widget.id] or {}; local stamp=geometry(entries)
             local measurement=self.measurements[signature(widget.style)]
             if not measurement then
@@ -174,7 +176,8 @@ function Runtime:_Flush()
                 viewport=viewport or deps.anchors:GetReferenceRect('screen')
                 result=deps.layout.Place(widget,entries,deps.anchors:GetReferenceRect(widget.anchor.relativeTo),viewport,measurement)
             end
-            view.snapshot=display and {observedAt=display.snapshot.observedAt,openedAt=display.snapshot.openedAt,title=display.snapshot.title} or nil
+            view.snapshot=display.snapshot and {observedAt=display.snapshot.observedAt,openedAt=display.snapshot.openedAt,title=display.snapshot.title} or nil
+            view.ruleDiagnostics=issues
             view.widget=widget; view.entries=entries; view.layout=result; view.geometry=stamp; self.views[widget.id]=view
             deps.renderer:Render(widget,entries,result,display)
             if self.gesturePreview and self.gesturePreview.widgetId==widget.id then self:SetGesturePreview(self.gesturePreview) end
@@ -185,7 +188,7 @@ function Runtime:_Flush()
 end
 function Runtime:_Validate(profile)
     local valid,diagnostics=self.deps.schema.Validate(profile); if not valid then return nil,nil,diagnostics end
-    local compiled; compiled,diagnostics=self.deps.rules.Compile(profile.sets,profile.longThreshold,profile.widgets)
+    local compiled; compiled,diagnostics=self.deps.rules.Compile(profile.sets,profile.longThreshold,profile.widgets,profile.hidden)
     if not compiled then return nil,nil,diagnostics end
     return self.deps.schema.CopyProfile(profile),compiled,diagnostics
 end
@@ -231,7 +234,8 @@ function Runtime:Start(profile)
         for _,w in ipairs(self.profile.widgets) do if w.unitTag=='reticleover' then self.dirty[w.id]=true end end; self:_Schedule()
     end) end
     local hover=self.deps.hoverCallbacks or {}
-    self.deps.renderer:SetCallbacks({onEnter=hover.onEnter,onExit=hover.onExit,onCellContext=hover.onCellContext,onExpired=function(id)
+    self.deps.renderer:SetCallbacks({onEnter=hover.onEnter,onExit=hover.onExit,onCellContext=hover.onCellContext,
+        onRuleErrorEnter=hover.onRuleErrorEnter,onRuleErrorExit=hover.onRuleErrorExit,onRuleError=hover.onRuleError,onExpired=function(id)
         if self.disposed or not self.views[id] then return end
         self.dirty[id]=true; self:_Schedule()
     end})

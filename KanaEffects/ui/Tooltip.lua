@@ -268,9 +268,16 @@ function Tooltip:_Position()
 end
 function Tooltip:Enter(widgetId,entry,control,icon)
     if self.disposed then return end
+    local text,title,body=Tooltip.Compose(entry,self.api)
+    return self:_EnterText(widgetId,text,title,body,control,icon)
+end
+function Tooltip:EnterMessage(widgetId,title,body,control)
+    return self:_EnterText(widgetId,title..'\n'..body,title,body,control,control)
+end
+function Tooltip:_EnterText(widgetId,text,title,body,control,icon)
+    if self.disposed then return end
     local api=self.api
     if not api.InitializeTooltip or not api.ClearTooltipImmediately or not api.controls.CreateControlFromVirtual or not api.controls.CreateControl then return end
-    local text,title,body=Tooltip.Compose(entry,api)
     if text=='' then if self.owner then self:Exit(nil,nil,self.owner) end; return end
     if not self.control then
         self.root=api.controls.CreateTopLevelWindow(self.name..'TooltipTopLevel'); self.root:SetMouseEnabled(false); self.root:SetDrawTier(api.constants.DT_HIGH)

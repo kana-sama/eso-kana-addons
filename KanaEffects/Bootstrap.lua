@@ -74,6 +74,17 @@ function Bootstrap.Build(api,storage,catalog,presentation)
         rules=KanaEffects.Rules,projector=KanaEffects.Projector,layout=KanaEffects.Layout,renderer=renderer,anchors=anchors,
         fontMetrics=app.fontMetrics,clock=clock,targetView=app.targetView,
         hoverCallbacks={onEnter=function(...) app.tooltip:Enter(...) end,onExit=function(...) app.tooltip:Exit(...) end,
+            onRuleErrorEnter=function(id,issues,control)
+                local messages={}; for _,issue in ipairs(issues) do messages[#messages+1]=issue.message end
+                app.tooltip:EnterMessage(id,'Ошибка фильтра',table.concat(messages,'\n')..'\n\nНажмите, чтобы исправить.',control)
+            end,
+            onRuleErrorExit=function(id,control) app.tooltip:Exit(id,nil,control) end,
+            onRuleError=function(id)
+                if app.disposed then return end
+                if not app.editor:IsOpen() then app.editor:Open() end
+                app.editor:_CloseAuxiliary()
+                if app.editor:Select(id) then app.editor.inspector.tab='effects'; app.editor.inspector:Refresh() end
+            end,
             onCellContext=function(...) return app:OpenEffectContext(...) end},historyUnitTags=historyTags(api),defer=defer,diagnostics=app.diagnostics})
     app.fragmentScenes={}; for _,scene in pairs(api.scenes) do app.fragmentScenes[#app.fragmentScenes+1]=scene end
     if api.hudEditorScene then app.fragmentScenes[#app.fragmentScenes+1]=api.hudEditorScene end

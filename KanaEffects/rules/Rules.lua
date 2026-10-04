@@ -41,6 +41,7 @@ local function duration(o)
     if o.lifetime=='finite' and finite(o.fullDuration) and o.fullDuration>=0 then return o.fullDuration end
 end
 local functions={
+    on_panel={type='boolean',args='panel'},
     element_of={type='boolean',args='set',run=function(o,t,args,resolve) return resolve and resolve(args[1],args[2]) or false end},
     is_buff={type='boolean',run=function(o) return o.kind=='buff' end},
     is_debuff={type='boolean',run=function(o) return o.kind=='debuff' end},
@@ -69,7 +70,7 @@ end
 function Rules.ParseExpression(source)
     if type(source)~='string' or #source>Rules.ExpressionLimits.length then return nil,'Правило: максимум 16384 байта.' end
     if expressionCache[source] then return expressionCache[source] end
-    local position,tokens,references=1,{},{}
+    local position,tokens,references,panelReferences=1,{},{},{}
     local function bad(message,at) error('Позиция '..tostring(at or position)..': '..message,0) end
     local function parse()
         while position<=#source do
@@ -139,7 +140,7 @@ function Rules.ParseExpression(source)
                     -- Arguments are literals or Category constants, not calls.
                     if peek().kind~='literal' and peek().kind~='Category' then bad('Аргумент должен быть литералом или Category.*.',peek().pos) end
                     local argument=peek(); local arg=atom(); args[#args+1]=arg.value
-                    if spec.args=='set' then
+                    if spec.args=='set' or spec.args=='panel' then
                         if argument.kind~='literal' or argument.type~='string' then bad('element_of требует строковое имя набора.',argument.pos) end
                         if #args==1 then reference={name=arg.value,start=argument.pos,finish=argument.finish}
                         elseif #args==2 then reference.id=arg.value end
@@ -150,6 +151,7 @@ function Rules.ParseExpression(source)
             take(')')
             local valid=#args==0 and not spec.args
             if spec.args=='set' then valid=(#args==1 or #args==2) and nonempty(args[1]) and (#args==1 or nonempty(args[2]))
+            elseif spec.args=='panel' then valid=#args==1 and nonempty(args[1])
             elseif spec.args=='category' then
                 valid=#args>0; for _,arg in ipairs(args) do valid=valid and nonempty(arg) end
             elseif spec.args=='ability' or spec.args=='artificial' then
@@ -158,6 +160,10 @@ function Rules.ParseExpression(source)
                 valid=#args==2 and nonempty(args[1]) and (args[2]=='pair' or args[2]=='minor' or args[2]=='major')
             end
             if not valid then bad('Неверные типы или число аргументов '..token.kind..'().',token.pos) end
+            if spec.args=='panel' then
+                panelReferences[#panelReferences+1]=reference
+                return {type=spec.type,run=function(o,t,resolve) return resolve and resolve(nil,nil,reference) or false end}
+            end
             if reference then references[#references+1]=reference end
             return {type=spec.type,run=function(o,t,resolve) return spec.run(o,t,args,resolve) end}
         end
@@ -206,7 +212,7 @@ function Rules.ParseExpression(source)
         if cursor~=#tokens then bad('Лишний текст после выражения.',peek().pos) end
         take('end')
         if result.type~='boolean' then bad('Результат правила должен быть boolean.',1) end
-        result.references=references
+        result.references=references; result.panelReferences=panelReferences
         return result
     end
     local ok,result=pcall(parse)
@@ -314,6 +320,195 @@ function Rules.ReferenceOwners(profile,setId)
     end)
     return owners
 end
+-- Incomplete editor buffers are not executable expressions, but complete literal
+-- calls can still be renamed. Ignore strings/comments and stop at unsafe tails.
+function Rules.PanelReferences(source)
+    local parsed=Rules.ParseExpression(source)
+    if parsed then return parsed.panelReferences end
+    if type(source)~='string' or #source>Rules.ExpressionLimits.length then return {} end
+    local tokens,position={},1
+    while position<=#source do
+        local start=position; local char=source:sub(position,position)
+        if char:match('%s') then position=position+1
+        elseif source:sub(position,position+1)=='--' then
+            local equals=source:sub(position+2):match('^%[(=*)%[')
+            if equals then
+                local _,ending=source:find(']'..equals..']',position+4+#equals,true)
+                if not ending then break end
+                position=ending+1
+            else position=(source:find('\n',position+2,true) or #source)+1 end
+        elseif char=='"' or char=="'" then
+            local parts,valid={},true; position=position+1
+            while position<=#source and source:sub(position,position)~=char do
+                local value=source:sub(position,position)
+                if value=='\\' then
+                    position=position+1; value=source:sub(position,position)
+                    local escapes={n='\n',r='\r',t='\t',['\\']='\\',['"']='"',["'"]="'"}
+                    if not escapes[value] then valid=false else value=escapes[value] end
+                end
+                parts[#parts+1]=value; position=position+1
+            end
+            if position>#source then break end
+            tokens[#tokens+1]={kind=valid and 'string' or 'invalid',value=table.concat(parts),start=start,finish=position}
+            position=position+1
+        elseif char=='[' and source:sub(position):match('^%[(=*)%[') then
+            local equals=source:sub(position):match('^%[(=*)%[')
+            local _,ending=source:find(']'..equals..']',position+2+#equals,true)
+            if not ending then break end
+            tokens[#tokens+1]={kind='invalid'}; position=ending+1
+        elseif char:match('[%a_]') then
+            local word=source:sub(position):match('^[%a_][%w_]*')
+            tokens[#tokens+1]={kind=word,start=position,finish=position+#word-1}; position=position+#word
+        else tokens[#tokens+1]={kind=char}; position=position+1 end
+    end
+    local references={}
+    for i,token in ipairs(tokens) do
+        local before=tokens[i-1]; local opening,value,closing=tokens[i+1],tokens[i+2],tokens[i+3]
+        if (token.kind=='on_panel' or token.kind=='not_on_panel') and (not before or (before.kind~='.' and before.kind~=':'))
+            and opening and opening.kind=='(' and value and value.kind=='string' and closing and closing.kind==')' then
+            references[#references+1]={name=value.value,start=value.start,finish=value.finish,functionName=token.kind,functionStart=token.start,functionFinish=token.finish}
+        end
+    end
+    return references
+end
+-- Rename the former call in loaded configuration; only complete call tokens,
+-- never panel names, unrelated literals or comments. The corrected predicate
+-- is positive, so this deliberately does not insert a `not` operator.
+function Rules.NormalizePanelFunctions(profile)
+    visitSources(profile,function(source)
+        local references=Rules.PanelReferences(source)
+        for i=#references,1,-1 do local ref=references[i]
+            if ref.functionName=='not_on_panel' then
+                source=source:sub(1,ref.functionStart-1)..'on_panel'..source:sub(ref.functionFinish+1)
+            end
+        end
+        return source
+    end)
+end
+function Rules.RewritePanelReferences(source,oldName,newName)
+    local references=Rules.PanelReferences(source)
+    for i=#references,1,-1 do local ref=references[i]
+        if ref.name==oldName then source=source:sub(1,ref.start-1)..quote(newName)..source:sub(ref.finish+1) end
+    end
+    return source
+end
+function Rules.RenamePanelReferences(profile,oldName,newName)
+    visitSources(profile,function(source) return Rules.RewritePanelReferences(source,oldName,newName) end)
+end
+function Rules.PanelReferenceOwners(profile,panelId)
+    local target,owners,seen=nil,{},{}
+    for _,widget in ipairs(profile.widgets) do if widget.id==panelId then target=widget end end
+    if not target then return owners end
+    visitSources(profile,function(source,owner)
+        for _,ref in ipairs(Rules.PanelReferences(source)) do
+            if ref.name==target.name and not seen[owner] then
+                seen[owner]=true; owners[#owners+1]=owner.name..' ('..owner.id..')'
+            end
+        end
+        return source
+    end)
+    return owners
+end
+local function copy(value)
+    if type(value)~='table' then return value end
+    local result={}; for key,item in pairs(value) do result[key]=copy(item) end; return result
+end
+-- Resolve calls per owner, never on cached parser nodes. The combined graph
+-- includes sets and panel admission; every cyclic panel edge is disabled.
+local function bindPanels(result,widgets,hidden,pendingExpressions)
+    result.profile={widgets=copy(widgets or {}),hidden=copy(hidden or {})}
+    result.panels={}; result.panelBindings={}; result.panelDiagnostics={}
+    local names,graph,reverse,edges,issues={},{},{},{},{}
+    local function node(id) if not graph[id] then graph[id]={}; reverse[id]={} end end
+    local function edge(owner,target)
+        node(owner); node(target); graph[owner][target]=true; reverse[target][owner]=true
+    end
+    for _,widget in ipairs(result.profile.widgets) do
+        result.panels[widget.id]=widget; node('p:'..widget.id)
+        if names[widget.name]==nil then names[widget.name]=widget.id else names[widget.name]=false end
+    end
+    for id,set in pairs(result.sets) do
+        node('s:'..id)
+        for _,field in ipairs({'includeSets','excludeSets','expressionSets'}) do
+            for _,ref in ipairs(set[field]) do edge('s:'..id,'s:'..ref) end
+        end
+    end
+    for _,widget in ipairs(result.profile.widgets) do
+        if widget.type~='table' and widget.rules.expression==nil then
+            for _,field in ipairs({'includeSets','excludeSets'}) do
+                for _,ref in ipairs(widget.rules[field] or {}) do edge('p:'..widget.id,'s:'..ref) end
+            end
+        end
+    end
+    local function issue(owner,binding,code,message)
+        binding.invalid=true
+        issues[#issues+1]={owner=owner,code=code,message=message}
+    end
+    for _,pending in ipairs(pendingExpressions) do
+        local owner=pending.id and 's:'..pending.id or 'p:'..pending.widgetId
+        local widget=pending.widgetId and result.panels[pending.widgetId]
+        -- Explicit table slots do not evaluate the table's stored grid rules.
+        if not widget or widget.type~='table' then
+            local bindings=result.panelBindings[owner] or {}; result.panelBindings[owner]=bindings
+            if widget then for _,ref in ipairs(pending.parsed.references) do edge(owner,'s:'..(ref.id or result.names[ref.name])) end end
+            for _,ref in ipairs(pending.parsed.panelReferences) do
+                local id=names[ref.name]; local binding={id=id}; bindings[ref]=binding
+                if id==nil then issue(owner,binding,'unknown_panel','Панель «'..ref.name..'» не найдена.')
+                elseif id==false then issue(owner,binding,'ambiguous_panel','Несколько панелей с именем «'..ref.name..'».')
+                else
+                    local target='p:'..id; edge(owner,target)
+                    edges[#edges+1]={owner=owner,target=target,binding=binding,name=ref.name}
+                end
+            end
+        end
+    end
+    -- Iterative Kosaraju keeps long dependency chains off the Lua call stack.
+    local visited,order={},{}
+    for start in pairs(graph) do if not visited[start] then
+        visited[start]=true; local stack={{id=start}}
+        while #stack>0 do
+            local frame=stack[#stack]; local target=next(graph[frame.id],frame.cursor)
+            frame.cursor=target
+            if target then
+                if not visited[target] then visited[target]=true; stack[#stack+1]={id=target} end
+            else order[#order+1]=frame.id; stack[#stack]=nil end
+        end
+    end end
+    local component,count={},0
+    for i=#order,1,-1 do local start=order[i]
+        if not component[start] then
+            count=count+1; local queue={start}; component[start]=count; local cursor=1
+            while cursor<=#queue do
+                for parent in pairs(reverse[queue[cursor]]) do
+                    if not component[parent] then component[parent]=count; queue[#queue+1]=parent end
+                end
+                cursor=cursor+1
+            end
+        end
+    end
+    for _,call in ipairs(edges) do
+        if component[call.owner]==component[call.target] then
+            issue(call.owner,call.binding,'panel_cycle','Циклическая ссылка на панель «'..call.name..'».')
+        end
+    end
+    -- Warn all consuming panels, including callers through shared sets.
+    local seenDiagnostics={}
+    for _,warning in ipairs(issues) do
+        local seen,queue={[warning.owner]=true},{warning.owner}; local cursor=1
+        while cursor<=#queue do local owner=queue[cursor]
+            if owner:sub(1,2)=='p:' then
+                local id=owner:sub(3); local key=warning.code..'\0'..warning.message
+                seenDiagnostics[id]=seenDiagnostics[id] or {}
+                if not seenDiagnostics[id][key] then
+                    seenDiagnostics[id][key]=true; result.panelDiagnostics[id]=result.panelDiagnostics[id] or {}
+                    local list=result.panelDiagnostics[id]; list[#list+1]={code=warning.code,message=warning.message}
+                end
+            end
+            for parent in pairs(reverse[owner] or {}) do if not seen[parent] then seen[parent]=true; queue[#queue+1]=parent end end
+            cursor=cursor+1
+        end
+    end
+end
 local function reason(matched, code, label, path, children, setId)
     return {matched=matched,code=code,label=label,path=path,children=children or {},setId=setId}
 end
@@ -322,7 +517,7 @@ local function listLabel(values)
     return table.concat(labels,", ")
 end
 
-function Rules.Compile(setDefs, longThreshold, widgets)
+function Rules.Compile(setDefs, longThreshold, widgets, hidden)
     local diagnostics={}
     local function fail(code,path,message)
         diagnostics[#diagnostics+1]={code=code,path=path,message=message}
@@ -445,7 +640,7 @@ function Rules.Compile(setDefs, longThreshold, widgets)
             local path='widgets['..i..'].rules.expression'
             local parsed,message=Rules.ParseExpression(widget.rules.expression)
             if not parsed then fail('invalid_expression',path,message)
-            else result.widgetExpressions[widget.id]=parsed; pendingExpressions[#pendingExpressions+1]={parsed=parsed,path=path} end
+            else result.widgetExpressions[widget.id]=parsed; pendingExpressions[#pendingExpressions+1]={parsed=parsed,path=path,widgetId=widget.id} end
         else
             for _,field in ipairs({'includeSets','excludeSets'}) do for _,ref in ipairs(widget.rules[field]) do
                 if not result.sets[ref] then fail('unknown_set','widgets['..i..'].rules.'..field,'Unknown set '..ref..' in '..widget.name) end
@@ -496,6 +691,7 @@ function Rules.Compile(setDefs, longThreshold, widgets)
     end
     for _,id in ipairs(result.order) do if not state[id] then visit(id) end end
     if #diagnostics > 0 then return nil,diagnostics end
+    bindPanels(result,widgets,hidden,pendingExpressions)
     return result,diagnostics
 end
 
@@ -565,7 +761,7 @@ function Compiled:_Evaluate(setId, observation, explain, cache)
     end
     local base,excluded,children=false,false,explain and {} or nil
     if node.predicate then
-        local value,detail=evaluatePredicate(node.predicate,observation,self.threshold,explain,function(name,id) return self:_Evaluate(id or self.names[name],observation,explain,cache) end)
+        local value,detail=evaluatePredicate(node.predicate,observation,self.threshold,explain,self:_Resolver('s:'..setId,observation,explain,cache))
         base=value; if explain then children[#children+1]=detail end
     end
     for _,field in ipairs({"includeSets","excludeSets"}) do
@@ -590,14 +786,35 @@ function Compiled:_Evaluate(setId, observation, explain, cache)
     cache[setId]={matched=matched,reason=detail}
     return matched,detail
 end
-function Compiled:MatchesWidget(widgetId, observation)
+-- Cache is scoped to one observation admission, shared across set/panel paths.
+-- Private table keys cannot collide with arbitrary user-authored set IDs.
+local panelCacheKey={}
+function Compiled:_Resolver(owner,observation,explain,cache)
+    return function(name,id,reference)
+        if reference then
+            local binding=(self.panelBindings[owner] or {})[reference]
+            if not binding or binding.invalid then return false end
+            local panels=cache[panelCacheKey]; if not panels then panels={}; cache[panelCacheKey]=panels end
+            local admitted=panels[binding.id]
+            if admitted==nil then
+                admitted=KanaEffects.Projector.Decide(observation,self.panels[binding.id],self.profile,self,false,cache)
+                panels[binding.id]=admitted
+            end
+            return admitted
+        end
+        return self:_Evaluate(id or self.names[name],observation,explain,cache)
+    end
+end
+function Compiled:PanelDiagnostics(widgetId)
+    return copy(self.panelDiagnostics[widgetId] or {})
+end
+function Compiled:MatchesWidget(widgetId, observation, cache)
     local parsed=self.widgetExpressions[widgetId]
     if not parsed then return false end
-    local cache={}
-    return parsed.run(observation,self.threshold,function(name,id) return self:_Evaluate(id or self.names[name],observation,false,cache) end)
+    return parsed.run(observation,self.threshold,self:_Resolver('p:'..widgetId,observation,false,cache or {}))
 end
-function Compiled:Matches(setId, observation)
-    local matched=self:_Evaluate(setId,observation,false,{})
+function Compiled:Matches(setId, observation, cache)
+    local matched=self:_Evaluate(setId,observation,false,cache or {})
     return matched
 end
 function Compiled:Explain(setId, observation)

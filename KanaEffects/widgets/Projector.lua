@@ -44,8 +44,8 @@ local function timer(observations,category)
     if unknown then return {kind="unknown",knownUntil=ending},true end
     return {kind="finite",endTime=ending},false
 end
-local function matchesAny(ids,compiled,observation)
-    for _,id in ipairs(ids or {}) do if compiled:Matches(id,observation) then return true end end
+local function matchesAny(ids,compiled,observation,cache)
+    for _,id in ipairs(ids or {}) do if compiled:Matches(id,observation,cache) then return true end end
     return false
 end
 -- One admission decision shared by rendering and on-demand diagnostics. The
@@ -54,8 +54,10 @@ local function finish(detail,accepted,code)
     if detail then detail.admitted=accepted; detail.code=code; return detail end
     return accepted
 end
-function Projector.Decide(observation,widget,profile,compiled,explain)
+function Projector.Decide(observation,widget,profile,compiled,explain,cache)
     local rules=widget.rules; local detail=explain and {admitted=false,includeSets={},excludeSets={}} or nil
+    cache=cache or {}
+    if (observation.unit or {}).tag~=widget.unitTag then return finish(detail,false,'wrong_source') end
     if widget.type=='table' then
         local found=false
         for row,columns in pairs(widget.slots or {}) do for column,selector in pairs(columns) do
@@ -65,7 +67,7 @@ function Projector.Decide(observation,widget,profile,compiled,explain)
         return finish(detail,found,found and 'explicit_slot' or 'no_slot')
     end
     if rules.expression~=nil then
-        local accepted=compiled:MatchesWidget(widget.id,observation)
+        local accepted=compiled:MatchesWidget(widget.id,observation,cache)
         if detail then detail.expression=rules.expression; detail.expressionMatched=accepted; detail.globalHidden=hidden(observation,profile) end
         if not accepted then return finish(detail,false,'not_included') end
         if hidden(observation,profile) then return finish(detail,false,'global_hidden') end
@@ -73,13 +75,13 @@ function Projector.Decide(observation,widget,profile,compiled,explain)
     end
     local included,excluded=false,false
     if detail then
-        for _,id in ipairs(rules.includeSets or {}) do local matched=compiled:Matches(id,observation); detail.includeSets[#detail.includeSets+1]={id=id,matched=matched}; included=included or matched end
-        for _,id in ipairs(rules.excludeSets or {}) do local matched=compiled:Matches(id,observation); detail.excludeSets[#detail.excludeSets+1]={id=id,matched=matched}; excluded=excluded or matched end
+        for _,id in ipairs(rules.includeSets or {}) do local matched=compiled:Matches(id,observation,cache); detail.includeSets[#detail.includeSets+1]={id=id,matched=matched}; included=included or matched end
+        for _,id in ipairs(rules.excludeSets or {}) do local matched=compiled:Matches(id,observation,cache); detail.excludeSets[#detail.excludeSets+1]={id=id,matched=matched}; excluded=excluded or matched end
         detail.globalHidden=hidden(observation,profile); detail.named=named(observation)
         detail.namedPolicy=rules.named; detail.namedAccepted=(rules.named~='only' or detail.named) and (rules.named~='exclude' or not detail.named)
     else
-        included=matchesAny(rules.includeSets,compiled,observation)
-        if included then excluded=matchesAny(rules.excludeSets,compiled,observation) end
+        included=matchesAny(rules.includeSets,compiled,observation,cache)
+        if included then excluded=matchesAny(rules.excludeSets,compiled,observation,cache) end
     end
     if not included then return finish(detail,false,'not_included') end
     if excluded then return finish(detail,false,'excluded_set') end

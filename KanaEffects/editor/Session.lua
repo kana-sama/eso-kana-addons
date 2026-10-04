@@ -9,7 +9,7 @@ end
 local function reject(code,path,message) return false,{{code=code,path=path,message=message}} end
 local function validate(p)
     local ok,diag=KanaEffects.Schema.Validate(p); if not ok then return false,diag end
-    local compiled; compiled,diag=KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets); if not compiled then return false,diag end
+    local compiled; compiled,diag=KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets,p.hidden); if not compiled then return false,diag end
     return #diag==0,diag
 end
 local function serializable(value,active)
@@ -54,7 +54,7 @@ function Session:Apply(command)
     if not self.draft then return reject('session_closed','session','Begin editing first') end
     if type(command)~='table' or not serializable(command,{}) then return reject('invalid_command','command','Expected serializable closed command') end
     local allowed={
-        ['widget.add']='type widget',['widget.delete']='type widgetId',['widget.duplicate']='type widgetId newId',['widget.patch']='type widgetId patch',
+        ['widget.add']='type widget',['widget.delete']='type widgetId',['widget.duplicate']='type widgetId newId',['widget.patch']='type widgetId patch',['widget.rename']='type widgetId name previousName',
         ['slot.assign']='type widgetId row column selector',['slot.clear']='type widgetId row column',['slot.transfer']='type from to copy',
         ['set.put']='type set',['set.delete']='type setId',['hidden.add']='type selector',['hidden.remove']='type selector',['hidden.clear']='type',
         ['profile.threshold']='type seconds',['editor.toolbar']='type x y'}
@@ -71,14 +71,21 @@ function Session:Apply(command)
         p.widgets[#p.widgets+1]=copy(command.widget)
     elseif t=='widget.delete' then table.remove(p.widgets,index)
     elseif t=='widget.duplicate' then local duplicate=copy(w); duplicate.id=command.newId; p.widgets[#p.widgets+1]=duplicate
+    elseif t=='widget.rename' then
+        if type(command.name)~='string' then return reject('invalid_command','name','Expected panel name') end
+        if command.previousName~=nil and command.previousName~=w.name then return reject('stale_rename','previousName','Panel name changed before confirmation') end
+        local previous=w.name; w.name=command.name
+        KanaEffects.Rules.RenamePanelReferences(p,previous,w.name)
     elseif t=='widget.patch' then
         if type(command.patch)~='table' then return reject('invalid_command','patch','Expected widget patch') end
+        local previousName=w.name
         local permitted={name=true,type=true,unitTag=true,style=true,layout=true,anchor=true,rules=true}
         for key,v in pairs(command.patch) do
             if not permitted[key] then return reject('unknown_field','patch.'..tostring(key),'Immutable or unknown widget field') end
             if type(v)=='table' and type(w[key])=='table' then for field,child in pairs(v) do w[key][field]=copy(child) end
             else w[key]=copy(v) end
         end
+        if type(w.name)=='string' and previousName~=w.name then KanaEffects.Rules.RenamePanelReferences(p,previousName,w.name) end
     elseif t=='slot.assign' or t=='slot.clear' then
         if not coordinate(command.row) or not coordinate(command.column) then return reject('invalid_number','slot','Invalid slot address') end
         if t=='slot.assign' and command.selector==nil then return reject('invalid_selector','selector','Assign requires selector') end

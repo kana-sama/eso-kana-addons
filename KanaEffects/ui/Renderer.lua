@@ -16,12 +16,14 @@ local function signature(style,m,rect,pair)
         m.contentGap,m.rightInset or 0,m.nameColumnWidth,m.nameLineHeight,rect.x,rect.y,rect.width,rect.height,tostring(pair)},'|')
 end
 function Renderer.New(parent, controls, scheduler, diagnostics)
-    local self=setmetatable({diagnostics=diagnostics,controls=controls,scheduler=scheduler,widgets={},free={},freeOutlines={},freeMarkers={},visible=true,sceneVisible=true,callbacks={}}, {__index=Renderer})
+    local self=setmetatable({diagnostics=diagnostics,controls=controls,scheduler=scheduler,widgets={},free={},freeOutlines={},freeMarkers={},freeWarnings={},visible=true,sceneVisible=true,callbacks={}}, {__index=Renderer})
     self.content=controls:Create('control',parent); self.content:SetHidden(false)
     self.chrome=controls:Create('control',self.content); self.chrome:SetHidden(false)
     if diagnostics then diagnostics:Count('controls_created',2) end
     self.unsubscribeVisibility=controls:ObserveVisibility(self.content,function(visible)
-        self.sceneVisible=visible; if not visible then self:_ExitHovers() end; scheduler:SetVisible(self.visible and visible)
+        self.sceneVisible=visible
+        if not visible then self:_ExitHovers(); for _,state in pairs(self.widgets) do self:_ExitWarning(state) end end
+        scheduler:SetVisible(self.visible and visible)
     end)
     self.tick=function(now) scheduler:Advance(now) end
     self.unsubscribeActivity=scheduler:SubscribeActivity(function(active) controls:SetTimerDriver(active and self.tick or nil) end)
@@ -170,12 +172,54 @@ function Renderer:_BindTimer(cell,widget,entry,index,state,level,frozenAt)
         if not self.disposed and cell.jobs[index]==job and self.callbacks.onExpired then self.callbacks.onExpired(widget.id,entry.key) end
     end)
 end
+function Renderer:_ExitWarning(state)
+    if state.warningHovered then
+        state.warningHovered=nil
+        if self.callbacks.onRuleErrorExit then self.callbacks.onRuleErrorExit(state.widget.id,state.warning) end
+    end
+end
+function Renderer:_RuleWarning(state,issues)
+    local warning=state.warning
+    local message={}; for _,issue in ipairs(issues or {}) do message[#message+1]=issue.message end
+    local stamp=table.concat(message,'\n')
+    if state.warningStamp~=stamp then self:_ExitWarning(state) end
+    state.warningStamp=stamp; state.ruleDiagnostics=issues
+    if #message==0 then
+        if warning then warning:SetHidden(true); warning:SetMouseEnabled(false) end
+        return
+    end
+    if not warning then
+        warning=table.remove(self.freeWarnings) or self.controls:Create('texture',self.content); state.warning=warning
+        warning:SetTexture('EsoUI/Art/Miscellaneous/eso_icon_warning.dds'); warning:SetColor(1,0.8,0.3,1)
+        local function current() return not self.disposed and self.widgets[state.widget.id]==state and state.warning==warning and self:IsVisible() and not warning:IsControlHidden() end
+        warning:SetHandler('OnMouseEnter',function()
+            if current() then state.warningHovered=true; if self.callbacks.onRuleErrorEnter then self.callbacks.onRuleErrorEnter(state.widget.id,state.ruleDiagnostics,warning) end end
+        end)
+        warning:SetHandler('OnMouseExit',function() self:_ExitWarning(state) end)
+        warning:SetHandler('OnEffectivelyHidden',function() self:_ExitWarning(state) end)
+        warning:SetHandler('OnMouseUp',function(_,button,inside)
+            if current() and inside and button==1 and self.callbacks.onRuleError then self.callbacks.onRuleError(state.widget.id) end
+        end)
+    end
+    local rect,viewport=state.layout.rect,state.layout.viewport
+    local size,gap=18,4; local x,y=rect.x-size-gap,rect.y
+    if viewport then
+        size=math.min(size,viewport.width,viewport.height)
+        if x<viewport.x then x=rect.x+rect.width+gap end
+        x=math.max(viewport.x,math.min(x,viewport.x+viewport.width-size))
+        y=math.max(viewport.y,math.min(y,viewport.y+viewport.height-size))
+    end
+    state.warningRect={x=x,y=y,width=size,height=size}
+    self.controls:Rect(warning,state.warningRect); warning._kanaDrawX,warning._kanaDrawY=x,y
+    warning:SetMouseEnabled(true); warning:SetHidden(false)
+end
 function Renderer:Render(widget,entries,layout,display)
     local frozenAt=display and display.frozenAt
     if self.disposed then return end
     local state=self.widgets[widget.id]
     if not state then state={cells={},outlines={},editor=false}; self.widgets[widget.id]=state end
     state.widget=widget; state.layout=layout
+    self:_RuleWarning(state,display and display.ruleDiagnostics)
     local byKey={}; for _,entry in ipairs(entries) do byKey[entry.key]=entry end
     local visibleBounds
     for _,placement in ipairs(layout.placements) do
@@ -287,6 +331,10 @@ function Renderer:_PreviewPositions(state,preview)
         local rect=state.snapshotRect
         self:_PreviewPosition(state.snapshotLabel,rect.x+(move and dx or 0),rect.y+(move and dy or 0))
     end
+    if state.warning and state.warningRect then
+        local rect=state.warningRect
+        self:_PreviewPosition(state.warning,rect.x+(move and dx or 0),rect.y+(move and dy or 0))
+    end
 end
 function Renderer:SetGesturePreview(preview)
     if self.disposed then return end
@@ -326,10 +374,12 @@ function Renderer:SetCallbacks(callbacks) if not self.disposed then self.callbac
 function Renderer:IsVisible() return not self.disposed and self.visible and self.sceneVisible end
 function Renderer:SetVisible(visible)
     if self.disposed then return end
-    self.visible=visible==true; if not self.visible then self:_ExitHovers() end; self.content:SetHidden(not self.visible); self.scheduler:SetVisible(self.visible and self.sceneVisible)
+    self.visible=visible==true; if not self.visible then self:_ExitHovers(); for _,state in pairs(self.widgets) do self:_ExitWarning(state) end end; self.content:SetHidden(not self.visible); self.scheduler:SetVisible(self.visible and self.sceneVisible)
 end
 function Renderer:ReleaseWidget(widgetId)
     local state=self.widgets[widgetId]; if not state then return end
+    self:_ExitWarning(state)
+    if state.warning then self.controls:Reset(state.warning); self.freeWarnings[#self.freeWarnings+1]=state.warning; state.warning=nil end
     for _,cell in pairs(state.cells) do self:_Release(cell) end
     for _,outline in ipairs(state.outlines) do
         self.controls:Reset(outline); outline._kanaGeometry=nil; self.freeOutlines[#self.freeOutlines+1]=outline
@@ -339,6 +389,7 @@ function Renderer:ReleaseWidget(widgetId)
 end
 function Renderer:Dispose()
     if self.disposed then return end
+    for _,state in pairs(self.widgets) do self:_ExitWarning(state) end
     self.disposed=true; self.callbacks={}
     for widgetId in pairs(self.widgets) do self:ReleaseWidget(widgetId) end
     self.unsubscribeActivity(); self.unsubscribeVisibility(); self.controls:SetTimerDriver(nil)

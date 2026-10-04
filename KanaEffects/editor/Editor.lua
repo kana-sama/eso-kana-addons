@@ -8,6 +8,7 @@ function Editor.New(session,runtime,picker,anchors,deps)
     self.unsubscribe=session:Subscribe(function(draft)
         if not self.open or self.closing then return end
         if not draft then self:_Finish(); return end
+        if self.renameRequest then self:ResolvePanelRename(false,self.renameRequest) end
         local ok,diag=self.runtime:Preview(draft,self.provider or self.store)
         if not ok then self:Report(false,diag); return end
         self.inspector:RebaseReferences(draft); if self.setEditor.RebaseReferences then self.setEditor:RebaseReferences(draft) end
@@ -17,7 +18,7 @@ function Editor.New(session,runtime,picker,anchors,deps)
         if self.open then self:_View(id,view) end
     end)
     self.unsubscribeAnchors=anchors:Observe(function()
-        if self.open then self:_Toolbar(self.session:ReadDraft()); if self.inspector.form then self.inspector.form:Place() end; if self.setEditor.form then self.setEditor.form:Place() end; if self.setEditor.help and self.setEditor.help.form then self.setEditor.help.form:Place() end end
+        if self.open then self:_Toolbar(self.session:ReadDraft()); if self.inspector.form then self.inspector.form:Place() end; if self.setEditor.form then self.setEditor.form:Place() end; if self.setEditor.help and self.setEditor.help.form then self.setEditor.help.form:Place() end; if self.renameForm and self.renameRequest then self.renameForm:Place() end end
     end)
     local scene=deps.api and deps.api.hudEditorScene
     if scene and scene.RegisterCallback then
@@ -53,6 +54,57 @@ function Editor:Apply(command)
     local ok,diag=self.session:Apply(command); return self:Report(ok,diag)
 end
 function Editor:PatchWidget(id,patch) return self:Apply({type='widget.patch',widgetId=id,patch=patch}) end
+-- Names are committed on Enter/focus loss or outer Save, never per keystroke.
+function Editor:RenamePanel(id,name)
+    if not self.open or self.disposed then return false end
+    if self.renameRequest then if self.renameForm then self.renameForm:Show() end; return false end
+    local p=self.session:ReadDraft(); local w=p and I.Find(p.widgets,id)
+    if not w or type(name)~='string' then return false end
+    if w.name==name then return true end
+    self.inspector:CaptureExpression(); self.setEditor:CaptureFields()
+    local owners={}; local ownerNames={}; local seen={}
+    for _,list in ipairs({p.widgets,p.sets}) do for _,owner in ipairs(list) do ownerNames[owner.name..' ('..owner.id..')']=owner.name end end
+    local function addOwner(label) if label and not seen[label] then seen[label]=true; owners[#owners+1]=label end end
+    for _,owner in ipairs(KanaEffects.Rules.PanelReferenceOwners(p,id)) do addOwner(ownerNames[owner]) end
+    local unfinished=false
+    for _,owner in ipairs({self.inspector,self.setEditor}) do
+        for bufferId,source in pairs(owner.expressionBuffers) do
+            local changed=KanaEffects.Rules.RewritePanelReferences(source,w.name,name)~=source
+            local invalid=not KanaEffects.Rules.ParseExpression(source)
+            local uncertain=not changed and invalid and source:find('on_panel',1,true) and source:find(w.name,1,true)
+            if changed or uncertain then
+                local definition=I.Find(owner==self.inspector and p.widgets or p.sets,bufferId)
+                addOwner(definition and definition.name or (owner==self.inspector and self.labels.inspector or self.labels.sets))
+            end
+            if uncertain then unfinished=true end
+        end
+    end
+    if #owners==0 then return self:Apply({type='widget.rename',widgetId=id,name=name,previousName=w.name}) end
+    local request={widgetId=id,name=name,previousName=w.name,editorGeneration=self.generation,sessionGeneration=self.session.generation}
+    self.renameRequest=request
+    -- Restore the committed field before opening the dialog. The proposal lives
+    -- only in this request, so Cancel and a second outer Save keep the old name.
+    self.inspector:Refresh()
+    if not self.renameForm then self.renameForm=I.Form.New(self.api,self.name..'RenamePanel',self.labels.renamePanel,520,480,function() self:ResolvePanelRename(false) end) end
+    if self.renameForm then
+        local f=self.renameForm; f.onClose=function() self:ResolvePanelRename(false,request) end
+        f:Show(); f:Begin(); f:Text(string.format(self.labels.renamePanelHint,w.name,name))
+        f:Text(table.concat(owners,', '))
+        if unfinished then f:Text(self.labels.renameUnfinishedHint) end
+        f:Button(self.labels.renamePanelConfirm,function() self:ResolvePanelRename(true,request) end)
+        f:Button(self.labels.cancel,function() self:ResolvePanelRename(false,request) end); f:End()
+    end
+    return false
+end
+function Editor:ResolvePanelRename(confirm,request)
+    request=request or self.renameRequest
+    if not request or request~=self.renameRequest then return false end
+    self.renameRequest=nil; if self.renameForm then self.renameForm:Hide() end
+    if not confirm then self.inspector:Refresh(); return true end
+    if not self.open or self.disposed or request.editorGeneration~=self.generation or request.sessionGeneration~=self.session.generation then return false end
+    self.inspector:CaptureExpression(); self.setEditor:CaptureFields()
+    return self:Apply({type='widget.rename',widgetId=request.widgetId,name=request.name,previousName=request.previousName})
+end
 function Editor:_NewId(prefix,list)
     local n=1; while I.Find(list,prefix..n) do n=n+1 end; return prefix..n
 end
@@ -421,6 +473,7 @@ function Editor:Open()
 end
 function Editor:RequestClose()
     if not self.open then return false end
+    if self.renameRequest then self:ResolvePanelRename(false); return true end
     if self.setEditor.help and self.setEditor.help:IsOpen() then
         if self.setEditor.help.form:CloseDropdown() then return true end
         self.setEditor.help:Close(); return true
@@ -449,6 +502,7 @@ function Editor:ResolveClose(choice)
 end
 function Editor:Save()
     if not self.open then return false end
+    if self.renameRequest then if self.renameForm then self.renameForm:Show() end; return false end
     local pending={}
     for _,owner in ipairs({self.inspector,self.setEditor}) do if owner.GetPendingEdits or (owner.form and owner:IsOpen()) then
         local edits
@@ -474,6 +528,7 @@ function Editor:_Finish()
     if self.layerPushed then self.layerPushed=false; self.api.RemoveActionLayerByName('KanaEffectsEditor') end
     if self.gesture and self.gesture.Cancel then self.gesture:Cancel() end
     self.picker:Close(); if self.hiddenList then self.hiddenList:Close() end; self.inspector:Close(); self.setEditor:Close()
+    self.renameRequest=nil; if self.renameForm then self.renameForm:Hide() end
     self.inspector:ResetDraft(); if self.setEditor.ResetDraft then self.setEditor:ResetDraft() end
     if self.setEditor.help then self.setEditor.help:Close() end
     if self.prompt then self.prompt:Hide() end; if self.testForm then self.testForm:Hide() end
@@ -498,6 +553,7 @@ function Editor:Dispose()
     if self.sceneCallback then self.api.hudEditorScene:UnregisterCallback('StateChange',self.sceneCallback) end
     self:SetGestureController(nil); self:SetCanvasHandlers(nil); self:SetGesturePreview(nil);
     for _,n in pairs(self.nativeOverlays) do n.root:SetHandler('OnEffectivelyHidden',nil) end
+    if self.renameForm then self.renameForm:Dispose() end
     self.inspector:Dispose(); self.setEditor:Dispose(); if self.prompt then self.prompt:Dispose() end; if self.testForm then self.testForm:Dispose() end
     if self.toolbar then self.toolbar.grip:SetHandler('OnMouseDown',nil); self.toolbar.grip:SetHandler('OnMouseUp',nil); for _,b in ipairs(self.toolbar.buttons) do b:SetHandler('OnClicked',nil) end end
 end

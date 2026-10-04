@@ -53,7 +53,22 @@ function SetEditor:RebaseReferences(draft)
     end
     for id in pairs(self.expressionBuffers) do if not names[id] then self.expressionBuffers[id]=nil end end
     for id in pairs(self.nameBuffers) do if not names[id] then self.nameBuffers[id]=nil end end
+    for id in pairs(self.panelRenameWarnings or {}) do if not names[id] then self.panelRenameWarnings[id]=nil end end
     self.setNames=names
+    local panels={}
+    for _,w in ipairs(draft.widgets) do
+        panels[w.id]=w.name; local old=self.panelNames and self.panelNames[w.id]
+        if old and old~=w.name then
+            for id,source in pairs(self.expressionBuffers) do
+                local rewritten=KanaEffects.Rules.RewritePanelReferences(source,old,w.name)
+                self.expressionBuffers[id]=rewritten
+                if rewritten==source and not KanaEffects.Rules.ParseExpression(source) and source:find('on_panel',1,true) and source:find(old,1,true) then
+                    self.panelRenameWarnings=self.panelRenameWarnings or {}; self.panelRenameWarnings[id]=self.labels.renameUnfinishedHint
+                end
+            end
+        end
+    end
+    self.panelNames=panels
 end
 function SetEditor:ValidateExpression(source,id)
     local p=self.session:ReadDraft(); local set=p and I.Find(p.sets,id or self.selected)
@@ -64,8 +79,11 @@ function SetEditor:ValidateExpression(source,id)
     if parsed then
         local candidate=copy(p.sets); local changed=I.Find(candidate,set.id)
         changed.predicate={op='expression',source=source}; changed.includeSets={}; changed.excludeSets={}
-        local compiled,diag=KanaEffects.Rules.Compile(candidate,p.longThreshold,p.widgets)
+        local compiled,diag=KanaEffects.Rules.Compile(candidate,p.longThreshold,p.widgets,p.hidden)
         if not compiled then message=diagnosticMessage(diag) end
+    end
+    if self.panelRenameWarnings and self.panelRenameWarnings[set.id] then
+        if parsed then self.panelRenameWarnings[set.id]=nil else message=(message or '')..'\n'..self.panelRenameWarnings[set.id] end
     end
     if self.form then self.form:Message(message or '') end
     return parsed~=nil and message==nil,message
@@ -95,7 +113,7 @@ function SetEditor:Candidate(id)
     local candidate=copy(p); local previous=self:GetSet(id)
     for index,value in ipairs(candidate.sets) do if value.id==id then candidate.sets[index]=copy(set) end end
     if previous.name~=set.name then KanaEffects.Rules.RenameReferences(candidate,previous.name,set.name,set.id) end
-    local valid,diag=KanaEffects.Rules.Compile(candidate.sets,candidate.longThreshold,candidate.widgets)
+    local valid,diag=KanaEffects.Rules.Compile(candidate.sets,candidate.longThreshold,candidate.widgets,candidate.hidden)
     if not valid then return nil,diagnosticMessage(diag) end
     return set
 end
@@ -120,16 +138,19 @@ end
 -- discards buffers; outer Save captures all of them before commands refresh UI.
 function SetEditor:GetPendingEdits()
     local p=self.session:ReadDraft(); if not p then return {} end
-    self:CaptureFields(); local pending={}
+    self:CaptureFields(); local pending={}; local generation=self.editor.generation
     for _,set in ipairs(p.sets) do
         local id=set.id; local source=self.expressionBuffers[id]; local name=self.nameBuffers[id]
         if (source and source~=expression(set,p.sets)) or (name and name~=set.name) then
             local candidate,message=self:Candidate(id)
             if not candidate then self:ShowError(id,'Набор «'..set.name..'»: '..message); return nil end
-            local names=copy(self.setNames or {})
+            local names=copy(self.setNames or {}); local panels=copy(self.panelNames or {})
             pending[#pending+1]={value=candidate,callback=function(value)
+                if not self.editor:IsOpen() or generation~=self.editor.generation then return false end
                 local draft=self.session:ReadDraft()
+                if not draft then return false end
                 if value.predicate and value.predicate.op=='expression' then
+                    for _,current in ipairs(draft.widgets) do local old=panels[current.id]; if old and old~=current.name then value.predicate.source=KanaEffects.Rules.RewritePanelReferences(value.predicate.source,old,current.name) end end
                     for _,current in ipairs(draft.sets) do
                         local old=names[current.id]
                         if old and old~=current.name then value.predicate.source=KanaEffects.Rules.RewriteReferences(value.predicate.source,old,current.name,current.id) end
@@ -250,7 +271,7 @@ function SetEditor:Preset(id,preset)
     state=copy(state); state.kind={'buff','debuff','unknown'}; set.predicate=simplePredicate(state); self.nodePath={}; return self:Put(set)
 end
 function SetEditor:Statistics(id,tag,other)
-    local p=self.session:ReadDraft(); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets); local provider=self.editor.provider or self.store
+    local p=self.session:ReadDraft(); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets,p.hidden); local provider=self.editor.provider or self.store
     local stats={observed=0,matched=0,overlap=0,provesUniversalDisjointness=false}
     if not compiled or not provider then return stats end
     for _,o in ipairs(provider:ReadUnit(tag or self.source)) do stats.observed=stats.observed+1; if compiled:Matches(id,o) then stats.matched=stats.matched+1; if other and compiled:Matches(other,o) then stats.overlap=stats.overlap+1 end end end
@@ -289,7 +310,7 @@ local function contextMatch(context,o,p,compiled)
     return widget and widget.unitTag==o.unit.tag and KanaEffects.Projector.Decide(o,widget,p,compiled) or false
 end
 function SetEditor:ContextStatistics(context,tag,other,evidence)
-    local p=self.session:ReadDraft(); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets)
+    local p=self.session:ReadDraft(); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets,p.hidden)
     local stats={observed=0,matched=0,overlap=0,provesUniversalDisjointness=false,metadataOnly=evidence=='recent',cooccurrenceKnown=evidence~='recent'}
     if not compiled then return stats end
     for _,o in ipairs(self:DiagnosticObservations(tag,evidence)) do
@@ -299,7 +320,7 @@ function SetEditor:ContextStatistics(context,tag,other,evidence)
     stats.total=self.diagnosticTotal; return stats
 end
 function SetEditor:WidgetReport(id,observation)
-    local p=self.session:ReadDraft(); local widget=p and I.Find(p.widgets,id); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets)
+    local p=self.session:ReadDraft(); local widget=p and I.Find(p.widgets,id); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets,p.hidden)
     if not widget or not compiled then return end
     local decision=KanaEffects.Projector.Decide(observation,widget,p,compiled,true)
     if observation.unit.tag~=widget.unitTag then decision.admitted=false; decision.code='wrong_source' end
@@ -363,7 +384,7 @@ function SetEditor:RefreshDiagnostic(context)
     if context.kind=='widget' then self.editor.inspector:Refresh() else self:Refresh() end
 end
 function SetEditor:Explain(id,observation)
-    local p=self.session:ReadDraft(); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets); if not compiled then return self.labels.invalidConfig end
+    local p=self.session:ReadDraft(); local compiled=p and KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets,p.hidden); if not compiled then return self.labels.invalidConfig end
     local lines={}; local l=self.labels
     local function value(field,v)
         if field=='named' then return v==true and l.namedYes or v==false and l.namedNo or l.unknown end
@@ -404,6 +425,10 @@ local HELP_SECTIONS={
     {title='Повторное использование наборов',entries={
         {'element_of(name: string) → boolean','Проверяет правило именованного набора. Имя чувствительно к регистру. Неизвестные и неоднозначные имена, а также циклы запрещены.', 'element_of("Long buffs") and not is_debuff()'},
         {'element_of(name: string, stableId: string) → boolean','Расширенная форма для старых наборов с одинаковыми именами. Стабильный ID однозначно выбирает набор; имя должно совпадать с именем этого ID. При обычном редактировании достаточно уникального имени.'},
+    }},
+    {title='Другие панели',entries={
+        {'on_panel(name: string) → boolean','Возвращает true, если эффект попадает в панель с этим уникальным именем для того же получателя по её правилу или явно назначенной ячейке. Для исключения используйте not on_panel("Имя панели"). Для автоматических панелей учитывает глобальное скрытие; явно назначенные ячейки обходят его. Не зависит от порядка панелей, наличия свободного места и геометрии. Имя чувствительно к регистру.', 'on_panel("Long buffs") and is_buff()'},
+        {'Имена и предупреждения','Отсутствующая или неоднозначная панель даёт false с предупреждением. Циклы также дают false. Переименование используемой панели требует подтверждения и обновляет ссылки в правилах и несохранённом коде.'},
     }},
     {title='Тип и длительность',entries={
         {'is_buff() · is_debuff() · is_named() → boolean','Положительный, отрицательный или именованный эффект.', 'is_buff() and not is_named()'},
@@ -486,7 +511,7 @@ function SetEditor:Refresh()
     self:ValidateExpression(source,set.id)
 end
 function SetEditor:ResetDraft()
-    self.expressionBuffers={}; self.nameBuffers={}; self.setNames=nil
+    self.expressionBuffers={}; self.nameBuffers={}; self.setNames=nil; self.panelNames=nil; self.panelRenameWarnings=nil
     if self.help then self.help:Close() end
 end
 function SetEditor:Close() self:CaptureFields(); self.open=false; if self.form then self.form:Hide() end end

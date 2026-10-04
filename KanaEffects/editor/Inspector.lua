@@ -579,6 +579,7 @@ function Inspector:Fields()
 end
 function Inspector:Set(path,value)
     local w=self:GetWidget(); if not w then return false end
+    if path=='name' then return self.editor:RenamePanel(w.id,value) end
     local parent,field=string.match(path,'^([^.]+)%.(.+)$'); local patch={}
     if parent then patch[parent]={[field]=value} else patch[path]=value end
     return self.editor:PatchWidget(w.id,patch)
@@ -640,6 +641,7 @@ end
 function Inspector:RebaseReferences(profile)
     local present={}; for _,w in ipairs(profile.widgets) do present[w.id]=true end
     for id in pairs(self.expressionBuffers) do if not present[id] then self.expressionBuffers[id]=nil end end
+    for id in pairs(self.panelRenameWarnings or {}) do if not present[id] then self.panelRenameWarnings[id]=nil end end
     local names={}
     for _,set in ipairs(profile.sets) do
         names[set.id]=set.name
@@ -649,6 +651,20 @@ function Inspector:RebaseReferences(profile)
         end
     end
     self.setNames=names
+    local panels={}
+    for _,w in ipairs(profile.widgets) do
+        panels[w.id]=w.name; local old=self.panelNames and self.panelNames[w.id]
+        if old and old~=w.name then
+            for id,source in pairs(self.expressionBuffers) do
+                local rewritten=KanaEffects.Rules.RewritePanelReferences(source,old,w.name)
+                self.expressionBuffers[id]=rewritten
+                if rewritten==source and not KanaEffects.Rules.ParseExpression(source) and source:find('on_panel',1,true) and source:find(old,1,true) then
+                    self.panelRenameWarnings=self.panelRenameWarnings or {}; self.panelRenameWarnings[id]=self.labels.renameUnfinishedHint
+                end
+            end
+        end
+    end
+    self.panelNames=panels
 end
 function Inspector:Expression(widget,profile)
     return KanaEffects.Rules.WidgetExpression(widget,profile.sets)
@@ -658,8 +674,11 @@ function Inspector:ValidateExpression(source,id)
     if not w then return false end
     if source==self:Expression(w,p) then if self.form then self.form:Message('') end; return true end
     w.rules.expression=source
-    local compiled,diagnostics=KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets)
+    local compiled,diagnostics=KanaEffects.Rules.Compile(p.sets,p.longThreshold,p.widgets,p.hidden)
     local message=not compiled and diagnostics and diagnostics[1] and diagnostics[1].message or ''
+    if self.panelRenameWarnings and self.panelRenameWarnings[w.id] then
+        if compiled then self.panelRenameWarnings[w.id]=nil else message=message..'\n'..self.panelRenameWarnings[w.id] end
+    end
     if self.form then self.form:Message(message) end
     return compiled~=nil,message
 end
@@ -682,17 +701,30 @@ end
 function Inspector:GetPendingEdits()
     self:CaptureExpression()
     local p=self.session:ReadDraft(); if not p then return {} end
-    local pending={}
+    local pending={}; local generation=self.editor.generation
     if self.open and self.form then
         local visible=self.form:GetPendingEdits(); if not visible then return nil end
-        for _,edit in ipairs(visible) do if edit.kind~='code' then pending[#pending+1]=edit end end
+        for _,edit in ipairs(visible) do if edit.kind~='code' then
+            local callback=edit.callback
+            pending[#pending+1]={value=edit.value,kind=edit.kind,callback=function(value)
+                if not self.editor:IsOpen() or generation~=self.editor.generation then return false end
+                return callback(value)
+            end}
+        end end
     end
     for _,w in ipairs(p.widgets) do
         local id=w.id; local source=self.expressionBuffers[id]
         if source and source~=self:Expression(w,p) then
             local ok,message=self:ValidateExpression(source,id)
             if not ok then self:Open(id); self.tab='effects'; self:Refresh(); self.form:Message(message); return nil end
-            pending[#pending+1]={value=source,callback=function(value) return self:SetExpression(id,value) end}
+            local panels=P.Copy(self.panelNames or {}); local names=P.Copy(self.setNames or {})
+            pending[#pending+1]={value=source,callback=function(value)
+                if not self.editor:IsOpen() or generation~=self.editor.generation then return false end
+                local draft=self.session:ReadDraft(); if not draft then return false end
+                for _,current in ipairs(draft.widgets) do local old=panels[current.id]; if old and old~=current.name then value=KanaEffects.Rules.RewritePanelReferences(value,old,current.name) end end
+                for _,current in ipairs(draft.sets) do local old=names[current.id]; if old and old~=current.name then value=KanaEffects.Rules.RewriteReferences(value,old,current.name,current.id) end end
+                return self:SetExpression(id,value)
+            end}
         end
     end
     return pending
@@ -702,7 +734,7 @@ function Inspector:HasPendingChanges()
     for _,w in ipairs(p.widgets) do local source=self.expressionBuffers[w.id]; if source and source~=self:Expression(w,p) then return true end end
     return false
 end
-function Inspector:ResetDraft() self.expressionBuffers={}; self.setNames=nil; self.widgetId=nil; self.tab='main' end
+function Inspector:ResetDraft() self.expressionBuffers={}; self.setNames=nil; self.panelNames=nil; self.panelRenameWarnings=nil; self.widgetId=nil; self.tab='main' end
 function Inspector:Refresh()
     if not self:IsOpen() or not self.form then return end
     local w=self:GetWidget(); if not w then self:Close(); return end
@@ -712,7 +744,7 @@ function Inspector:Refresh()
     f:Begin(); f.title:SetText(w.name)
     f:Tabs(self.tab,{{'main',l.mainTab},{'effects',l.effectsTab},{'layout',l.layoutTab},{'style',l.appearance},{'anchor',l.anchor}},function(tab) self.tab=tab; self:Refresh() end)
     local function edit(title,path,value,options)
-        f:Edit(title,value,function(v) return self:Set(path,v) end,type(value)=='number',nil,options)
+        f:Edit(title,value,function(v) if path=='name' then return self.editor:RenamePanel(w.id,v) end; return self:Set(path,v) end,type(value)=='number',nil,options)
     end
     local function count(title,path,value,options)
         f:Counter(title,value,function(v) return self:Set(path,v) end,options)
