@@ -1,16 +1,21 @@
 local addon = KanaSeasonOneTravel
 local addonName = "KanaSeasonOneTravel"
-local groups = { { "farm", "bilsa", "vampire" }, { "urcelmo", "holgunn", "arabelle" } }
+local groups = { { "farm", "bilsa", "vampire" }, { "urcelmo", "holgunn", "arabelle" },
+    { "thieves", "highseas" } }
+local daily = { farm = true, bilsa = true, vampire = true,
+    urcelmo = true, holgunn = true, arabelle = true, highseas = true }
 local labels = {
     en = {
-        title = "Season One", groups = { "Dynamic encounters", "Freerunners" },
+        title = "Season One", groups = { "Dynamic encounters", "Freerunners", "Other destinations" },
         names = {
             farm = "Farm Aflame", bilsa = "Bilsa's Delivery", vampire = "Vampire Hunt",
             urcelmo = "Battlereeve Urcelmo", holgunn = "Holgunn One-Eye", arabelle = "Lady Arabelle Davaux",
+            thieves = "New Thieves Guild", highseas = "High Seas of Tamriel",
         },
         locations = {
             farm = "Auridon", bilsa = "Stonefalls", vampire = "Glenumbra",
             urcelmo = "Skywatch", holgunn = "Ebonheart", arabelle = "Aldcroft",
+            thieves = "Daggerfall", highseas = "Anvil",
         },
         mark = "Mark completed today", clear = "Clear today's checkmark",
         edit = "Right-click to change today's checkmark.",
@@ -19,14 +24,16 @@ local labels = {
         unknown = "The destination wayshrine is undiscovered or unavailable.",
     },
     ru = {
-        title = "Первый сезон", groups = { "Динамические события", "Вольнонаёмники" },
+        title = "Первый сезон", groups = { "Динамические события", "Вольнонаёмники", "Другие точки" },
         names = {
             farm = "Пожар на ферме", bilsa = "Доставка Бильсы", vampire = "Охота на вампира",
             urcelmo = "Урсельмо", holgunn = "Холгун", arabelle = "Арабелла",
+            thieves = "Новая Гильдия воров", highseas = "Бескрайние моря Тамриэля",
         },
         locations = {
             farm = "Ауридон", bilsa = "Стоунфолз", vampire = "Гленумбра",
             urcelmo = "Скайвотч", holgunn = "Эбонхарт", arabelle = "Альдкрофт",
+            thieves = "Даггерфолл", highseas = "Анвиль",
         },
         mark = "Отметить за сегодня", clear = "Снять сегодняшнюю отметку",
         edit = "Правая кнопка: изменить сегодняшнюю отметку.",
@@ -41,7 +48,14 @@ local reopenSeasonTab, shrineMapOpen = false, false
 
 local function RefreshChecks()
     for key, row in pairs(rows) do
-        row.check:SetHidden(not addon.IsDone(key))
+        if row.check then row.check:SetHidden(not addon.IsDone(key)) end
+    end
+    if rows.highseas then
+        local row = rows.highseas
+        local active = addon.IsHighSeasActive()
+        row.button:SetHidden(not active)
+        row.name:SetEnabled(active and row.available)
+        row.location:SetColor(((active and row.available) and ZO_SELECTED_TEXT or ZO_DISABLED_TEXT):UnpackRGBA())
     end
 end
 
@@ -56,7 +70,7 @@ function addon.Refresh()
         local node = addon.Resolve(key)
         local available = node and not GetFastTravelNodeOutboundOnlyInfo(node)
         row.available = available == true
-        local enabled = row.available
+        local enabled = row.available and (key ~= "highseas" or addon.IsHighSeasActive())
         row.name:SetEnabled(enabled)
         row.location:SetColor((enabled and ZO_SELECTED_TEXT or ZO_DISABLED_TEXT):UnpackRGBA())
     end
@@ -104,7 +118,7 @@ local function Initialize()
                 if row.name.enabled then ZO_SelectableLabel_OnMouseEnter(row.name) end
                 local travelHint = not row.available and locale.unknown
                     or (addon.CanTravel() and locale.travel or locale.shrine)
-                Tooltip(control, travelHint .. "\n" .. locale.edit)
+                Tooltip(control, travelHint .. (daily[key] and "\n" .. locale.edit or ""))
             end)
             control:SetHandler("OnMouseExit", function()
                 ZO_SelectableLabel_OnMouseExit(row.name)
@@ -114,7 +128,7 @@ local function Initialize()
                 if not upInside then return end
                 if button == MOUSE_BUTTON_INDEX_LEFT then
                     if addon.CanTravel() and row.available then addon.Travel(key) end
-                elseif button == MOUSE_BUTTON_INDEX_RIGHT then
+                elseif button == MOUSE_BUTTON_INDEX_RIGHT and daily[key] then
                     ShowCompletionMenu(control, key)
                 end
             end)
@@ -124,12 +138,15 @@ local function Initialize()
             local location = control:GetNamedChild("Location")
             location:SetText(locale.locations[key])
             location:SetMouseEnabled(false)
-            local check = WINDOW_MANAGER:CreateControl(addonName .. key .. "Check", control, CT_TEXTURE)
-            check:SetDimensions(20, 20)
-            check:SetAnchor(TOPLEFT, control, TOPLEFT, -2, 0)
-            check:SetTexture("EsoUI/Art/Miscellaneous/check_icon_32.dds")
-            check:SetColor(ZO_SELECTED_TEXT:UnpackRGBA())
-            check:SetMouseEnabled(false)
+            local check
+            if daily[key] then
+                check = WINDOW_MANAGER:CreateControl(addonName .. key .. "Check", control, CT_TEXTURE)
+                check:SetDimensions(20, 20)
+                check:SetAnchor(TOPLEFT, control, TOPLEFT, -2, 0)
+                check:SetTexture("EsoUI/Art/Miscellaneous/check_icon_32.dds")
+                check:SetColor(ZO_SELECTED_TEXT:UnpackRGBA())
+                check:SetMouseEnabled(false)
+            end
             row.button, row.name, row.location, row.check = control, name, location, check
             rows[key] = row
             y = y + 60

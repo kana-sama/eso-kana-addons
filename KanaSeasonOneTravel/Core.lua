@@ -29,8 +29,26 @@ local destinations = {
         zoneId = 3,
         names = { "Aldcroft", "Альдкрофт" },
     },
+    thieves = {
+        zoneId = 3, -- Glenumbra: Daggerfall Thieves Den
+        names = { "Daggerfall", "Даггерфолла", "Даггерфолл" },
+    },
+    highseas = {
+        zoneId = 823, -- Gold Coast: event ship west of Anvil
+        names = { "Anvil", "Анвила", "Анвиль" },
+    },
 }
 addon.destinations = destinations
+
+-- The announced 2026 event runs September 30–October 14. ESO events normally
+-- turn over at 10:00 EDT (14:00 UTC); the published dates omit an exact hour.
+local HIGH_SEAS_START = 1790776800
+local HIGH_SEAS_END = 1791986400
+
+function addon.IsHighSeasActive()
+    local now = GetTimeStamp()
+    return now >= HIGH_SEAS_START and now < HIGH_SEAS_END
+end
 
 function addon.Resolve(key)
     local destination = destinations[key]
@@ -60,6 +78,7 @@ end
 
 function addon.Travel(key)
     if not addon.CanTravel() then return false end
+    if key == "highseas" and not addon.IsHighSeasActive() then return false end
     local nodeIndex = addon.Resolve(key)
     if not nodeIndex or GetFastTravelNodeOutboundOnlyInfo(nodeIndex) then return false end
     FastTravelToNode(nodeIndex)

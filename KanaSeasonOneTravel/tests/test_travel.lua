@@ -1,8 +1,9 @@
 -- Run from this folder with: lua test_travel.lua
 local addon = "KanaSeasonOneTravel"
 local nodes = {}
-local zoneIds = { [11] = 381, [22] = 41, [33] = 3, [44] = 999 }
+local zoneIds = { [11] = 381, [22] = 41, [33] = 3, [44] = 999, [55] = 823 }
 local currentNode, inMode, interaction = 99, true, 1
+local nowTimestamp = 1791201600 -- October 5, 2026, UTC
 local travelled = {}
 
 POI_TYPE_WAYSHRINE = 1
@@ -23,6 +24,7 @@ end
 function ZO_Map_GetFastTravelNode() return currentNode end
 WORLD_MAP_MANAGER = { IsInMode = function(_, mode) return inMode and mode == MAP_MODE_FAST_TRAVEL end }
 function GetInteractionType() return interaction end
+function GetTimeStamp() return nowTimestamp end
 function GetFastTravelNodeOutboundOnlyInfo(index) return nodes[index].outbound or false end
 function FastTravelToNode(index) travelled[#travelled + 1] = index end
 
@@ -87,3 +89,34 @@ assert(core.Resolve("urcelmo") == 2)
 assert(core.Resolve("holgunn") == 3)
 assert(core.Resolve("arabelle") == 4)
 print("KanaSeasonOneTravel: Freerunner travel checks passed")
+
+nodes = {
+    { known = true, name = "Daggerfall Wayshrine", type = 1, zone = 33 },
+    { known = true, name = "Anvil Wayshrine", type = 1, zone = 55 },
+}
+assert(core.Resolve("thieves") == 1, "New Thieves Guild route reaches Daggerfall")
+assert(core.Resolve("highseas") == 2, "High Seas route reaches Anvil on the Gold Coast")
+core.Travel("thieves")
+core.Travel("highseas")
+assert(travelled[#travelled - 1] == 1 and travelled[#travelled] == 2,
+    "Both new routes use the existing wayshrine travel action")
+nodes[1].name = "Дорожное святилище Даггерфолла"
+nodes[2].name = "Дорожное святилище Анвила"
+assert(core.Resolve("thieves") == 1 and core.Resolve("highseas") == 2,
+    "New routes resolve in the Russian client")
+nodes[2].known = false
+assert(core.Resolve("highseas") == nil, "Undiscovered Anvil wayshrine stays unavailable")
+nodes[2].known = true
+
+nowTimestamp = 1790776799
+assert(not core.IsHighSeasActive(), "High Seas row stays hidden before the event")
+nowTimestamp = 1790776800
+assert(core.IsHighSeasActive(), "High Seas row appears when the event begins")
+nowTimestamp = 1791986399
+assert(core.IsHighSeasActive(), "High Seas row remains through the event")
+nowTimestamp = 1791986400
+assert(not core.IsHighSeasActive(), "High Seas row hides when the event ends")
+local tripsBeforeEnd = #travelled
+assert(core.Travel("highseas") == false and #travelled == tripsBeforeEnd,
+    "Expired High Seas shortcut must not initiate travel")
+print("KanaSeasonOneTravel: seasonal travel checks passed")

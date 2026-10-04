@@ -1,6 +1,20 @@
 # Season One travel and daily tracking
 
-## Data sources (checked 2026-09-27)
+## Data sources (checked 2026-10-05)
+
+- Official Update 50 patch notes: new Thieves Den in Daggerfall:
+  https://forums.elderscrollsonline.com/en/discussion/693682
+  The map row travels to the Daggerfall wayshrine, not through the Den entrance.
+- Official High Seas event dates (September 30–October 14, 2026):
+  https://www.elderscrollsonline.com/en-gb/events/2923
+- Official community manager: the event starts on the Gold Coast shore by Anvil;
+  "Bounty of the Abecean Sea" is the repeatable daily after the introduction:
+  https://forums.elderscrollsonline.com/en/discussion/comment/8526178
+  The map row travels to the Anvil wayshrine, not straight onto the ship.
+- ESO-Hub's Russian achievement text calls the daily "Дары Абесинского моря":
+  https://eso-hub.com/ru/achievements/oxotnik-za-sokrovishhami-beskrainix-morei
+  ESO-Hub warns that some Russian text is machine translated. The quest title
+  and automatic check still need confirmation in the live Russian client.
 
 - ESO UI source and API: https://github.com/esoui/esoui/tree/live
   - `esoui/ingame/map/keyboard/worldmapinfo_keyboard.lua` and `.xml`:
@@ -29,13 +43,20 @@
 
 ## Tracking limits and live acceptance
 
-Version 1.2.3 uses ESO's `ZO_WorldMapHouseRow` template for the six map entries.
+Version 1.3.0 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
 That supplies the same name/location anchors, font, and 60-unit row spacing
-as the Houses tab. The Season One tab has two `ZoFontHeader2` category labels.
+as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels.
 A standalone check icon appears to the left of the name for entries completed
 today. Left-click travels when the map was opened at a wayshrine; right-click
 opens the native menu to correct the mark. Actual rendering and interaction
 still require an ESO `/reloadui` review.
+
+The High Seas row has a daily check for turning in "Bounty of the Abecean Sea"
+(or "Дары Абесинского моря"). The introduction does not count. Right-click can
+correct a missed check manually. The permanent Thieves Guild row has no check.
+The High Seas row is shown only between the announced dates; the code assumes
+10:00 EDT (14:00 UTC) for event start/end because the official dates omit an
+hour and the game API does not expose a reliable current-event flag.
 
 Completion is stored by character ID and server. Completion marks can be corrected
 manually, including completions before installation. There is no retrospective
@@ -72,9 +93,11 @@ reconstructed: 1.1.0 had no diagnostic log. Live confirmation is still needed.
 Lua tests use mocked ESO callbacks. In-game validation is still required for:
 
 1. `/reloadui`, map opened at a wayshrine, right-side trophy tab "Season 1".
-2. Both groups fit; all six discovered wayshrines can be selected.
+2. All three groups fit; the eight discovered wayshrines can be selected.
 3. Ordinary map allows viewing/correcting checks, but no paid recall.
 4. Final chest name and auto-loot event order on the current client; verify
    each encounter, and verify intermediate chests do not set the check.
 5. Complete a Favor at each board; reload and change characters to verify storage.
 6. Checks expire at the next server daily reset.
+7. The High Seas row disappears after the event, and its daily check appears
+   after turning in the quest on both English and Russian clients.

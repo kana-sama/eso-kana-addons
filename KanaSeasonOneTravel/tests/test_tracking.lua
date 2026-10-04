@@ -97,6 +97,24 @@ fire("QUEST_ADDED", 5)
 fire("QUEST_REMOVED", true, 5, "Ordinary quest", 381, 0, 1005)
 assert(not addon.IsDone("urcelmo"), "Unrelated quests must not count")
 
+-- Only the repeatable High Seas quest counts, in either supported locale.
+fire("QUEST_REMOVED", true, 6, "Raising the Riotous Redress", 823, 0, 2001)
+assert(not addon.IsDone("highseas"), "The introduction must not count as today's voyage")
+fire("QUEST_REMOVED", false, 6, "Bounty of the Abecean Sea", 823, 0, 2002)
+assert(not addon.IsDone("highseas"), "Abandoning the daily must not count")
+fire("QUEST_REMOVED", true, 6, "Bounty of the Abecean Sea", 823, 0, 2002)
+assert(addon.IsDone("highseas"), "Turning in the English daily must mark today")
+addon.SetDone("highseas", false)
+fire("QUEST_REMOVED", true, 6, "Дары Абесинского моря", 823, 0, 2002)
+assert(addon.IsDone("highseas"), "Turning in the Russian daily must mark today")
+addon.SetDone("highseas", false)
+fire("QUEST_REMOVED", true, 6, "An unrelated Gold Coast quest", 823, 0, 2003)
+assert(not addon.IsDone("highseas"), "An unrelated quest must not mark the voyage")
+fire("QUEST_REMOVED", true, 6, "Дары Абесинского моря", 823, 0, 2002)
+now = reset
+assert(not addon.IsDone("highseas"), "The High Seas check expires at the next daily reset")
+reset = now + 86400
+
 -- Manual correction for completions before installation or unknown loot names.
 addon.SetDone("arabelle", true)
 assert(addon.IsDone("arabelle"))

@@ -2,6 +2,9 @@ local addon = KanaSeasonOneTravel
 local saved, lootKey
 local scanName = "KanaSeasonOneTravelParticipation"
 local favorZones = { [381] = "urcelmo", [41] = "holgunn", [3] = "arabelle" }
+-- English client name and the current Russian localization of the daily quest.
+local highSeasDailyNames = { ["Bounty of the Abecean Sea"] = true,
+    ["Дары Абесинского моря"] = true }
 
 -- Observed U50 parent instances and final participation steps; see SOURCES.md.
 -- Deactivation alone is not completion: the player must subsequently take loot.
@@ -84,6 +87,7 @@ local function QuestRemoved(_, completed, index, name, zoneIndex, poiIndex, ques
     if not key and GetQuestType(questId) == QUEST_TYPE_FAVOR then
         key = FavorKey(zoneIndex)
     end
+    if not key and highSeasDailyNames[name] then key = "highseas" end
     if completed and key then addon.SetDone(key, true) end
 end
 

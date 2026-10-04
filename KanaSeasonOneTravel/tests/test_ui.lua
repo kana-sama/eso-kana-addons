@@ -88,7 +88,7 @@ WORLD_MAP_INFO = { modeBar = { lastName = SI_MAP_INFO_MODE_LOCATIONS,
     Add = function(_, name, fragments, data)
     tabs[#tabs + 1] = { name = name, fragments = fragments, data = data }
 end }, SelectTab = function(self, name) self.modeBar.lastName = name end }
-local canTravel, done, travelled = false, {}, nil
+local canTravel, done, travelled, highSeasActive = false, {}, nil, true
 KanaSeasonOneTravel = {
     InitializeTracking = function() end,
     CanTravel = function() return canTravel end,
@@ -96,6 +96,7 @@ KanaSeasonOneTravel = {
     Travel = function(key) travelled = key end,
     IsDone = function(key) return done[key] == true end,
     SetDone = function(key, checked) done[key] = checked end,
+    IsHighSeasActive = function() return highSeasActive end,
 }
 function GetFastTravelNodeOutboundOnlyInfo(key) return key == "holgunn" end
 dofile("../UI.lua")
@@ -112,7 +113,8 @@ for name, control in pairs(controls) do
     assert(control.template ~= "ZO_ReadOnlyCheckBox", "Completion icon must have no checkbox frame")
     if name:find("Row$") and control.template == "ZO_WorldMapHouseRow" then nativeRows = nativeRows + 1 end
 end
-assert(count == 6 and nativeRows == 6, "Each activity must use the native house row template")
+assert(count == 7 and nativeRows == 8, "Daily items have checks and all entries use native house rows")
+assert(not controls[prefix .. "thievesCheck"], "The permanent Thieves Guild has no daily check")
 local farmCheck = controls[prefix .. "farmCheck"]
 local farmName = controls[prefix .. "farmRowName"]
 assert(controls[prefix .. "farmRow"].mouseEnabled and not farmName.mouseEnabled,
@@ -129,6 +131,7 @@ assert(farmName.anchor[4] == 20 and controls[prefix .. "farmRowLocation"].anchor
     "Name and location must keep the native house row anchors")
 assert(controls[prefix .. "Heading1"].font == "ZoFontHeader2")
 assert(controls[prefix .. "Heading2"].font == "ZoFontHeader2")
+assert(controls[prefix .. "Heading3"].font == "ZoFontHeader2")
 assert(controls[prefix .. "farmRowName"].font == "ZoFontHeader")
 assert(controls[prefix .. "farmRowLocation"].text == "Ауридон")
 assert(controls[prefix .. "urcelmoRowLocation"].text:find("Скайвотч", 1, true))
@@ -141,6 +144,15 @@ assert(nextRow.anchor[5] - firstRow.anchor[5] == 60,
     "Rows must use the native house-list step")
 assert(controls[prefix .. "Heading2"].anchor[5] == controls[prefix .. "vampireRow"].anchor[5] + 60,
     "The next category must follow the third row without a custom gap")
+assert(controls[prefix .. "Heading3"].anchor[5] == controls[prefix .. "arabelleRow"].anchor[5] + 60)
+assert(not controls[prefix .. "highseasRow"].hidden, "Show High Seas during the event")
+highSeasActive = false
+addon.Refresh()
+assert(controls[prefix .. "highseasRow"].hidden, "Hide High Seas outside the event")
+highSeasActive = true
+-- The visible tab's one-second update must handle event boundaries too.
+addon.Refresh()
+assert(not controls[prefix .. "highseasRow"].hidden)
 assert(controls[prefix .. "farmCheck"].hidden, "No checkmark before completion")
 assert(controls[prefix .. "farmRowName"].enabled, "Readable list on an ordinary map")
 controls[prefix .. "farmRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_LEFT, true)
@@ -163,6 +175,13 @@ controls[prefix .. "arabelleRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIG
 assert(#menu == 1 and menu[1].label:find("Снять", 1, true), "Completed entry offers a clear action")
 menu[1].callback()
 assert(not done.arabelle, "The context menu must also clear a mark")
+controls[prefix .. "highseasRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
+assert(#menu == 1 and menu[1].label:find("Отметить", 1, true))
+menu[1].callback()
+assert(done.highseas, "High Seas allows manual completion correction")
+ClearMenu()
+controls[prefix .. "thievesRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
+assert(#menu == 0 and done.highseas, "The Thieves Guild cannot change completion")
 controls[prefix .. "arabelleRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
 menu[1].callback()
 addon.fragment.onState(nil, SCENE_FRAGMENT_SHOWING)
@@ -172,8 +191,12 @@ assert(not controls[prefix .. "arabelleCheck"].hidden)
 done.arabelle = false
 updates[prefix .. "DailyReset"]()
 assert(controls[prefix .. "arabelleCheck"].hidden, "Observe an online daily reset")
-assert(controls[prefix .. "arabelleRow"].anchor[5] + controls[prefix .. "arabelleRow"].height < 595,
-    "Six rows and two categories must fit in the native map panel")
+highSeasActive = false
+updates[prefix .. "DailyReset"]()
+assert(controls[prefix .. "highseasRow"].hidden and not controls[prefix .. "highseasRowName"].enabled,
+    "Hide and disable High Seas when the event ends with the tab open")
+assert(controls[prefix .. "highseasRow"].anchor[5] + controls[prefix .. "highseasRow"].height < 595,
+    "All rows and categories must fit in the native map panel")
 addon.fragment.onState(nil, SCENE_FRAGMENT_HIDDEN)
 assert(not updates[prefix .. "DailyReset"], "Stop UI updates when tab hidden")
 -- The native fast-travel handler always forces Locations before this addon's
