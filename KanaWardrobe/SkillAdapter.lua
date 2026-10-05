@@ -529,6 +529,12 @@ function Adapter:DiscardDraft()
     if not self.mounted then return true end
     local global,err=self:NativeManagers()
     if not global then return nil,err end
+    -- ESO's OnHidden can reset the native editor after our HIDING callback,
+    -- before the queued closeDraft step runs. Release the already cancelled
+    -- draft only after verifying clean native state and unchanged actual skills.
+    if global:GetSkillPointAllocationMode()==self.api.SKILL_POINT_ALLOCATION_MODE_PURCHASE_ONLY then
+        return self:ReleaseAfterNativeExit(self.mounted.token,self.mounted.original)
+    end
     local blocked=self:OwnedDraftProblem(global) or self:RecoveryGuard()
     if blocked then return nil,blocked end
     local actual;actual,err=self:Capture()

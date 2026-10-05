@@ -18,6 +18,39 @@ local function draftSetup(specs)
     return kw,f,adapter
 end
 return {
+ discard_after_native_cancel_releases_callbacks_without_resetting_again=function()
+    local _,f,a=draftSetup({active(51,{morph=1})})
+    local target={skills={['10:active:51']={kind='active',purchased=true,morph=2}}}
+    local changed=0
+    assert(a:MountDraft(target,function()changed=changed+1 end))
+    local global=f.api.SKILLS_AND_ACTION_BAR_MANAGER
+    global:ResetInterface()
+    global.ResetRespecState=function()error('native editor is already reset')end
+    local ok,err=a:DiscardDraft();assert(ok,err and err.code)
+    assert(not a:GetNativeOwnership())
+    local callbacks=changed
+    f.api.SKILL_POINT_ALLOCATION_MANAGER:FireCallbacks('PurchasedChanged',f.skillObjects[1]:GetPointAllocator())
+    assert(changed==callbacks,'cancelled editor retained change callbacks')
+    assert(a:DiscardDraft(),'repeat cleanup must be harmless')
+    global:OnUpdate();assert(#f.requests.skills==0 and f.skillObjects[1]:GetCurrentMorphSlot()==1)
+    assert(a:MountDraft(target),'cancelled editor could not reopen')
+ end,
+ discard_after_native_cancel_preserves_pending_edits_and_changed_actual=function()
+    for _,reason in ipairs({'pending','actual','cast'})do
+        local _,f,a=draftSetup({active(51,{morph=1})})
+        assert(a:MountDraft({skills={['10:active:51']={kind='active',purchased=true,morph=2}}}))
+        local global=f.api.SKILLS_AND_ACTION_BAR_MANAGER;global:ResetInterface()
+        if reason=='pending' then f.foreignPending=true
+        elseif reason=='actual' then f.skillObjects[1].spec.morph=2
+        else f.castRemaining=100 end
+        global.ResetRespecState=function()error('must preserve native state')end
+        local ok,err=a:DiscardDraft()
+        assert(not ok and err and a:GetNativeOwnership())
+        assert(#f.requests.skills==0 and global.mode==0)
+        if reason=='pending' then assert(f.foreignPending)
+        elseif reason=='actual' then assert(f.skillObjects[1]:GetCurrentMorphSlot()==2)end
+    end
+ end,
  werewolf_reassignment_moves_only_an_unselected_duplicate_source=function()
     local _,f,a=draftSetup({active(51,{werewolf=true})})
     f.actualBars[3][3]={type=1,id=510};f.api.ACTION_BAR_ASSIGNMENT_MANAGER:ResetPlayerHotbars()

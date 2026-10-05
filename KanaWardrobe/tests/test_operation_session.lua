@@ -20,6 +20,41 @@ local function create(saved)
  return f
 end
 return {
+ native_skill_cancel_releases_editor_before_or_after_page_hiding=function()
+  for _,resetFirst in ipairs({false,true})do
+   local f=create();local key='10:active:51'
+   local p=assert(f.repo:PatchComponent(nil,'abilities',{op='replace',value={skills={[key]={kind='active',purchased=true,morph=2}}}},'Morph'))
+   assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(5)
+   assert(f.session:IsEditorActive() and f.skills:CaptureDraft().skills[key].morph==2)
+   local global=f.api.SKILLS_AND_ACTION_BAR_MANAGER
+   if resetFirst then global:ResetInterface()end
+   f.session:OnNativePageState('skills','hiding')
+   -- ESO resets the editor in OnHidden, which can follow our HIDING callback.
+   if not resetFirst then global:ResetInterface()end
+   f:Tick(6)
+   assert(not f.x:GetView(),'confirmed native cancel left a failed operation')
+   assert(not f.skills:GetNativeOwnership() and not f.session.journal)
+   f.session:OnNativePageState('skills','showing')
+   assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(5)
+   assert(f.session:IsEditorActive() and f.skills:CaptureDraft().skills[key].morph==2)
+   assert(#f.requests.skills==0 and f.skillObjects[1]:GetCurrentMorphSlot()==1)
+  end
+ end,
+ new_edit_releases_a_cancelled_skill_draft_after_failed_cleanup=function()
+  for _,page in ipairs({'skills','inventory','stats'})do
+   local f=create()
+   local p=assert(f.repo:PatchComponent(nil,'abilities',{op='replace',value={skills={['10:active:51']={kind='active',purchased=true,morph=2}}}},'Morph'))
+   assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(5)
+   f.session:OnNativePageState('skills','hiding')
+   f.api.SKILLS_AND_ACTION_BAR_MANAGER:ResetInterface();f.foreignPending=true
+   f:Tick(6);assert(f.x:GetView().status=='failed' and f.skills:GetNativeOwnership())
+   f.foreignPending=false
+   f.session:OnNativePageState(page,'showing')
+   assert(f.session:BeginEdit(p.id,false,page));f:Tick(6)
+   assert(f.session:IsEditorActive(),'old cancelled draft blocked editing on '..page)
+   assert(#f.requests.skills==0 and f.attributeSends==0 and #f.api.requests==0)
+  end
+ end,
  automatic_werewolf_binding_has_an_executable_step_when_talents_already_match=function()
   local f=create();f.skillObjects[1].spec.ultimate=true
   f.overrides={['3:8']=f.skillObjects[1]};f.api.ACTION_BAR_ASSIGNMENT_MANAGER:ResetPlayerHotbars()
