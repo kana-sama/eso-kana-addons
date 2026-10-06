@@ -1,0 +1,27 @@
+## Title: KanaStatSources
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101051
+## Description: Sources of main character stats in native tooltips; /kanastats dump
+## SavedVariables: KanaStatSourcesSaved
+
+Core.lua
+Stats.lua
+Rules.lua
+Descriptions.lua
+Critical.lua
+Model.lua
+capture/Equipment.lua
+capture/Build.lua
+capture/Effects.lua
+Snapshot.lua
+sources/Base.lua
+sources/Equipment.lua
+sources/Skills.lua
+sources/Champion.lua
+sources/Effects.lua
+Dump.lua
+Table.lua
+Tooltip.lua
+App.lua

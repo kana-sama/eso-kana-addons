@@ -1,0 +1,7 @@
+-- Synthetic arithmetic fixture; these amounts are not a claim about a live build.
+return function()
+    local s={consistent=true,meta={apiVersion=101051,language='en'},context={level=50,championPoints=160,battleLeveled=false,championBattleLeveled=false,bar='front',now=1000,mundusIndices={2}},stats={},criticalSamples={},preview={},constants={},attributes={health={spent=10,perPoint=150}},equipment={{slot=1,name='Armor',armorRating=2000,enchant={name='Glyph',hasCharges=false,description='Adds 1000 Maximum Magicka.'}}},sets={[1]={id=1,normal=5,perfected=0,name='Set',bonuses={{index=1,required=2,description='Adds 1096 Maximum Stamina.'}}}},skills={{id=1,purchased=true,passive=true,lineActive=true,name='Racial passive',description='Increases your Maximum Magicka by 2000.'}},champion={{id=1,points=50,slottable=false,name='CP star',currentBonus='Maximum Health: 1400'}},effects={{index=1,abilityId=68411,name='Food',endTime=1000,description='Increase Max Health by 5395 and Max Magicka by 4936 for 2 hours.'},{index=2,abilityId=13940,name='Mundus',endTime=0,derivedStats={{stat='weaponCritical',value=2500},{stat='spellCritical',value=2500}}},{index=3,abilityId=999,name='Buff',endTime=1000,description='Increases Weapon and Spell Damage by 430.'}},bars={front={},back={}}}
+    for _,d in ipairs(KanaStatSources.Stats.Definitions)do s.stats[d[1]]={total=23456}end
+    for _,key in ipairs({'weaponCritical','spellCritical'})do s.criticalSamples[key]={{rating=0,chance=0},{rating=1,chance=0.005},{rating=1000,chance=5},{rating=23456,chance=117.28}}end
+    return s
+end

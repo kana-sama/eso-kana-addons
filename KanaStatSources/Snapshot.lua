@@ -56,6 +56,7 @@ function Instance:Capture(full)
             for _,d in ipairs(K.Stats.List(api)) do local ok,v=pcall(api.STATS.GetPendingStatBonuses,api.STATS,d.id);if ok and K.Core.Finite(v) then s.preview[d.key]=v end end
         end
         if full then
+            local errorCount=#s.errors
             for ci=1,read('GetNumAdvancedStatCategories') or 0 do
                 local id=read('GetAdvancedStatsCategoryId',ci)
                 local name,count=read('GetAdvancedStatCategoryInfo',id)
@@ -65,6 +66,7 @@ function Instance:Capture(full)
                     s.advancedStats[#s.advancedStats+1]={categoryId=id,categoryName=name,type=kind,name=label,description=description,flatDescription=flatDescription,percentDescription=percentDescription,format=format,flat=flat,percent=percent}
                 end
             end
+            s.categoryStatus.advancedStats=#s.errors==errorCount and 'available' or 'partial'
         end
         local endStats=stats(api,{})
         local endEquipment=K.CaptureEquipment.Read(api)
