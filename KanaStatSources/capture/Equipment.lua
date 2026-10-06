@@ -9,6 +9,8 @@ function K.CaptureEquipment.Read(api)
         local link=read('GetItemLink',api.BAG_WORN,slot,api.LINK_STYLE_DEFAULT)
         if link and link~='' then
             local r={slot=slot,link=link,name=read('GetItemLinkName',link),id=read('GetItemLinkItemId',link)}
+            r.slotName=read('GetString','SI_EQUIPSLOT',slot)
+            if slot==api.EQUIP_SLOT_RING1 or slot==api.EQUIP_SLOT_RING2 then r.slotName=(r.slotName or '')..' '..(slot==api.EQUIP_SLOT_RING1 and '1' or '2')end
             for field,fn in pairs({armorType='GetItemLinkArmorType',weaponType='GetItemLinkWeaponType',equipType='GetItemLinkEquipType',level='GetItemLinkRequiredLevel',cp='GetItemLinkRequiredChampionPoints',quality='GetItemLinkDisplayQuality',condition='GetItemLinkCondition',charges='GetItemLinkNumEnchantCharges',enchantId='GetItemLinkFinalEnchantId'}) do r[field]=read(fn,link) end
             r.armorRating=read('GetItemLinkArmorRating',link,true);r.weaponPower=read('GetItemLinkWeaponPower',link)
             local traitId,traitDescription=read('GetItemLinkTraitInfo',link)

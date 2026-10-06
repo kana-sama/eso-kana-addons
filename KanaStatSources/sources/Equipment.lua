@@ -7,6 +7,18 @@ function E.Active(item,s)
     return true
 end
 local traits={JEWELRY_HEALTHY={'maxHealth'},JEWELRY_ARCANE={'maxMagicka'},JEWELRY_ROBUST={'maxStamina'},JEWELRY_PROTECTIVE={'physicalResistance','spellResistance'},ARMOR_PROSPEROUS={'healthRecovery','magickaRecovery','staminaRecovery'},ARMOR_IMPENETRABLE={'criticalResistance'},WEAPON_PRECISE={'weaponCritical','spellCritical'},WEAPON_SHARPENED={'physicalPenetration','spellPenetration'},WEAPON_DEFENDING={'physicalResistance','spellResistance'}}
+local function triune(description,language)
+    local template,values=K.Descriptions.Tokens(description,language)
+    if #values~=3 then return nil end
+    local clauses={}
+    for _,resource in ipairs({{'maxHealth',{'health','здоровье','здоровья'}},{'maxMagicka',{'magicka','магии','магия','магию'}},{'maxStamina',{'stamina','запас сил','запаса сил'}}})do
+        local index
+        for _,name in ipairs(resource[2])do index=template:match(name..' by @([0-9]+)@') or template:match(name..' на @([0-9]+)@');if index then break end end
+        if not index then return nil end
+        clauses[#clauses+1]={stats={resource[1]},amount=values[tonumber(index)],operation='flat'}
+    end
+    return clauses
+end
 function E.Build(s)
     local out,diagnostics={},{};local language=(s.meta or {}).language or 'en';local constants=s.constants or {}
     local function parse(source,text,kind)
@@ -15,7 +27,8 @@ function E.Build(s)
         if tail~='' then source.description=text;diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'unrecognized or conditional description') end
     end
     for _,item in ipairs(s.equipment or {}) do if E.Active(item,s) then
-        local root={key='item:'..item.slot,category='equipment',slot=item.slot,link=item.link,id=item.id,label=item.name or tostring(item.slot)}
+        local slotName=item.slotName or (s.slotNames or {})[item.slot] or ('#'..item.slot)
+        local root={key='item:'..item.slot,category='equipment',slot=item.slot,link=item.link,id=item.id,label=(item.name or tostring(item.slot))..' ['..slotName..']'}
         local function source(suffix,label) local r=K.Core.CopySerializable(root);r.key=r.key..':'..suffix;r.label=r.label..' — '..label;return r end
         if K.Core.Finite(item.armorRating) and item.armorRating>0 then
             K.Rules.Emit(out,source('armor',language=='ru' and 'броня' or 'armor'),{{stats={'physicalResistance','spellResistance'},amount=item.armorRating,operation='flat'}},'GetItemLinkArmorRating(link, true); includes condition and local armor traits')
@@ -32,11 +45,18 @@ function E.Build(s)
         end
         if item.trait then
             local trait=item.trait;local origin=source('trait',trait.name or 'trait');local handled=false
-            for name,stats in pairs(traits) do if constants['ITEM_TRAIT_TYPE_'..name]~=nil and trait.id==constants['ITEM_TRAIT_TYPE_'..name] then
+            for name,stats in pairs(traits) do if (language=='ru' or language=='en') and constants['ITEM_TRAIT_TYPE_'..name]~=nil and trait.id==constants['ITEM_TRAIT_TYPE_'..name] then
                 local _,values=K.Descriptions.Tokens(trait.description,language)
                 if #values==1 then K.Rules.Emit(out,origin,{{stats=stats,amount=values[1],operation=name=='WEAPON_PRECISE' and 'criticalChance' or 'flat'}},'native trait ID and item-specific description');handled=true end
+                if name=='ARMOR_IMPENETRABLE' and #values>1 then
+                    local clauses=K.Descriptions.Parse(trait.description,language,'trait')
+                    for _,clause in ipairs(clauses)do if clause.operation=='flat' and clause.stats[1]=='criticalResistance' then K.Rules.Emit(out,origin,{clause},'native Impenetrable trait ID; resistance clause excludes durability modifier');handled=true end end
+                end
             end end
-            if trait.id==constants.ITEM_TRAIT_TYPE_JEWELRY_TRIUNE and trait.id~=nil then parse(origin,trait.description,'trait');handled=true end
+            if (language=='ru' or language=='en') and trait.id==constants.ITEM_TRAIT_TYPE_JEWELRY_TRIUNE and trait.id~=nil then
+                local clauses=triune(trait.description,language)
+                if clauses then K.Rules.Emit(out,origin,clauses,'native Triune trait ID; resource-specific amounts in native item description');handled=true end
+            end
             for _,name in ipairs({'ARMOR_INFUSED','JEWELRY_INFUSED','WEAPON_INFUSED','ARMOR_REINFORCED','ARMOR_NIRNHONED','WEAPON_NIRNHONED','ARMOR_DIVINES'}) do if constants['ITEM_TRAIT_TYPE_'..name]~=nil and trait.id==constants['ITEM_TRAIT_TYPE_'..name] then handled=true end end
             if not handled and trait.description and trait.description~='' then diagnostics[#diagnostics+1]=K.Core.Diagnostic(origin,'trait has no verified character-stat rule') end
         end

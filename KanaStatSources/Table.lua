@@ -48,6 +48,7 @@ function View:Render(b,language,bounds)
         if not r then r={labels={self.makeLabel(self.content),self.makeLabel(self.content),self.makeLabel(self.content)}};self.rows[i]=r;r.labels[3]:SetHorizontalAlignment(api.TEXT_ALIGN_RIGHT)end
         local bonus='—'
         if row.amount~=nil then bonus=K.Stats.Number(row.amount,language,(row.operation=='percent' or row.operation=='criticalChance') and 2 or 0);if row.operation=='percent' or row.operation=='criticalChance' then bonus=bonus..'%'end end
+        if row.operation=='percent' and K.Core.Finite(row.base) then bonus=bonus..' × '..K.Stats.Number(row.base,language)end
         local values={row.labelKey and K.Stats.Text(language,row.labelKey) or row.label or row.key,bonus,K.Stats.Number(row.value,language)}
         local h=18
         for col,l in ipairs(r.labels)do l:ClearAnchors();l:SetDimensions(widths[col],0);l:SetText(values[col]);l:SetHidden(false);h=math.max(h,l:GetTextHeight())end
@@ -55,7 +56,10 @@ function View:Render(b,language,bounds)
         r.y=y;r.height=h;y=y+h+3
     end
     for i=#(b.rows or {})+1,#self.rows do for _,l in ipairs(self.rows[i].labels)do l:SetHidden(true)end end
-    self.contentHeight=y;self.bodyHeight=math.max(0,math.min(y,available-headerHeight-footerHeight-8))
+    self.contentHeight=y
+    -- Reserve a positive viewport before fitting the complete block. A zero
+    -- height scroll control cannot expose any source regardless of its offset.
+    self.bodyHeight=math.max(math.min(y,24),math.min(y,available-headerHeight-footerHeight-8))
     self.height=headerHeight+footerHeight+self.bodyHeight+8
     -- Even a tiny viewport keeps the footer within the remaining space.
     local fit=math.min(1,available/math.max(1,self.height));self.control:SetScale(fit)

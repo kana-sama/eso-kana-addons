@@ -9,8 +9,8 @@ S.Definitions={
     {'physicalResistance','STAT_PHYSICAL_RESIST'}, {'spellResistance','STAT_SPELL_RESIST'}, {'criticalResistance','STAT_CRITICAL_RESISTANCE'},
 }
 S.Strings={
-    ru={source='Источник',bonus='Бонус',value='Вклад в итог',total='Итого',unknown='Неизвестно',base='Базовое значение',attributes='Атрибуты',preview='Предпросмотр атрибутов',unavailable='Данные недоступны',formulaUnknown='Формула не распознана',rating='Итого рейтинг',scroll='Колесо мыши: источники',dump='Снимок',disk='Для записи на диск: /reloadui или выход из игры.'},
-    en={source='Source',bonus='Bonus',value='Contribution',total='Total',unknown='Unknown',base='Base value',attributes='Attributes',preview='Attribute preview',unavailable='Data unavailable',formulaUnknown='Formula not recognized',rating='Total rating',scroll='Mouse wheel: sources',dump='Snapshot',disk='Use /reloadui or exit the game to save to disk.'},
+    ru={source='Источник',bonus='Бонус',value='Вклад в итог',total='Итого',unknown='Неизвестно',base='Базовое значение',attributes='Атрибуты',preview='Предпросмотр атрибутов',unavailable='Данные недоступны',formulaUnknown='Формула не распознана',rating='Итого рейтинг',scroll='Колесо мыши: источники',dump='Снимок',disk='Для записи на диск: /reloadui или выход из игры.',rank='ранг',points='очков'},
+    en={source='Source',bonus='Bonus',value='Contribution',total='Total',unknown='Unknown',base='Base value',attributes='Attributes',preview='Attribute preview',unavailable='Data unavailable',formulaUnknown='Formula not recognized',rating='Total rating',scroll='Mouse wheel: sources',dump='Snapshot',disk='Use /reloadui or exit the game to save to disk.',rank='rank',points='points'},
 }
 function S.Text(language,key) return (S.Strings[language] or S.Strings.en)[key] or key end
 function S.List(api)
@@ -23,7 +23,7 @@ function S.List(api)
     end
     return out
 end
-function S.KeyForId(api,id) for _,d in ipairs(S.Definitions) do if api[d[2]]==id then return d[1] end end end
+function S.KeyForId(api,id) if id==nil then return nil end;for _,d in ipairs(S.Definitions) do if api[d[2]]==id then return d[1] end end end
 function S.Number(value,language,decimals)
     local text=string.format('%.'..(decimals or 0)..'f',value)
     if language=='ru' then text=text:gsub('%.',',') end

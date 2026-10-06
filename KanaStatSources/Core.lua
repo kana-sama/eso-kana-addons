@@ -26,15 +26,27 @@ function K.Core.Diagnostic(source,reason)
 end
 function K.Core.Reader(api,errors)
     local reported={}
+    local counts={GetNumBuffs=1024,GetNumSkillTypes=64,GetNumSkillLines=512,GetNumSkillAbilities=512,GetNumChampionDisciplines=32,GetNumChampionDisciplineSkills=1024,GetNumAdvancedStatCategories=128,GetAbilityNumDerivedStats=64,GetAttributeSpentPoints=4096,GetAttributeUnspentPoints=4096,GetNumPointsSpentOnChampionSkill=4096}
+    local requiredNumbers={GetPlayerStat=true,GetCriticalStrikeChance=true,GetAttributeDerivedStatPerPointValue=true}
+    local function pack(...) return {n=select('#',...),...} end
+    local function report(name,reason)
+        if not reported[name] then errors[#errors+1]={api=name,reason=reason};reported[name]=true end
+    end
     return function(name,...)
         local fn=api[name]
         local values
-        if type(fn)=='function' then values={pcall(fn,...)} else values={false,'API unavailable'} end
+        if type(fn)=='function' then values=pack(pcall(fn,...)) else values={n=2,false,'API unavailable'} end
         if not values[1] then
-            if not reported[name] then errors[#errors+1]={api=name,reason=tostring(values[2])};reported[name]=true end
+            report(name,tostring(values[2]))
             return nil
         end
-        return (unpack or table.unpack)(values,2,table.maxn and table.maxn(values) or 32)
+        for i=2,values.n do
+            if type(values[i])=='number' and not K.Core.Finite(values[i]) then values[i]=nil;report(name,'nonfinite return at position '..(i-1)) end
+        end
+        local maximum=counts[name]
+        if maximum and (not K.Core.Finite(values[2]) or values[2]<0 or values[2]>maximum or values[2]~=math.floor(values[2])) then values[2]=nil;report(name,'required count unavailable or invalid') end
+        if requiredNumbers[name] and not K.Core.Finite(values[2]) then values[2]=nil;report(name,'required numeric result unavailable') end
+        return (unpack or table.unpack)(values,2,values.n)
     end
 end
 function K.Core.Signature(value)

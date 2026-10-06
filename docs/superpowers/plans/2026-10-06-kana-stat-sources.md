@@ -129,7 +129,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 - `Model.Build(snapshot, contributions, diagnostics, policies) -> Breakdowns`;
 - `Rules.Policies`, `Rules.Register(rule)`, `Rules.Resolve(source, snapshot) -> contributions, diagnostics`.
 
-- [ ] **Step 1: Написать падающие `test_model` и `test_critical`.**
+- [x] **Step 1: Написать падающие `test_model` и `test_critical`.**
   Проверить ровно 15 характеристик; положительный и отрицательный остаток;
   дедупликацию по key; неподтверждённую базу процентов; отсутствие мутаций
   входа; отклонение `NaN`, infinity и нечисловых вкладов. Синтетические
@@ -150,20 +150,20 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   ```
   Добавить пробы со смещением, подтверждённым cap, нелинейной функцией,
   нулевым рейтингом и округлением до одной десятичной в RU/EN.
-- [ ] **Step 2: Запустить `lua KanaStatSources/tests/run.lua model` и `lua KanaStatSources/tests/run.lua critical`.** Ожидается FAIL из-за отсутствующих модулей или нужных функций.
-- [ ] **Step 3: Реализовать указанные интерфейсы.** Форматировать вклады до
+- [x] **Step 2: Запустить `lua KanaStatSources/tests/run.lua model` и `lua KanaStatSources/tests/run.lua critical`.** Ожидается FAIL из-за отсутствующих модулей или нужных функций.
+- [x] **Step 3: Реализовать указанные интерфейсы.** Форматировать вклады до
   расчёта видимого остатка; сохранять rawUnknown отдельно. Общая база
   аддитивных процентов фиксируется до применения всей группы. Неверифицированные
   группы дают кандидатов. Порядок строк брать из спецификации. Критический
   коэффициент и cap проверять по пробам, никогда не обрезать исходный рейтинг.
   Уточнять точность коэффициента до совпадения показанного округлённого процента;
   при непроверенной формуле сохранять результат API и пометку из спецификации.
-- [ ] **Step 4: Повторить обе команды.** Ожидается `0 failed` и exit 0.
-- [ ] **Step 5: Запустить тот же набор в Lua 5.1.** Команда:
+- [x] **Step 4: Повторить обе команды.** Ожидается `0 failed` и exit 0.
+- [x] **Step 5: Запустить тот же набор в Lua 5.1.** Команда:
   `PYTHONPATH=/tmp/kana-cooldown-test-deps python3 KanaStatSources/tests/run51.py`.
   Runner должен создавать отдельный LuaRuntime на тестовый файл и проверять
   синтаксис производственных файлов через Lua 5.1 `loadstring`. Ожидается `0 failed`.
-- [ ] **Step 6: Проверить `git diff --check` и закоммитить только файлы задачи:** `feat: add stat source reconciliation and critical formulas`.
+- [x] **Step 6: Проверить `git diff --check` и закоммитить только файлы задачи:** `feat: add stat source reconciliation and critical formulas`.
 
 ## Task 2: Безопасный снимок персонажа и все исходные категории
 
@@ -178,7 +178,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 - `CaptureBuild.Read(api) -> data, errors` с полями `attributes`, `skills`, `bars`, `champion`;
 - `CaptureEffects.Read(api) -> data, errors` с полями `context`, `effects`.
 
-- [ ] **Step 1: Написать `test_snapshot`.** Стабильный снимок содержит все
+- [x] **Step 1: Написать `test_snapshot`.** Стабильный снимок содержит все
   категории, обе конфигурации панелей, 13 возвращаемых полей бафа и сохранённые
   описания. Нет вызовов переключения оружия, ресета или снятия предметов.
   Сбой одного API оставляет прочитанные элементы и error, а не обнуляет категорию.
@@ -195,8 +195,8 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   T.eq(T.captureApiMutationCalls, 0)
   ```
   `T.captureApi()` и счётчик определить в новой фикстуре задачи.
-- [ ] **Step 2: `lua KanaStatSources/tests/run.lua snapshot`.** Ожидается FAIL.
-- [ ] **Step 3: Реализовать сборщики.** Использовать реестр Stats, числовые
+- [x] **Step 2: `lua KanaStatSources/tests/run.lua snapshot`.** Ожидается FAIL.
+- [x] **Step 3: Реализовать сборщики.** Использовать реестр Stats, числовые
   API предметов, `GetItemLinkTraitInfo`, `GetItemLinkEnchantInfo`,
   `GetItemLinkSetInfo`/`GetItemLinkSetBonusInfo`, оба набора слотов оружия,
   `GetAttributeSpentPoints`, `GetAttributeDerivedStatPerPointValue`,
@@ -207,10 +207,10 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   без повторов. Сравнивать generation, активную панель и подпись быстрых
   stats/effects/equipment в начале и конце. Полный scan навыков и CP
   кешируется; инвалидировать его на изменения build.
-- [ ] **Step 4: Повторить тест.** Ожидается `0 failed`; проверить отдельно
+- [x] **Step 4: Повторить тест.** Ожидается `0 failed`; проверить отдельно
   nil/nonfinite итог, устаревшие пробы, потерю части предметов и `full=false`.
-- [ ] **Step 5: Запустить общий Lua 5.1 runner.** Ожидается `0 failed`.
-- [ ] **Step 6: Проверить diff и scoped commit:** `feat: capture character stat inputs safely`.
+- [x] **Step 5: Запустить общий Lua 5.1 runner.** Ожидается `0 failed`.
+- [x] **Step 6: Проверить diff и scoped commit:** `feat: capture character stat inputs safely`.
 
 ## Task 3: База, атрибуты, предметы и сеты без двойного учёта
 
@@ -225,7 +225,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 - `Sources.Equipment.Build(snapshot) -> contributions, diagnostics`;
 - `Rules.Resolve` и `Rules.Policies` сохраняют интерфейсы задачи 1.
 
-- [ ] **Step 1: Зафиксировать доказательства исходных величин.** В
+- [x] **Step 1: Зафиксировать доказательства исходных величин.** В
   `docs/research.md` записать проверенную сигнатуру
   `GetAttributeDerivedStatPerPointValue(attribute, stat)`, её использование
   в штатном предпросмотре и точные ссылки для каждого правила базового значения.
@@ -234,7 +234,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   отсутствии доказательства оставить именно базу кандидатом. Из итогового
   остатка базовые значения не выводить. Неподдержанное масштабирование
   исключает соответствующее правило, но не остальные предметы.
-- [ ] **Step 2: Написать падающие тесты трёх модулей.** RU/EN, цветовые коды,
+- [x] **Step 2: Написать падающие тесты трёх модулей.** RU/EN, цветовые коды,
   NBSP/узкие NBSP, `1 096`, `1,096`, `7,5%`; не считать «2 предмета»,
   «10 секунд» и вероятность proc величиной стата. Постоянный префикс с
   условным хвостом возвращает два независимых результата. Два одноимённых
@@ -251,8 +251,8 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   T.eq(clauses[1].stats[1], 'maxMagicka')
   T.eq(tail ~= '', true)
   ```
-- [ ] **Step 3: Запустить группы `descriptions`, `base`, `equipment`.** Ожидается FAIL.
-- [ ] **Step 4: Реализовать интерфейсы.** Парсер сообщает величину, но не
+- [x] **Step 3: Запустить группы `descriptions`, `base`, `equipment`.** Ожидается FAIL.
+- [x] **Step 4: Реализовать интерфейсы.** Парсер сообщает величину, но не
   доказывает активность источника. Свойства по ID: Healthy/Arcane/Robust/Triune,
   Protective, Prosperous, Precise, Sharpened, Defending, Impenetrable;
   Divines передаёт усиление провайдеру Мундуса. Локальные свойства оружия
@@ -261,9 +261,9 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   Сеты опирать на действующие количества API, а не суммарное число обеих
   панелей; семейство совершенного/обычного сета определить API.
   Процентные и особые сеты без правила остаются кандидатами.
-- [ ] **Step 5: Повторить три группы и Lua 5.1 runner.** Ожидается `0 failed`;
+- [x] **Step 5: Повторить три группы и Lua 5.1 runner.** Ожидается `0 failed`;
   все подтверждённые строки имеют evidence, не синтетическое доказательство.
-- [ ] **Step 6: Проверить diff и scoped commit:** `feat: explain attributes equipment and set bonuses`.
+- [x] **Step 6: Проверить diff и scoped commit:** `feat: explain attributes equipment and set bonuses`.
 
 ## Task 4: Изученные навыки и действующие CP
 
@@ -275,15 +275,15 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 `Sources.Champion.Build(snapshot) -> contributions, diagnostics`.
 Используют Snapshot, Descriptions, Rules, Contribution задачи 1.
 
-- [ ] **Step 1: Написать падающие тесты.** Неизученная пассивка, чужой ранг,
+- [x] **Step 1: Написать падающие тесты.** Неизученная пассивка, чужой ранг,
   отключённая линия подкласса и навык на второй панели не активны. Для
   правил с количеством предметов/навыков/оружием использовать текущий контекст.
   В CP различать saved points и pending points, полную ступень и неполную,
   passive и slottable, slotted и unslotted. Синтетическая звезда с шагом
   10 и прибавкой 20 при 19 очках даёт 20, при 20 — 40; она не утверждает
   игровые величины. Неустановленная slottable даёт кандидата без числового вклада.
-- [ ] **Step 2: Запустить группы `skills`, `champion`.** Ожидается FAIL.
-- [ ] **Step 3: Реализовать провайдеры и проверенные правила.** Простой
+- [x] **Step 2: Запустить группы `skills`, `champion`.** Ожидается FAIL.
+- [x] **Step 3: Реализовать провайдеры и проверенные правила.** Простой
   постоянный flat бонус изученной пассивки/активной CP распознаётся строго.
   Процент, эффект от наличия навыка на панели, бонус за каждый предмет брони,
   оружейная специализация и подкласс требуют зарегистрированного условия.
@@ -292,10 +292,10 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   Правила для расовых, броневых, оружейных и классовых источников получают
   ID, версию данных и первичную ссылку в research. Навык, дающий тот же
   именованный баф, ссылается на канонический sourceKey эффекта.
-- [ ] **Step 4: Повторить обе группы.** Ожидается `0 failed`, включая
+- [x] **Step 4: Повторить обе группы.** Ожидается `0 failed`, включая
   потерю доступности навыка при смене подкласса и чужой язык описания.
-- [ ] **Step 5: Общий Lua 5.1 runner.** Ожидается `0 failed`.
-- [ ] **Step 6: Scoped commit:** `feat: explain active skill passives and champion bonuses`.
+- [x] **Step 5: Общий Lua 5.1 runner.** Ожидается `0 failed`.
+- [x] **Step 6: Scoped commit:** `feat: explain active skill passives and champion bonuses`.
 
 ## Task 5: Еда, Мундус, бафы, дебафы и процентные политики
 
@@ -306,7 +306,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 `Rules.Resolve` принимает источник effect с ID, описанием, стаками,
 контекстом и доступным признаком castByPlayer; policy остаётся plain data.
 
-- [ ] **Step 1: Написать падающие тесты.** Одно ID в нескольких баф-слотах
+- [x] **Step 1: Написать падающие тесты.** Одно ID в нескольких баф-слотах
   не удваивается; разные стаки обрабатывает явное правило. Одноимённые
   Major/Minor учитываются по ID/правилу совместимости. Еда и Мундус не
   учитываются одновременно в своей категории и как общий баф. Divines
@@ -314,8 +314,8 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   влияет только на названные ресурсы; неизвестный эффект остаётся в дампе.
   Истёкший временный баф не действует, постоянный баф с endTime=0 не
   исключается. Чужой баф может действовать на игрока без castByPlayer=true.
-- [ ] **Step 2: `lua KanaStatSources/tests/run.lua effects`.** Ожидается FAIL.
-- [ ] **Step 3: Реализовать провайдер и правила.** Еда/напитки и Мундус
+- [x] **Step 2: `lua KanaStatSources/tests/run.lua effects`.** Ожидается FAIL.
+- [x] **Step 3: Реализовать провайдер и правила.** Еда/напитки и Мундус
   определяются по проверенным ID/семействам эффектов, а не случайному
   числу в названии. Простые текущие плоские бонусы используют строгие описания;
   стандартные бафы силы, восстановления, сопротивления, критического
@@ -324,11 +324,11 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   не умножать все уже готовые native вклады. Временные оружейные
   зачарования, особые сетовые proc, проклятия и окружение учитывать только
   при известном действии. Неизвестные условия диагностировать.
-- [ ] **Step 4: Повторить effects и model.** Ожидается `0 failed`; заменить
+- [x] **Step 4: Повторить effects и model.** Ожидается `0 failed`; заменить
   активную панель в фикстуре и проверить изменение только соответствующих
   вкладов. Потеря эффекта убирает строку и меняет остаток относительно нового итога.
-- [ ] **Step 5: Общий Lua 5.1 runner.** Ожидается `0 failed`.
-- [ ] **Step 6: Scoped commit:** `feat: explain food mundus and active stat modifiers`.
+- [x] **Step 5: Общий Lua 5.1 runner.** Ожидается `0 failed`.
+- [x] **Step 6: Scoped commit:** `feat: explain food mundus and active stat modifiers`.
 
 ## Task 6: Диагностический дамп и сохранение десяти снимков
 
@@ -339,7 +339,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 - `Dump.Append(saved, report) -> id`, где saved имеет `schemaVersion`, `nextDumpId`, `dumps`;
 - `Dump.Storage(api) -> saved` с глобальной SavedVariable `KanaStatSourcesSaved`.
 
-- [ ] **Step 1: Написать `test_dump`.** Все поля из раздела дампа спецификации
+- [x] **Step 1: Написать `test_dump`.** Все поля из раздела дампа спецификации
   присутствуют или явно обозначены недоступными; полный исходный текст
   сохранён. Дамп содержит кандидатов и ошибки, raw/visible residual,
   critical samples, обе конфигурации панелей и только действующий итог.
@@ -352,17 +352,17 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   T.eq(saved.dumps[1].id, 2)
   T.eq(saved.dumps[10].id, 11)
   ```
-- [ ] **Step 2: `lua KanaStatSources/tests/run.lua dump`.** Ожидается FAIL.
-- [ ] **Step 3: Реализовать интерфейсы.** Для схемы и истории использовать
+- [x] **Step 2: `lua KanaStatSources/tests/run.lua dump`.** Ожидается FAIL.
+- [x] **Step 3: Реализовать интерфейсы.** Для схемы и истории использовать
   простые таблицы SavedVariables; не создавать аккаунт/персонажные вложенные
   уровни, которые противоречат согласованному `KanaStatSourcesSaved.dumps`.
   Все записи содержат время, персонажа, версии, язык и consistent.
   Нативные ссылки/циклы не сериализовать; причины фиксировать.
   Неподдержанную будущую версию схемы не перетирать молча.
-- [ ] **Step 4: Повторить dump.** Ожидается `0 failed`; проверить запись
+- [x] **Step 4: Повторить dump.** Ожидается `0 failed`; проверить запись
   частично неудачного снимка и сохранение пустых категорий со статусом.
-- [ ] **Step 5: Общий Lua 5.1 runner.** Ожидается `0 failed`.
-- [ ] **Step 6: Scoped commit:** `feat: save diagnostic character stat snapshots`.
+- [x] **Step 5: Общий Lua 5.1 runner.** Ожидается `0 failed`.
+- [x] **Step 6: Scoped commit:** `feat: save diagnostic character stat snapshots`.
 
 ## Task 7: Читаемая таблица и штатные тултипы
 
@@ -377,7 +377,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 - `bridge:Refresh()`, `bridge:Clear()`;
 - `getBreakdown(statKey) -> breakdown` предоставляется App из задачи 8.
 
-- [ ] **Step 1: Написать падающие тесты.** Хук вызывается после оригинального
+- [x] **Step 1: Написать падающие тесты.** Хук вызывается после оригинального
   `ZO_StatsEntry_OnMouseEnter(control)` и использует `control.statEntry.statType`.
   Оригинальные заголовок/описание и handler-возвраты сохраняются. Все 15 ID
   открывают свой расчёт; второе наведение не дублирует блок. OnMouseExit,
@@ -387,21 +387,21 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   ограничен экраном, итог виден, прокрутка достигает последнего источника.
   После 100 Refresh число созданных контролов не растёт. Неподдержанный
   язык использует английские подписи и исходное имя предмета.
-- [ ] **Step 2: Запустить `table`, `tooltip`.** Ожидается FAIL.
-- [ ] **Step 3: Реализовать view.** Создать один собственный блок в
+- [x] **Step 2: Запустить `table`, `tooltip`.** Ожидается FAIL.
+- [x] **Step 3: Реализовать view.** Создать один собственный блок в
   InformationTooltip через AddControl. Заголовки «Источник», «Бонус»,
   «Вклад в итог», тело с переносом и числом справа, постоянный footer
   с итогом и критической формулой. Ограничить тело по GuiRoot и scale,
   переиспользовать строки; внутреннюю прокрутку двигать OnMouseWheel
   исходного stat-control. Ограничение высоты не меняет breakdown.
-- [ ] **Step 4: Реализовать bridge.** PostHook только подтверждённых
+- [x] **Step 4: Реализовать bridge.** PostHook только подтверждённых
   `ZO_StatsEntry_OnMouseEnter`/`ZO_StatsEntry_OnMouseExit`; очистка через
   дополнительный OnCleared. Не подменять InitializeTooltip, ClearTooltip
   или общее форматирование всех информационных тултипов. Хуки устанавливаются
   один раз после загрузки; отсутствие конкретного hook отражается в диагностике.
   Refresh открытого тултипа сохраняет корректный штатный заголовок и описание.
-- [ ] **Step 5: Повторить две группы и Lua 5.1 runner.** Ожидается `0 failed`.
-- [ ] **Step 6: Scoped commit:** `feat: show scrollable stat source tables in native tooltips`.
+- [x] **Step 5: Повторить две группы и Lua 5.1 runner.** Ожидается `0 failed`.
+- [x] **Step 6: Scoped commit:** `feat: show scrollable stat source tables in native tooltips`.
 
 ## Task 8: Работающий аддон, события, команда и итоговая проверка
 
@@ -415,7 +415,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 - `app:GetBreakdown(statKey) -> breakdown`;
 - `app:Invalidate(category)`, `app:Dump() -> dumpId`, `app:Start()`.
 
-- [ ] **Step 1: Написать падающий app-test, загружающий файлы в порядке
+- [x] **Step 1: Написать падающий app-test, загружающий файлы в порядке
   настоящего manifest и вызывающий EVENT_ADD_ON_LOADED.** Проверить, что
   чужое имя аддона игнорируется, Start не дублируется, slash-команда доступна
   до открытия STATS и вызывает full capture; обычный hover не добавляет дамп.
@@ -425,8 +425,8 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   и обновляет открытый тултип. Несогласованный снимок даёт текущий total и
   неизвестный остаток без смеси старых вкладов. Незарегистрированный необязательный
   event не мешает запуску. Сбой провайдера не ломает другие источники.
-- [ ] **Step 2: `lua KanaStatSources/tests/run.lua app`.** Ожидается FAIL.
-- [ ] **Step 3: Реализовать app и manifest.** Title `KanaStatSources`,
+- [x] **Step 2: `lua KanaStatSources/tests/run.lua app`.** Ожидается FAIL.
+- [x] **Step 3: Реализовать app и manifest.** Title `KanaStatSources`,
   Author `Kana`, Version `1.0.0`, AddOnVersion `10000`, APIVersion `101051`,
   SavedVariables `KanaStatSourcesSaved`. Порядок: Core, Stats, Rules,
   Descriptions, Critical, Model, capture/*, Snapshot, sources/*, Dump,
@@ -443,13 +443,13 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   неподдержанные не регистрировать. Тяжёлые scans не запускать каждый кадр:
   coalesce обновления на 100 ms только при открытом нашем тултипе;
   preview и изменение статов перепроверять без полного scan build.
-- [ ] **Step 4: Подключить `/kanastats dump` и написать документацию.**
+- [x] **Step 4: Подключить `/kanastats dump` и написать документацию.**
   Команда сообщает ID, `live/SavedVariables/KanaStatSources.lua` и необходимость
   `/reloadui` или выхода для записи на диск. Другой аргумент показывает краткую
   справку. README перечисляет поддержанный объём и способ анализа остатка;
   client-validation содержит действия из спецификации без утверждения,
   что они уже выполнены. Добавить новый аддон в корневой список.
-- [ ] **Step 5: Прогнать конечные проверки.**
+- [x] **Step 5: Прогнать конечные проверки.**
   ```bash
   lua KanaStatSources/tests/run.lua
   PYTHONPATH=/tmp/kana-cooldown-test-deps python3 KanaStatSources/tests/run51.py
@@ -459,12 +459,12 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
   Ожидается 0 failed/exit 0; manifest-test проверяет существование всех
   подключённых файлов, отсутствие product tests в manifest и правильные
   ресурсные пути. Повторять suites только после изменений или найденной ошибки.
-- [ ] **Step 6: Проверить спецификацию по реализации и review focus.**
+- [x] **Step 6: Проверить спецификацию по реализации и review focus.**
   Проверить источники всех категорий и evidence правил, отсутствие изменения
   билда, дублирования native бонусов и скрытых отрицательных остатков.
   Независимый review выполняется по выбранному пользователем способу исполнения.
   Внести необходимые исправления и повторить затронутые проверки.
-- [ ] **Step 7: Scoped commit:** `feat: wire KanaStatSources runtime and diagnostic command`.
+- [x] **Step 7: Scoped commit:** `feat: wire KanaStatSources runtime and diagnostic command`.
 - [ ] **Step 8: Проверить клиент, если доступен, и сдать результат.**
   После `/reloadui` пройти `docs/client-validation.md`. При отсутствии
   доступного живого клиента оставить этот пункт незавершённым и явно назвать
@@ -501,3 +501,7 @@ Namespace: глобальная таблица `KanaStatSources`, локальн
 native execution в этой сессии, поскольку восемь задач используют общий
 контракт снимка и модели, а частое переключение исполнителей не даёт
 существенного выигрыша для последовательной интеграции.
+
+## Результат выполнения 2026-10-06
+
+Реализация и независимое ревью завершены; замечания исправлены с RED→GREEN регрессиями. Итог: 76 tests в Lua5.4 и Lua5.1, TTC186, diff check. Клиентская проверка остаётся открытой. Фикстуры провайдеров объединены рядом с тестами и в complete_build.lua; неподтверждённые условные ID-взаимодействия оставлены кандидатами и Unknown согласно fallback пользователя. Подробности и решения: KanaStatSources/docs/validation.md.

@@ -9,7 +9,20 @@ function Instance:Explain(snapshot)
         if ok then for _,r in ipairs(c or {})do contributions[#contributions+1]=r end;for _,r in ipairs(d or {})do diagnostics[#diagnostics+1]=r end
         else diagnostics[#diagnostics+1]={category=category:lower(),reason=tostring(c)}end
     end
-    return K.Model.Build(snapshot,contributions,diagnostics,K.Rules.Policies),contributions,diagnostics
+    -- An active effect can be the manifestation of a learned passive. Prefer
+    -- that current effect for the same ability/stat, preserving independent IDs.
+    local effectStats={}
+    for _,c in ipairs(contributions)do
+        local source=c.source
+        if source and source.kind=='effect' then effectStats[source.id]=effectStats[source.id] or {};effectStats[source.id][c.stat]=true end
+    end
+    local unique={}
+    for _,c in ipairs(contributions)do
+        local source=c.source
+        if source and source.kind=='skill' and effectStats[source.id] and effectStats[source.id][c.stat] then diagnostics[#diagnostics+1]=K.Core.Diagnostic(c,'represented by the active effect of this ability')
+        else unique[#unique+1]=c end
+    end
+    return K.Model.Build(snapshot,unique,diagnostics,K.Rules.Policies),unique,diagnostics
 end
 function Instance:GetBreakdown(key)
     local snapshot=self.collector:Capture(false)

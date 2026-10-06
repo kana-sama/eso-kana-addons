@@ -8,6 +8,15 @@ local function api()
     return a
 end
 return {
+ passive_effect_identity=function()
+    local a=api();local app=K.App.New(a,K.Dump.Storage(a));local s=dofile('KanaStatSources/tests/fixtures/complete_build.lua')()
+    s.skills={{id=123,purchased=true,passive=true,lineActive=true,name='Passive',description='Increases Maximum Health by 1000.'},{id=124,purchased=true,passive=true,lineActive=true,name='Independent',description='Increases Maximum Health by 1000.'}}
+    s.effects={{index=1,abilityId=123,name='Active passive effect',endTime=0,description='Increases Maximum Health by 1000.'}}
+    local b,c,d=app:Explain(s);local found=0
+    for _,v in ipairs(c)do if v.source and (v.source.id==123 or v.source.id==124)then found=found+1 end end
+    T.eq(found,2);T.eq(T.sumRows(b.maxHealth),b.maxHealth.total)
+    T.eq(c[#c].source.id,123)
+ end,
  load_and_dump=function()local a=api();K.App.Load(a);local onLoad=a.EVENT_MANAGER.handlers[1];onLoad(1,'OtherAddon');T.eq(K.instance,nil);onLoad(1,'KanaStatSources');local app=K.instance;T.eq(type(a.SLASH_COMMANDS['/kanastats']),'function');T.eq(a.STATS,nil);a.SLASH_COMMANDS['/kanastats']('dump');T.eq(#a.KanaStatSourcesSaved.dumps,1);T.eq(a.KanaStatSourcesSaved.dumps[1].snapshot.categoryStatus.advancedStats,'available');T.eq(a.EVENT_MANAGER.handlers[1],nil);app:Start();local row=a.Control();row.statEntry={statType=1};a.ZO_StatsEntry_OnMouseEnter(row);T.eq(#a.KanaStatSourcesSaved.dumps,1);T.eq(#a.messages>0,true);K.instance=nil end,
  all_categories=function()local a=api();local app=K.App.New(a,K.Dump.Storage(a));local s=dofile('KanaStatSources/tests/fixtures/complete_build.lua')();local b,c=app:Explain(s);local categories={};for _,r in ipairs(c)do if r.amount~=0 then categories[r.category]=true end;T.eq(r.evidence~=nil,true)end;for _,category in ipairs({'base','attributes','equipment','sets','skills','champion','food','mundus','effects'})do T.eq(categories[category],true)end;for _,d in ipairs(K.Stats.Definitions)do T.eq(T.sumRows(b[d[1]]),s.stats[d[1]].total)end;s.consistent=false;b=app:Explain(s);T.eq(#b.maxHealth.rows,1);T.eq(b.maxHealth.rows[1].category,'unknown')end,
  coalesced_events=function()local a=api();local app=K.App.New(a,K.Dump.Storage(a));app:Start();local row=a.Control();row.statEntry={statType=1};a.ZO_StatsEntry_OnMouseEnter(row);local cached=app.collector.cache.build;for _=1,20 do a.EVENT_MANAGER.handlers[2](2,'player')end;T.eq(app.collector.cache.build,cached);local count=0;for _ in pairs(a.EVENT_MANAGER.updates)do count=count+1 end;T.eq(count,1);a.EVENT_MANAGER.handlers[3](3);T.eq(app.collector.cache.build,nil);for name,fn in pairs(a.EVENT_MANAGER.updates)do fn();T.eq(a.EVENT_MANAGER.updates[name],nil)end;T.eq(app.bridge.active,row);app.bridge:Clear();local generation=app.collector.generation;a.EVENT_MANAGER.handlers[2](2,'group1');T.eq(app.collector.generation,generation);for _,event in ipairs({4,5,6,7})do if event==4 then a.EVENT_MANAGER.handlers[event](event,1,1,'Buff','player')else a.EVENT_MANAGER.handlers[event](event)end end;T.eq(next(a.EVENT_MANAGER.updates),nil)end,

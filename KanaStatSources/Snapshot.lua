@@ -11,6 +11,11 @@ local function merge(s,data,errors,category)
     s.categoryStatus[category]=#errors==0 and 'available' or 'partial'
     for _,e in ipairs(errors) do e.category=category;s.errors[#s.errors+1]=e end
 end
+local function capture(api,collector,fallback)
+    local ok,data,errors=pcall(collector,api)
+    if ok and type(data)=='table' and type(errors)=='table' then return data,errors end
+    return fallback,{{api='collector',reason=ok and 'invalid collector result' or tostring(data)}}
+end
 local function stats(api,errors)
     local out={};local read=K.Core.Reader(api,errors)
     for _,d in ipairs(K.Stats.List(api)) do
@@ -34,13 +39,14 @@ function Instance:Capture(full)
         for name,value in pairs(api) do if type(value)=='number' and (name:match('^ITEM_TRAIT_TYPE_') or name:match('^EQUIP_SLOT_') or name:match('^ARMORTYPE_') or name:match('^WEAPONTYPE_')) then s.constants[name]=value end end
         s.meta={addonVersion=K.version,apiVersion=read('GetAPIVersion'),language=read('GetCVar','language.2') or 'en',characterId=read('GetCurrentCharacterId'),characterName=read('GetUnitName','player'),time=read('GetTimeStamp'),timeMs=read('GetGameTimeMilliseconds')}
         s.stats=stats(api,s.errors)
-        local equipment,gearErrors=K.CaptureEquipment.Read(api);merge(s,equipment,gearErrors,'equipment')
-        local effects,effectErrors=K.CaptureEffects.Read(api);merge(s,effects,effectErrors,'effects')
+        local equipment,gearErrors=capture(api,K.CaptureEquipment.Read,{equipment={},sets={}});merge(s,equipment,gearErrors,'equipment')
+        local effects,effectErrors=capture(api,K.CaptureEffects.Read,{effects={},context={}});merge(s,effects,effectErrors,'effects')
         local build=self.cache.build
-        if not build then local values,errors=K.CaptureBuild.Read(api);build={data=values,errors=errors};self.cache.build=build end
+        if not build then local values,errors=capture(api,K.CaptureBuild.Read,{attributes={},skills={},champion={},bars={front={},back={},werewolf={}}});build={data=values,errors=errors};self.cache.build=build end
         merge(s,K.Core.CopySerializable(build.data),K.Core.CopySerializable(build.errors),'build')
         -- Attribute deltas can scale when effects change: read their native current values each capture.
         for _,a in ipairs({{'health','ATTRIBUTE_HEALTH','STAT_HEALTH_MAX'},{'magicka','ATTRIBUTE_MAGICKA','STAT_MAGICKA_MAX'},{'stamina','ATTRIBUTE_STAMINA','STAT_STAMINA_MAX'}}) do
+            s.attributes[a[1]]=s.attributes[a[1]] or {}
             s.attributes[a[1]].perPoint=read('GetAttributeDerivedStatPerPointValue',api[a[2]],api[a[3]])
         end
         for _,key in ipairs({'weaponCritical','spellCritical'}) do
@@ -69,8 +75,8 @@ function Instance:Capture(full)
             s.categoryStatus.advancedStats=#s.errors==errorCount and 'available' or 'partial'
         end
         local endStats=stats(api,{})
-        local endEquipment=K.CaptureEquipment.Read(api)
-        local endEffects=K.CaptureEffects.Read(api)
+        local endEquipment=capture(api,K.CaptureEquipment.Read,{equipment={},sets={}})
+        local endEffects=capture(api,K.CaptureEffects.Read,{effects={},context={}})
         s.consistent=self.generation==s.generation and endEffects.context.weaponPair==s.context.weaponPair and K.Core.Signature(endStats)==K.Core.Signature(s.stats) and K.Core.Signature(endEquipment.equipment)==K.Core.Signature(s.equipment) and K.Core.Signature(endEffects.effects)==K.Core.Signature(s.effects)
         for name,value in pairs(api) do if type(value)=='function' and name:match('^Get') then s.capabilities[name]=true end end
         last=s

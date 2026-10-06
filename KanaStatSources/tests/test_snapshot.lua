@@ -2,6 +2,23 @@ local T=dofile('KanaStatSources/tests/support.lua')
 local K=T.load({'Core','Stats','Rules','Critical','Model','capture/Equipment','capture/Build','capture/Effects','Snapshot'})
 local makeApi=dofile('KanaStatSources/tests/fixtures/capture.lua')
 return {
+ malformed_results=function()
+    local api=makeApi();api.GetItemLinkSetInfo=function()return true,'Set',1,2,5,0/0,0 end
+    local s=K.Snapshot.New(api):Capture(false)
+    T.eq(s.stats.maxHealth.total,101);T.eq(#s.equipment,2);T.eq(next(s.sets),nil);T.eq(s.categoryStatus.equipment,'partial')
+    api=makeApi();api.GetNumBuffs=function()return nil end;s=K.Snapshot.New(api):Capture(false)
+    T.eq(s.categoryStatus.effects,'partial');local found=false;for _,e in ipairs(s.errors)do if e.api=='GetNumBuffs'then found=true end end;T.eq(found,true)
+    api=makeApi();api.GetNumBuffs=function()return math.huge end;s=K.Snapshot.New(api):Capture(false);T.eq(#s.effects,0);T.eq(s.categoryStatus.effects,'partial')
+ end,
+ collector_isolation=function()
+    local original=K.CaptureEquipment.Read;K.CaptureEquipment.Read=function()error('collector failure')end
+    local ok,s=pcall(function()return K.Snapshot.New(makeApi()):Capture(true)end);K.CaptureEquipment.Read=original
+    T.eq(ok,true);T.eq(s.stats.maxHealth.total,101);T.eq(#s.effects,1);T.eq(s.categoryStatus.equipment,'partial');T.eq(#s.equipment,0)
+ end,
+ nullable_api=function()
+    local api=makeApi();api.GetItemLinkSetInfo=function()return false,'',0,0,0,nil,0 end
+    local s=K.Snapshot.New(api):Capture(false);local bad=false;for _,e in ipairs(s.errors)do if e.api=='GetItemLinkSetInfo'then bad=true end end;T.eq(bad,false)
+ end,
     captures_character_and_both_bars=function()
         local s=K.Snapshot.New(makeApi()):Capture(true)
         T.eq(s.consistent,true);T.eq(s.schemaVersion,1);T.eq(s.bars.back[3].abilityId,103)
