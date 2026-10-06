@@ -2,6 +2,25 @@ local K=KanaStatSources
 local M={};K.Model=M
 local priority={base=1,attributes=2,equipment=3,sets=4,food=5,mundus=6,skills=7,champion=8,effects=9,unknown=10}
 local function contains(list,value) for _,v in ipairs(list or {}) do if v==value then return true end end;return false end
+local function roundRows(rows)
+    -- Round the known subtotal once, then apportion its fractional units.
+    -- Independently rounding percentage rows (440.72 + 629.60) creates a
+    -- fictitious -1 residual even though their combined bonus rounds to 1070.
+    local rawSum,floorSum,fractions=0,0,{}
+    for i,r in ipairs(rows)do
+        rawSum=rawSum+r.rawValue;r.value=math.floor(r.rawValue);floorSum=floorSum+r.value
+        local fraction=r.rawValue-r.value
+        if fraction>0 then fractions[#fractions+1]={row=r,fraction=fraction,index=i}end
+    end
+    table.sort(fractions,function(a,b)
+        if a.fraction~=b.fraction then return a.fraction>b.fraction end
+        return a.index<b.index
+    end)
+    for i=1,K.Core.Round(rawSum)-floorSum do fractions[i].row.value=fractions[i].row.value+1 end
+    local visible={}
+    for _,r in ipairs(rows)do if r.value~=0 then visible[#visible+1]=r end end
+    return visible,K.Core.Round(rawSum),rawSum
+end
 function M.Build(snapshot,contributions,diagnostics,policies)
     local out,seen={},{}
     for _,def in ipairs(K.Stats.Definitions) do
@@ -17,7 +36,7 @@ function M.Build(snapshot,contributions,diagnostics,policies)
     local pending={}
     local function append(b,c,value,base)
         local source=c.source or {}
-        local r={key=c.key,label=c.label or c.key,name=c.name or source.name,icon=c.icon or source.icon,category=c.category,source=c.source,evidence=c.evidence,rawValue=value,value=K.Core.Round(value),amount=c.amount,operation=c.operation,group=c.group,base=base}
+        local r={key=c.key,label=c.label or c.key,name=c.name or source.name,icon=c.icon or source.icon,category=c.category,source=c.source,evidence=c.evidence,rawValue=value,amount=c.amount,operation=c.operation,group=c.group,base=base}
         b.rows[#b.rows+1]=r
     end
     for _,c in ipairs(contributions or {}) do
@@ -59,10 +78,9 @@ function M.Build(snapshot,contributions,diagnostics,policies)
             if pa~=pc then return pa<pc end
             return tostring(a.key)<tostring(c.key)
         end)
-        local rawSum=0
-        for _,r in ipairs(b.rows) do b.explained=b.explained+r.value;rawSum=rawSum+r.rawValue end
+        b.rows,b.explained,b.rawExplained=roundRows(b.rows)
         if b.available then
-            b.unknown=b.total-b.explained;b.rawUnknown=b.total-rawSum
+            b.unknown=b.total-b.explained;b.rawUnknown=b.total-b.rawExplained
             if b.unknown~=0 then b.rows[#b.rows+1]={key='unknown',category='unknown',labelKey='unknown',value=b.unknown,rawValue=b.rawUnknown,operation='flat'} end
             local pendingPreview=(snapshot.preview or {})[stat]
             if K.Core.Finite(pendingPreview) and pendingPreview~=0 then b.preview={amount=pendingPreview,total=b.total+pendingPreview} end

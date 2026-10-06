@@ -57,4 +57,13 @@ return {
     T.eq(b.maxStamina.unknown,421)
     T.eq(b.physicalPenetration.unknown,0)
  end,
+ native_damage_total_with_current_brutality_description=function()
+    local s=snapshot()
+    for _,effect in ipairs(s.effects)do
+        if effect.abilityId==61665 then effect.effectDescription='Увеличивает силу оружия и заклинаний на 20%.' end
+    end
+    local b=K.App.New({}):Explain(s)
+    T.eq(b.weaponDamage.total,4218);T.eq(b.weaponDamage.unknown,0);T.near(b.weaponDamage.rawUnknown,-0.32)
+    T.eq(T.sumRows(b.weaponDamage),4218);T.eq(b.spellDamage.unknown,0)
+ end,
 }

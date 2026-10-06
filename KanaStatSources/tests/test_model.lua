@@ -23,7 +23,35 @@ return {
     end,
     rounding_reconciles_visible_rows=function()
         local b=K.Model.Build(T.snapshot({maxHealth=11}),{T.flat('a','maxHealth',5.6),T.flat('b','maxHealth',5.6)},{},{}).maxHealth
-        T.eq(b.unknown,-1);T.eq(T.sumRows(b),11);T.near(b.rawUnknown,-0.2)
+        T.eq(b.unknown,0);T.eq(T.sumRows(b),11);T.near(b.rawUnknown,-0.2)
+        T.eq(b.rows[1].value,6);T.eq(b.rows[2].value,5)
+    end,
+    fractional_damage_percentages_round_as_one_sum=function()
+        local cs={T.flat('base','weaponDamage',3148),T.percent('agility','weaponDamage',14,'additive'),T.percent('brutality','weaponDamage',20,'additive')}
+        local b=K.Model.Build(T.snapshot({weaponDamage=4218}),cs,{},K.Rules.Policies).weaponDamage
+        T.eq(b.unknown,0);T.eq(T.sumRows(b),4218);T.near(b.rawUnknown,-0.32)
+        T.eq(b.rows[2].value,441);T.eq(b.rows[3].value,629)
+        T.near(b.rows[2].rawValue,440.72);T.near(b.rows[3].rawValue,629.6)
+    end,
+    genuine_small_unknown_is_preserved=function()
+        local b=K.Model.Build(T.snapshot({weaponDamage=4218}),{T.flat('base','weaponDamage',4219)}).weaponDamage
+        T.eq(b.unknown,-1);T.eq(T.sumRows(b),4218)
+    end,
+    zero_bonuses_do_not_produce_rows=function()
+        local c={T.flat('base','physicalResistance',10812),T.flat('resolve','physicalResistance',0,'skills')}
+        local b=K.Model.Build(T.snapshot({physicalResistance=10812}),c).physicalResistance
+        T.eq(#b.rows,1);T.eq(b.rows[1].key,'base');T.eq(c[2].amount,0)
+    end,
+    rounded_zero_rows_are_removed_after_apportionment=function()
+        local b=K.Model.Build(T.snapshot({maxHealth=1}),{T.flat('a','maxHealth',0.4),T.flat('b','maxHealth',0.4)}).maxHealth
+        T.eq(b.unknown,0);T.eq(#b.rows,1);T.eq(b.rows[1].value,1);T.eq(T.sumRows(b),1)
+    end,
+    signed_fractional_rows_are_apportioned_deterministically=function()
+        local c={T.flat('a','maxHealth',10.2),T.flat('b','maxHealth',-0.6),T.flat('c','maxHealth',-0.6)}
+        local b=K.Model.Build(T.snapshot({maxHealth=9}),c).maxHealth
+        T.eq(b.unknown,0);T.eq(b.rows[1].value,10);T.eq(b.rows[2].value,-1);T.eq(T.sumRows(b),9)
+        local reordered=K.Model.Build(T.snapshot({maxHealth=9}),{c[3],c[2],c[1]}).maxHealth
+        T.eq(reordered.rows[1].key,b.rows[1].key);T.eq(reordered.rows[2].key,b.rows[2].key)
     end,
     invalid_values_are_diagnostic=function()
         local b=K.Model.Build(T.snapshot({maxHealth=10}),{T.flat('nan','maxHealth',0/0),T.flat('inf','maxHealth',math.huge)},{},{}).maxHealth
