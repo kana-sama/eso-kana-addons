@@ -18,7 +18,7 @@ function T.Install(api,getBreakdown)
         local scale=api.GetUIGlobalScale and api.GetUIGlobalScale() or 1
         b.view:Render(breakdown,language or 'en',{width=api.GuiRoot:GetWidth()*scale,height=api.GuiRoot:GetHeight()*scale,scale=scale,nativeHeight=api.InformationTooltip:GetHeight()})
         if not b.hooked[control] then
-            b.hooked[control]=true;control:SetMouseWheelEnabled(true)
+            b.hooked[control]=true
             api.ZO_PostHookHandler(control,'OnMouseWheel',function(_,delta)if b.active==control then b.view:Scroll(delta)end end)
             api.ZO_PostHookHandler(control,'OnEffectivelyHidden',function()if b.active==control then b:Clear()end end)
         end

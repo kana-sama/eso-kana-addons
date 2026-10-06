@@ -14,7 +14,8 @@ return function()
     function C:SetAnchor(...)self.anchor={...} end
     function C:ClearAnchors()self.anchor=nil end
     function C:SetMouseEnabled(v)self.mouse=v end
-    function C:SetMouseWheelEnabled(v)self.wheel=v end
+    -- ESO routes OnMouseWheel on mouse-enabled controls. There is no
+    -- SetMouseWheelEnabled method in the native Control API.
     function C:SetScrollBounding(v)self.bounding=v end
     function C:SetVerticalScroll(v)self.scroll=v end
     function C:GetHandler(e)return (self.handlers or {})[e] end

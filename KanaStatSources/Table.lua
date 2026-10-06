@@ -13,7 +13,7 @@ function Table.New(api,tooltip)
     v.makeLabel=label
     for i=1,3 do v.headers[i]=label(v.control);v.headers[i]:SetColor(0.75,0.72,0.56,1) end
     v.footer=label(v.control)
-    v.body:SetMouseEnabled(true);v.body:SetMouseWheelEnabled(true)
+    v.body:SetMouseEnabled(true)
     v.body:SetHandler('OnMouseWheel',function(_,delta)v:Scroll(delta)end)
     return v
 end
