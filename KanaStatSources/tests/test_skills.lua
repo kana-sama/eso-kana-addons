@@ -1,6 +1,17 @@
 local T=dofile('KanaStatSources/tests/support.lua');local K=T.load({'Core','Stats','Rules','Descriptions','sources/Skills'})
 local function s() return {meta={language='en'},context={bar='front'},skills={{id=100,name='Passive',rank=2,purchased=true,passive=true,lineActive=true,description='Increases your Maximum Magicka by 2000.'}},bars={front={},back={[3]={abilityId=200}}}} end
 return {
+ erudition_uses_complete_current_description=function()
+    for _,p in ipairs({{'ru','Знание — сила. Ваша необычайная ученость увеличивает восстановление магии и запаса сил на |cffffff18%|r.',18},{'en','Knowledge is power.Your excessive scholarship increases your Magicka and Stamina Recovery by 9%.',9}})do
+        local v=s();v.meta.language=p[1];v.skills={{id=185239,passive=true,purchased=true,lineActive=true,description=p[2]}}
+        local c=K.Sources.Skills.Build(v);T.eq(#c,2)
+        T.eq(c[1].stat,'magickaRecovery');T.eq(c[2].stat,'staminaRecovery');T.eq(c[1].amount,p[3]);T.eq(c[2].operation,'percent')
+        v.skills[1].description=p[2]..' While in combat.';T.eq(#K.Sources.Skills.Build(v),0)
+        v.skills[1].description=p[2];v.skills[1].id=999;T.eq(#K.Sources.Skills.Build(v),0)
+        v.skills[1].id=185239;v.skills[1].lineActive=false;T.eq(#K.Sources.Skills.Build(v),0)
+        v.skills[1].lineActive=true;v.skills[1].purchased=false;T.eq(#K.Sources.Skills.Build(v),0)
+    end
+ end,
  weapon_passive_needs_equipped_weapon_rule=function()
     local v=s();v.constants={SKILL_TYPE_WEAPON=2}
     v.skills[1]={id=29397,purchased=true,passive=true,lineActive=true,skillType=2,description='Ваша сила оружия и заклинаний увеличивается на 3%, а количество заблокированного урона — на 10%.'}

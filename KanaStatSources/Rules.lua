@@ -1,6 +1,7 @@
 local K=KanaStatSources
 local R={Policies={},registry={},DynamicSkills={}};K.Rules=R
--- Attribute deltas and native Mundus values already reflect their own scaling.
+-- Raw attribute deltas belong in the percentage base. Native Mundus values
+-- use effectiveFlat because they already reflect their own scaling.
 -- Percent rows explain only the recognized raw flat portion; any unmodeled
 -- base/source/scaling stays in the signed remainder.
 for _,stat in ipairs({'maxHealth','maxMagicka','maxStamina','weaponDamage','spellDamage','healthRecovery','magickaRecovery','staminaRecovery'}) do R.Policies[stat]={groups={{id='additive',scope={'flat'},requireBase=true}}} end
@@ -14,6 +15,20 @@ function R.Resolve(source,snapshot)
     for _,c in ipairs(cs) do c.ruleId=rule.kind..':'..tostring(rule.id);c.evidence=c.evidence or rule.evidence end
     return cs,{}
 end
+-- Erudition's flavor sentence precedes a permanent percentage clause. Accept
+-- this exact known description, never skip arbitrary prose in generic parsing.
+R.Register({id=185239,kind='skill',evidence='native Erudition ID and complete unconditional RU/EN description',build=function(source,s)
+    local language=(s.meta or {}).language
+    if language~='ru' and language~='en' then return {}end
+    local text,values=K.Descriptions.Tokens(source.description,language)
+    text=text:gsub('%s+',' ')
+    local pattern=language=='ru' and '^знание — сила%.%s*ваша необычайная ученость увеличивает восстановление магии и запаса сил на @([0-9]+)@%%%.?$'
+        or '^knowledge is power%.%s*your excessive scholarship increases your magicka and stamina recovery by @([0-9]+)@%%%.?$'
+    local index=text:match(pattern);local amount=index and values[tonumber(index)]
+    if not K.Core.Finite(amount) then return {}end
+    local out={};R.Emit(out,source,{{stats={'magickaRecovery','staminaRecovery'},amount=amount,operation='percent'}},'native Erudition unconditional description for ability 185239')
+    return out
+end})
 function R.Emit(out,source,clauses,evidence)
     for i,c in ipairs(clauses) do for _,stat in ipairs(c.stats) do
         out[#out+1]={key=source.key..':'..i,sourceKey=source.key,stat=stat,category=source.category,label=source.label,source=source,amount=c.amount,operation=c.operation,group=c.operation=='percent' and 'additive' or nil,active=true,evidence=evidence,bonusText=c.raw}
