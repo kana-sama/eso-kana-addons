@@ -10,7 +10,7 @@ return function()
     function C:SetDimensions(w,h)self.width=w;self.height=h end
     function C:GetWidth()return self.width or 416 end
     function C:GetHeight()return self.height or 100 end
-    function C:GetDimensionConstraints()return (unpack or table.unpack)(self.constraints or {0,0,450,0})end
+    function C:GetDimensionConstraints()return (unpack or table.unpack)(self.constraints or {0,0,350,0})end
     function C:SetDimensionConstraints(...)self.constraints={...}end
     function C:GetResizeToFitPadding()return 32,32 end
     function C:SetText(v)self.text=v end
@@ -49,7 +49,10 @@ return function()
     function C:ClearLines()self.control=nil;local f=self:GetHandler('OnCleared');if f then f(self)end end
     api.WINDOW_MANAGER={CreateControl=function(_,name,parent,kind)local c=setmetatable({name=name,parent=parent,kind=kind},C);created[#created+1]=c;return c end}
     function api.WINDOW_MANAGER:CreateControlFromVirtual(name,parent,template)
-        assert(template=='ZO_BaseTooltip' and parent==api.GuiRoot)
+        if template=='TooltipTopLevel' then
+            assert(parent==api.GuiRoot);return self:CreateControl(name,parent,'tooltipTopLevel')
+        end
+        assert(template=='ZO_BaseTooltip' and parent.kind=='tooltipTopLevel')
         local c=self:CreateControl(name,parent,'tooltip');c.hidden=true;c.constraints={0,0,350,0};return c
     end
     api.GuiRoot=setmetatable({width=1280,height=720},C);api.InformationTooltip=setmetatable({},C)

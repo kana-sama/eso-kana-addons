@@ -46,7 +46,28 @@ return {
  critical_footer=function()
     local v=view()
     v:Render({available=true,total=10000,rows={},critical={verified=true,rating=10000,pointsPerPercent=200,chance=50,offset=0}},'en',{width=1280,height=720})
-    T.eq(v.footer.text,'Total rating');T.eq(v.footerValue.text,'10000')
-    T.eq(v.formula.text,'10000 / 200.00 = 50.0%')
+    T.eq(v.footer.text,'Total');T.eq(v.footerValue.text,'50.0%')
+    T.eq(v.formula,nil)
+ end,
+ native_minimum_width_and_description_does_not_widen=function()
+    local v,api=view()
+    v:Render({available=true,total=10,rows={{name='Short',value=10}}},'en',{width=1800,height=900,title='A title long enough to wrap rather than enlarge the tooltip',description=string.rep('Long description ',30)})
+    T.eq(api.InformationTooltip:GetWidth(),350);T.eq(v.description.width,318)
+    T.eq(v.title.height>18,true)
+ end,
+ longest_source_sets_exact_width=function()
+    local v,api=view()
+    v:Render({available=true,total=123456,rows={{name=string.rep('N',60),value=123456}}},'en',{width=1800,height=900,description=string.rep('Long description ',30)})
+    -- 60 glyphs*8 + icon22 + icon gap6 + columns24 + 6 digits*8 + rounding1 + padding32.
+    T.eq(api.InformationTooltip:GetWidth(),613)
+    T.eq(v.rows[1].labels[1].width,480);T.eq(v.rows[1].labels[2].width,49)
+ end,
+ new_longer_source_refits_without_delayed_growth=function()
+    local v,api=view();local b={available=true,total=10,rows={{name='Short',value=10}}}
+    v:Render(b,'en',{width=1800,height=900});T.eq(api.InformationTooltip:GetWidth(),350)
+    b.rows[1].name=string.rep('N',60)
+    v:Render(b,'en',{width=1800,height=900,keepLayout=true})
+    T.eq(api.InformationTooltip:GetWidth(),581);T.eq(v.rows[1].labels[1].width,480)
+    for _=1,5 do v:Render(b,'en',{width=1800,height=900,keepLayout=true});T.eq(api.InformationTooltip:GetWidth(),581)end
  end,
 }

@@ -84,7 +84,7 @@ return {
     local a=api();local v=K.Table.New(a,a.InformationTooltip)
     v:Render({available=true,total=10000,critical={verified=true,rating=10000,pointsPerPercent=200,slope=0.005,chance=50,offset=0},rows={{name='Source',value=1000}}},'en',{width=1200,height=800})
     T.eq(v.rows[1].labels[2].text,'5.00%')
-    T.eq(v.footerValue.text,'10000');T.eq(v.formula.text:find('50.0%',1,true)~=nil,true)
+    T.eq(v.footerValue.text,'50.0%');T.eq(v.formula,nil)
  end,
  native_tooltip_restored_after_exit=function()
     local a=api();local before={a.InformationTooltip:GetDimensionConstraints()}

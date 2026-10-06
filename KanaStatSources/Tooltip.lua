@@ -45,7 +45,8 @@ function T.Install(api,getBreakdown)
     if not api.WINDOW_MANAGER or not api.WINDOW_MANAGER.CreateControlFromVirtual or not api.ZO_PreHook or not api.ZO_PostHookHandler or not api.InitializeTooltip or not api.ClearTooltip or not api.ClearTooltipImmediately or not api.ZO_STAT_TOOLTIP_DESCRIPTIONS or not api.ZO_StatsEntry_OnMouseEnter or not api.ZO_StatsEntry_OnMouseExit then b.diagnostics[1]={reason='native keyboard tooltip hooks unavailable'};return b end
     -- InformationTooltip is shared with map pins and other UI. A private
     -- native tooltip owns every constraint, content control and animation.
-    b.tooltip=api.WINDOW_MANAGER:CreateControlFromVirtual(K.name..'Tooltip',api.GuiRoot,'ZO_BaseTooltip')
+    b.root=api.WINDOW_MANAGER:CreateControlFromVirtual(K.name..'TooltipTopLevel',api.GuiRoot,'TooltipTopLevel')
+    b.tooltip=api.WINDOW_MANAGER:CreateControlFromVirtual(K.name..'Tooltip',b.root,'ZO_BaseTooltip')
     b.view=K.Table.New(api,b.tooltip)
     api.ZO_PostHookHandler(b.tooltip,'OnCleared',function()b:Reset()end)
     api.ZO_PostHookHandler(b.tooltip,'OnHide',function()b:Reset()end)

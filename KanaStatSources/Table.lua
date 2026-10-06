@@ -7,7 +7,8 @@ local function colour(label,api,name,fallback)
     if c then label:SetColor(c:UnpackRGBA()) else label:SetColor((unpack or table.unpack)(fallback)) end
 end
 function Table.New(api,tooltip)
-    local v=setmetatable({api=api,tooltip=tooltip,rows={},offset=0},View)
+    local minWidth,_,nativeWidth=tooltip:GetDimensionConstraints()
+    local v=setmetatable({api=api,tooltip=tooltip,rows={},offset=0,defaultWidth=math.max(minWidth or 0,nativeWidth and nativeWidth>0 and nativeWidth or 350)},View)
     local function control(parent,kind)return api.WINDOW_MANAGER:CreateControl(nil,parent,kind)end
     v.control=control(tooltip,api.CT_CONTROL);v.control:SetHidden(true)
     local function label(parent,gold)
@@ -16,7 +17,7 @@ function Table.New(api,tooltip)
         return l
     end
     v.makeLabel=label
-    v.title=label(v.control,true);v.title:SetMaxLineCount(1)
+    v.title=label(v.control,true)
     v.measure=label(v.control);v.measure:SetHidden(true)
     v.measureLine=label(v.control);v.measureLine:SetHidden(true);v.measureLine:SetMaxLineCount(1)
     v.body=control(v.control,api.CT_SCROLL);v.body:SetScrollBounding(api.SCROLL_BOUNDING_CONTAINED)
@@ -24,7 +25,7 @@ function Table.New(api,tooltip)
     v.description=label(v.content)
     v.footer=label(v.control,true);v.footer:SetMaxLineCount(1)
     v.footerValue=label(v.control);v.footerValue:SetMaxLineCount(1);v.footerValue:SetHorizontalAlignment(api.TEXT_ALIGN_RIGHT)
-    v.formula=label(v.control);v.hint=label(v.control)
+    v.hint=label(v.control)
     v.preview=label(v.content,true)
     v.previewValue=label(v.content);v.previewValue:SetHorizontalAlignment(api.TEXT_ALIGN_RIGHT)
     v.body:SetMouseEnabled(true)
@@ -33,11 +34,6 @@ function Table.New(api,tooltip)
 end
 function View:Clear()
     self.control:SetHidden(true);self.inserted=false;self.offset=0;self.layout=nil;self.body:SetVerticalScroll(0)
-    if self.originalConstraints then
-        self.tooltip:SetDimensionConstraints((unpack or table.unpack)(self.originalConstraints))
-        self.tooltip:SetDimensions(self.originalWidth,self.originalHeight)
-        self.originalConstraints=nil
-    end
 end
 function View:Scroll(delta)
     self.offset=math.max(0,math.min(math.max(0,(self.contentHeight or 0)-(self.bodyHeight or 0)),self.offset-delta*36))
@@ -75,16 +71,18 @@ function View:Render(b,language,bounds)
     local maxWidth=math.max(1,(bounds.width or api.GuiRoot:GetWidth())-64-paddingWidth)
     local maxHeight=math.max(1,(bounds.height or api.GuiRoot:GetHeight())-64-paddingHeight)
     local title,description=bounds.title or '',bounds.description or ''
-    local totalLabel=K.Stats.Text(language,b.critical and 'rating' or 'total')
+    local totalLabel=K.Stats.Text(language,'total')
     local totalValue=b.available and K.Stats.Number(b.total,language) or K.Stats.Text(language,'unavailable')
-    local formula=b.critical and K.Critical.Formula(b.critical,language) or ''
+    if b.critical then
+        totalValue=K.Core.Finite(b.critical.chance) and K.Stats.Number(b.critical.chance,language,1)..'%' or K.Stats.Text(language,'unavailable')
+    end
     local preview=b.preview and K.Stats.Text(language,'preview') or ''
     local previewValue=b.preview and ('+'..K.Stats.Number(b.preview.amount,language)..' → '..K.Stats.Number(b.preview.total,language)) or ''
     local hint=K.Stats.Text(language,'scroll')
     if self.titleText~=title then self.title:SetText(title);self.titleText=title end
     if self.descriptionText~=description then self.description:SetText(description);self.descriptionText=description end
     self.footer:SetText(totalLabel);self.footerValue:SetText(totalValue)
-    self.formula:SetText(formula);self.preview:SetText(preview);self.previewValue:SetText(previewValue);self.hint:SetText(hint)
+    self.preview:SetText(preview);self.previewValue:SetText(previewValue);self.hint:SetText(hint)
     local nameWidth=math.max(self:NaturalWidth(totalLabel),self:NaturalWidth(preview))
     local valueWidth=math.max(self:NaturalWidth(totalValue),self:NaturalWidth(previewValue))
     for i,row in ipairs(b.rows or {}) do
@@ -103,14 +101,13 @@ function View:Render(b,language,bounds)
         r.icon:SetHidden(not icon or icon=='')
     end
     -- Fit the longest name, icon, column gap and value with one rounding pixel.
-    -- The title/formula may need more room; the description wraps at that same
-    -- width. One-line names are capped only by the physical screen boundary.
+    -- Title and description wrap inside the width required by the two cells.
+    -- The native default is a floor; screen bounds are the only upper limit.
     local width=ICON+ICON_GAP+math.ceil(nameWidth)+COLUMN_GAP+math.ceil(valueWidth)+1
-    width=math.min(maxWidth,math.max(width,self:NaturalWidth(title),self:NaturalWidth(formula)))
+    width=math.min(maxWidth,math.max(width,self.defaultWidth-paddingWidth))
     valueWidth=math.min(math.ceil(valueWidth)+1,math.max(1,width-ICON-ICON_GAP-COLUMN_GAP-1))
     nameWidth=math.max(1,width-ICON-ICON_GAP-COLUMN_GAP-valueWidth)
     local old=bounds.keepLayout and self.layout
-    if old then width=old.width;nameWidth=old.nameWidth;valueWidth=old.valueWidth end
     self.width=width
     local function place(l,parent,x,y,w,h)
         l:ClearAnchors();l:SetDimensions(w,h);l:SetAnchor(api.TOPLEFT,parent,api.TOPLEFT,x,y)
@@ -119,9 +116,9 @@ function View:Render(b,language,bounds)
         l:SetHidden(text=='')
         local _,h=self:Measure(text,width,singleLine);return h
     end
-    local titleHeight=textHeight(self.title,title,true)
+    local titleHeight=textHeight(self.title,title)
     local descriptionHeight=textHeight(self.description,description)
-    if old then titleHeight=old.titleHeight end
+    if old and old.width==width then titleHeight=old.titleHeight end
     place(self.title,self.control,0,0,width,titleHeight)
     local headerHeight=titleHeight+(titleHeight>0 and SECTION_GAP or 0)
     -- Description, sources and attribute preview share one scroll viewport.
@@ -165,8 +162,7 @@ function View:Render(b,language,bounds)
     local _,totalLabelHeight=self:Measure(totalLabel,width-valueWidth-COLUMN_GAP,true)
     local _,totalValueHeight=self:Measure(totalValue,valueWidth,true)
     local totalHeight=math.max(totalLabelHeight,totalValueHeight)
-    local formulaHeight=textHeight(self.formula,formula)
-    local footerHeight=totalHeight+(formulaHeight>0 and formulaHeight+ROW_GAP or 0)
+    local footerHeight=totalHeight
     local available=(old and old.height or maxHeight)-headerHeight-footerHeight-SECTION_GAP
     local overflow=self.contentHeight>available
     local hintHeight=textHeight(self.hint,overflow and hint or '')
@@ -186,13 +182,8 @@ function View:Render(b,language,bounds)
     place(self.footer,self.control,0,footerY,width-valueWidth-COLUMN_GAP,totalHeight);self.footer:SetHidden(false)
     place(self.footerValue,self.control,width-valueWidth,footerY,valueWidth,totalHeight);self.footerValue:SetHidden(false)
     footerY=footerY+totalHeight+ROW_GAP
-    place(self.formula,self.control,0,footerY,width,formulaHeight);footerY=footerY+(formulaHeight>0 and formulaHeight+ROW_GAP or 0)
     place(self.hint,self.control,0,footerY,width,hintHeight)
     self:Scroll(0);self.control:SetHidden(false)
-    if not self.originalConstraints then
-        self.originalConstraints={self.tooltip:GetDimensionConstraints()}
-        self.originalWidth=self.tooltip:GetWidth();self.originalHeight=self.tooltip:GetHeight()
-    end
     local tooltipWidth,tooltipHeight=width+paddingWidth,self.height+paddingHeight
     self.tooltip:SetDimensionConstraints(tooltipWidth,tooltipHeight,tooltipWidth,tooltipHeight)
     self.tooltip:SetDimensions(tooltipWidth,tooltipHeight)
