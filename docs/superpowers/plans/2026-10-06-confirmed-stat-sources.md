@@ -27,7 +27,7 @@
 
 ### Task 1: Verified bases and raw attribute percentage scope
 
-**Files:** `Sources/Base.lua`, `Rules.lua`, `tests/test_base.lua`, `tests/fixtures/live_ru_tank.lua`, `tests/test_live_ru_tank.lua` under `KanaStatSources`.
+**Files:** `sources/Base.lua`, `Rules.lua`, `tests/test_base.lua`, `tests/fixtures/live_ru_tank.lua`, `tests/test_live_ru_tank.lua` under `KanaStatSources`.
 
 **Interfaces:** `K.Sources.Base.Build(snapshot)` emits flat bases/attributes and diagnostics; `K.App:Explain(snapshot)` retains native totals and calculates residuals.
 
@@ -55,7 +55,7 @@
 
 **Files:** `Core.lua`, `KanaStatSources.addon`, `README.md`, `docs/research.md`, `docs/validation.md` under `KanaStatSources`.
 
-- [ ] Update evidence, limits, latest dump results and release version to 1.0.5.
-- [ ] Run `lua KanaStatSources/tests/run.lua` and `PYTHONPATH=/tmp/kana-cooldown-test-deps python3 KanaStatSources/tests/run51.py`; require all checks pass.
+- [x] Update evidence, limits, latest dump results and release version to 1.0.5.
+- [x] Run `lua KanaStatSources/tests/run.lua` and `PYTHONPATH=/tmp/kana-cooldown-test-deps python3 KanaStatSources/tests/run51.py`; require all checks pass.
 - [ ] Obtain one fresh-context whole-change review, address material findings with failing regressions and rerun suite.
 - [ ] Commit scoped release/docs; report remaining crit discrepancy and client verification limit.
