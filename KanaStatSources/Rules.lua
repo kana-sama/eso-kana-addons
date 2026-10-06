@@ -1,5 +1,9 @@
 local K=KanaStatSources
 local R={Policies={},registry={}};K.Rules=R
+-- Attribute deltas and native Mundus values already reflect their own scaling.
+-- Percent rows explain only the recognized raw flat portion; any unmodeled
+-- base/source/scaling stays in the signed remainder.
+for _,stat in ipairs({'maxHealth','maxMagicka','maxStamina','weaponDamage','spellDamage','healthRecovery','magickaRecovery','staminaRecovery'}) do R.Policies[stat]={groups={{id='additive',scope={'flat'},requireBase=true}}} end
 function R.Register(rule) assert(rule.id and rule.kind and rule.build,'invalid source rule');R.registry[rule.kind..':'..tostring(rule.id)]=rule end
 function R.Resolve(source,snapshot)
     local rule=R.registry[source.kind..':'..tostring(source.id)]

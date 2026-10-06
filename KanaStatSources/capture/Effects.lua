@@ -7,7 +7,16 @@ function K.CaptureEffects.Read(api)
     for i=1,read('GetNumBuffs','player') or 0 do
         local values={read('GetUnitBuffInfo','player',i)};local e={index=i}
         for n,name in ipairs(fields) do e[name]=values[n] end
-        if e.abilityId then e.description=read('GetAbilityDescription',e.abilityId) end
+        if e.abilityId then
+            e.description=read('GetAbilityDescription',e.abilityId,nil,'player')
+            e.buffType=read('GetAbilityBuffType',e.abilityId,'player')
+            e.mundusType=read('GetAbilityMundusStoneType',e.abilityId)
+            e.derivedStats={}
+            for n=1,read('GetAbilityNumDerivedStats',e.abilityId) or 0 do
+                local stat,value=read('GetAbilityDerivedStatAndEffectByIndex',e.abilityId,n)
+                e.derivedStats[#e.derivedStats+1]={id=stat,stat=K.Stats.KeyForId(api,stat),value=value}
+            end
+        end
         data.effects[#data.effects+1]=e
     end
     local c=data.context
