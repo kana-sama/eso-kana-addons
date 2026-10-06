@@ -35,10 +35,11 @@ function R.Emit(out,source,clauses,evidence)
     end end
 end
 local function oneHandAndShield(_,s)
-    local c=s.constants or {};local bar=(s.context or {}).bar;local mainSlot,offSlot
-    if bar=='front' then mainSlot,offSlot=c.EQUIP_SLOT_MAIN_HAND,c.EQUIP_SLOT_OFF_HAND
-    elseif bar=='back' then mainSlot,offSlot=c.EQUIP_SLOT_BACKUP_MAIN,c.EQUIP_SLOT_BACKUP_OFF
+    local c=s.constants or {};local context=s.context or {};local bar=context.bar;local mainSlot,offSlot,category,pair
+    if bar=='front' then mainSlot,offSlot,category,pair=c.EQUIP_SLOT_MAIN_HAND,c.EQUIP_SLOT_OFF_HAND,c.HOTBAR_CATEGORY_PRIMARY,1
+    elseif bar=='back' then mainSlot,offSlot,category,pair=c.EQUIP_SLOT_BACKUP_MAIN,c.EQUIP_SLOT_BACKUP_OFF,c.HOTBAR_CATEGORY_BACKUP,2
     else return false end
+    if not K.Core.Finite(category) or context.hotbarCategory~=category or context.weaponPair~=pair then return false end
     if not K.Core.Finite(mainSlot) or not K.Core.Finite(offSlot) or not K.Core.Finite(c.WEAPONTYPE_SHIELD) then return false end
     local main,off
     for _,item in ipairs(s.equipment or {})do

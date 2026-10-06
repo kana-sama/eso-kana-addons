@@ -78,6 +78,7 @@ function Instance:Start()
     register('EVENT_LEVEL_UPDATE','all',function(_,tag)if tag=='player'then self:Invalidate('all')end end,true)
     register('EVENT_INVENTORY_SINGLE_SLOT_UPDATE','equipment',function(_,bag)if bag==nil or bag==api.BAG_WORN then self:Invalidate('equipment')end end)
     for _,name in ipairs({'EVENT_INVENTORY_FULL_UPDATE','EVENT_ACTIVE_WEAPON_PAIR_CHANGED'})do register(name,'equipment')end
+    register('EVENT_ACTION_SLOTS_ACTIVE_HOTBAR_UPDATED','stats',function(_,changed)if changed then self:Invalidate('stats')end end)
     for _,name in ipairs({'EVENT_ATTRIBUTE_UPGRADE_UPDATED','EVENT_CHAMPION_PURCHASE_RESULT','EVENT_CHAMPION_POINT_GAINED','EVENT_SKILLS_FULL_UPDATE','EVENT_SKILL_POINTS_CHANGED','EVENT_SKILL_RANK_UPDATE','EVENT_ABILITY_PROGRESSION_RANK_UPDATE','EVENT_SKILL_LINE_ADDED','EVENT_HOTBAR_SLOT_UPDATED','EVENT_ACTION_SLOTS_ALL_HOTBARS_UPDATED'})do register(name,'build')end
     register('EVENT_PLAYER_ACTIVATED','all')
     register('EVENT_PLAYER_DEACTIVATED',nil,function()self.bridge:Clear();self.collector:Invalidate('all')end)

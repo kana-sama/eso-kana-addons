@@ -2,7 +2,8 @@ local T=dofile('KanaStatSources/tests/support.lua');local K=T.load({'Core','Stat
 local function s() return {meta={language='en'},context={bar='front'},skills={{id=100,name='Passive',rank=2,purchased=true,passive=true,lineActive=true,description='Increases your Maximum Magicka by 2000.'}},bars={front={},back={[3]={abilityId=200}}}} end
 local function sword(language,description)
     local v=s();v.meta.language=language or 'en'
-    v.constants={SKILL_TYPE_WEAPON=2,EQUIP_SLOT_MAIN_HAND=4,EQUIP_SLOT_OFF_HAND=5,EQUIP_SLOT_BACKUP_MAIN=20,EQUIP_SLOT_BACKUP_OFF=21,WEAPONTYPE_AXE=1,WEAPONTYPE_HAMMER=2,WEAPONTYPE_SWORD=3,WEAPONTYPE_DAGGER=11,WEAPONTYPE_SHIELD=14,WEAPONTYPE_FROST_STAFF=13,WEAPONTYPE_TWO_HANDED_SWORD=4}
+    v.context.weaponPair=1;v.context.hotbarCategory=0
+    v.constants={HOTBAR_CATEGORY_PRIMARY=0,HOTBAR_CATEGORY_BACKUP=1,SKILL_TYPE_WEAPON=2,EQUIP_SLOT_MAIN_HAND=4,EQUIP_SLOT_OFF_HAND=5,EQUIP_SLOT_BACKUP_MAIN=20,EQUIP_SLOT_BACKUP_OFF=21,WEAPONTYPE_AXE=1,WEAPONTYPE_HAMMER=2,WEAPONTYPE_SWORD=3,WEAPONTYPE_DAGGER=11,WEAPONTYPE_SHIELD=14,WEAPONTYPE_FROST_STAFF=13,WEAPONTYPE_TWO_HANDED_SWORD=4}
     v.equipment={{slot=4,weaponType=1},{slot=5,weaponType=14},{slot=20,weaponType=13}}
     v.skills={{id=29397,purchased=true,passive=true,lineActive=true,skillType=2,description=description or 'Increases your Weapon and Spell Damage by 5% and the amount of damage you can block by 20%.'}}
     return v
@@ -18,7 +19,7 @@ return {
  sword_and_board_accepts_supported_one_hand_types_on_either_bar=function()
     for _,weapon in ipairs({1,2,3,11})do
         local v=sword();v.equipment[1].weaponType=weapon;T.eq(#K.Sources.Skills.Build(v),2)
-        v.context.bar='back';T.eq(#K.Sources.Skills.Build(v),0)
+        v.context.bar='back';v.context.weaponPair=2;v.context.hotbarCategory=1;T.eq(#K.Sources.Skills.Build(v),0)
         v.equipment[3].weaponType=weapon;v.equipment[4]={slot=21,weaponType=14}
         T.eq(#K.Sources.Skills.Build(v),2)
     end
@@ -28,6 +29,12 @@ return {
         function(v)v.context.bar='back'end,
         function(v)v.context.bar='werewolf'end,
         function(v)v.context.bar=nil end,
+        function(v)v.context.hotbarCategory=nil end,
+        function(v)v.context.hotbarCategory=123 end,
+        function(v)v.context.hotbarCategory=1 end,
+        function(v)v.context.weaponPair=nil end,
+        function(v)v.context.weaponPair=2 end,
+        function(v)v.constants.HOTBAR_CATEGORY_PRIMARY=nil end,
         function(v)v.equipment[2]=nil end,
         function(v)v.equipment[2].weaponType=11 end,
         function(v)v.equipment[1].weaponType=4 end,

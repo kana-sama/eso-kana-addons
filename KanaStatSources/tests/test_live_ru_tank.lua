@@ -1,7 +1,15 @@
 local T=dofile('KanaStatSources/tests/support.lua')
 local files={};for line in io.lines('KanaStatSources/KanaStatSources.addon')do if line:match('%.lua$')then files[#files+1]=line:gsub('%.lua$','')end end
 local K=T.load(files)
-local function snapshot()return dofile('KanaStatSources/tests/fixtures/live_ru_tank.lua')end
+local function snapshot()
+    local s=dofile('KanaStatSources/tests/fixtures/live_ru_tank.lua')
+    -- 1.0.4 did not capture these enums. Replay with the same native API enum
+    -- fixture used by the collector tests; leave the saved snapshot untouched.
+    local api=dofile('KanaStatSources/tests/fixtures/capture.lua')()
+    s.constants.HOTBAR_CATEGORY_PRIMARY=api.HOTBAR_CATEGORY_PRIMARY
+    s.constants.HOTBAR_CATEGORY_BACKUP=api.HOTBAR_CATEGORY_BACKUP
+    return s
+end
 local function row(b,key)
     for _,r in ipairs(b.rows)do if r.key==key then return r end end
     error('missing source '..key)

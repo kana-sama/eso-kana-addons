@@ -8,6 +8,20 @@ local function api()
     return a
 end
 return {
+ hotbar_change_invalidates_context_without_rebuilding_cached_sources=function()
+    local a=api();a.EVENT_ACTION_SLOTS_ACTIVE_HOTBAR_UPDATED=8
+    local category=0;a.GetActiveHotbarCategory=function()return category end
+    local app=K.App.New(a,K.Dump.Storage(a));app:Start()
+    a.EVENT_MANAGER.updates[K.name..':refresh']()
+    T.eq(app.lastSnapshot.context.hotbarCategory,0)
+    local build,gear,generation=app.collector.cache.build,app.collector.cache.equipment,app.collector.generation
+    local changed=a.EVENT_MANAGER.handlers[8];T.eq(type(changed),'function')
+    changed(8,false,false,0);T.eq(app.collector.generation,generation)
+    category=2;changed(8,true,true,2)
+    T.eq(app.collector.generation,generation+1)
+    app:GetBreakdown('weaponDamage');T.eq(app.lastSnapshot.context.hotbarCategory,2)
+    T.eq(app.collector.cache.build,build);T.eq(app.collector.cache.equipment,gear)
+ end,
  prewarm_after_start=function()
     local a=api();local app=K.App.New(a,K.Dump.Storage(a));app:Start()
     local callback=a.EVENT_MANAGER.updates[K.name..':refresh'];T.eq(type(callback),'function')

@@ -4,6 +4,7 @@ local Instance={};Instance.__index=Instance
 -- Read known enum names directly. Iterating _G also retrieves private native
 -- functions, which ESO forbids even when they are never called.
 local constantNames={
+    'HOTBAR_CATEGORY_PRIMARY','HOTBAR_CATEGORY_BACKUP',
     'SKILL_TYPE_WEAPON',
     'EQUIP_SLOT_ITERATION_BEGIN','EQUIP_SLOT_ITERATION_END','ARMORTYPE_HEAVY','ARMORTYPE_LIGHT',
     'ARMORTYPE_MEDIUM','ARMORTYPE_NONE','EQUIP_SLOT_BACKUP_MAIN','EQUIP_SLOT_BACKUP_OFF',

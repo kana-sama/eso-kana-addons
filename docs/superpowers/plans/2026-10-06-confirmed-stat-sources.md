@@ -57,5 +57,5 @@
 
 - [x] Update evidence, limits, latest dump results and release version to 1.0.5.
 - [x] Run `lua KanaStatSources/tests/run.lua` and `PYTHONPATH=/tmp/kana-cooldown-test-deps python3 KanaStatSources/tests/run51.py`; require all checks pass.
-- [ ] Obtain one fresh-context whole-change review, address material findings with failing regressions and rerun suite.
-- [ ] Commit scoped release/docs; report remaining crit discrepancy and client verification limit.
+- [x] Obtain one fresh-context whole-change review, address material findings with failing regressions and rerun suite. P2 normal-category admission fixed with collector-to-rule tests and hotbar cache invalidation.
+- [x] Commit scoped release/docs; report remaining crit discrepancy and client verification limit.
