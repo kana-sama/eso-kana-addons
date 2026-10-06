@@ -2,6 +2,26 @@ local Fake=dofile(ROOT..'/tests/support/fake_eso.lua')
 local function setup() return Fake.Load({'Core.lua','Slots.lua','lang/en.lua','BuildModel.lua','Presets.lua'}) end
 local function gear(uid) return {[11]={kind='item',uid=uid,link='ring'}} end
 return {
+    multi_component_patch_commits_once_or_leaves_the_preset_unchanged=function()
+        local k=setup();local r=k.Presets.New({},'EU','a','1','One')
+        local p=assert(r:PatchComponents(nil,{
+            equipment={op='replace',value=gear('a')},
+            attributes={op='replace',value={health=0,magicka=0,stamina=64}},
+        },'Parts'))
+        local bad,problem=r:PatchComponents(p.id,{
+            equipment={op='remove'},attributes={op='replace',value={health=-1,magicka=0,stamina=64}},
+        },p.name,p.revision)
+        assert(not bad and problem and r:Get(p.id).equipment and r:Get(p.id).revision==p.revision)
+        local barriers,events=0,0
+        r.emit=function()events=events+1;assert(barriers==1 and not r:Get(p.id).equipment)end
+        local stored=assert(r:PatchComponents(p.id,{
+            equipment={op='remove'},attributes={op='replace',value={health=64,magicka=0,stamina=0}},
+        },p.name,p.revision,function(value)
+            barriers=barriers+1;assert(not value.equipment and value.attributes.health==64)
+            assert(r:Get(p.id).revision==p.revision+1)
+        end))
+        assert(stored.revision==p.revision+1 and barriers==1 and events==1)
+    end,
     werewolf_slots_are_optional_constraints_and_survive_storage=function()
         local k=setup();local ref={kind='skill',skillKey='50:active:152',expectedMorph=2}
         local wanted={abilities={bars={werewolf={[2]=ref,[4]={kind='empty'}}}}}

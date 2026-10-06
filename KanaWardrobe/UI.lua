@@ -121,6 +121,9 @@ function Instance:Model(snapshot,actual,catalogue,captureProblem)
  local idle=view.state=="idle";local editing=view.state=="editing" and not view.paused
  local selected=selectionCount(view)
  local unresolved=count(view.missing)
+ if view.component=='equipment'then
+  unresolved=0;for slot in pairs(view.missing or {})do if (view.selected or {})[slot]then unresolved=unresolved+1 end end
+ end
  if view.component=='abilities'then
   unresolved=0
   for _,entry in pairs(view.missing or {})do
@@ -129,7 +132,8 @@ function Instance:Model(snapshot,actual,catalogue,captureProblem)
   end
  end
  local projected=selected>0
- if view.component and not projected then
+ if view.includedGroups then projected=count(view.includedGroups)>0
+ elseif view.component and not projected then
   local preset=view.presetId and self.repo:Get(view.presetId)
   if preset then
    for _,part in ipairs({"equipment","abilities","attributes"})do
@@ -528,6 +532,13 @@ function Instance:Build()
  self.nameButton:SetHandler("OnMouseExit",clearTooltip)
  self.allButton=button(self.editor,"KanaWardrobeAll",text("ALL"),0,124,108,function()self:SelectAll(true)end)
  self.noneButton=button(self.editor,"KanaWardrobeNone",text("NONE"),114,124,110,function()self:SelectAll(false)end)
+ self.clearGroupButtons={}
+ for _,group in ipairs({'skills','bars','equipment','attributes'})do
+  local b=button(self.editor,'KanaWardrobeClear'..group,text('CLEAR_'..group),0,0,224,function()self:Command('ClearPresetGroup',group)end)
+  b.group=group;b:SetFont('ZoFontGame')
+  b:SetHandler('OnMouseEnter',function()tooltip(b,text('CLEAR_GROUP_HELP'))end);b:SetHandler('OnMouseExit',clearTooltip)
+  self.clearGroupButtons[#self.clearGroupButtons+1]=b
+ end
  self.ghostButton=button(self.editor,"KanaWardrobeGhosts",text("RESOLVE"),0,158,224,function()
   ClearMenu();for _,slot in ipairs(KW.Slots.Order)do
    if self.session:GetView().missing[slot]then local id=slot;AddMenuItem(D.SlotName(slot),function()zo_callLater(function()self:ResolveMenu(id,self.ghostButton)end,0)end)end
@@ -704,6 +715,7 @@ function Instance:LayoutContent(model)
   if self.attributesCheck.label then self.attributesCheck.label:SetWidth(bodyWidth-25)end
   y=y+32
  end
+ for _,b in ipairs(self.clearGroupButtons)do full(b,6,28)end
  full(self.ghostButton,12,28)
  for _,row in ipairs(self.repairRows or {})do
   full(row,10,82);row.title:SetWidth(bodyWidth);row.reason:SetWidth(bodyWidth);row.action:SetWidth(bodyWidth)
@@ -826,6 +838,10 @@ function Instance:Render(model)
  self.saveAndApplyButton:SetEnabled(model.canSaveAndApply);self.saveAndApplyButton:SetHidden(false)
  self.saveButton:SetEnabled(model.canSave);self.cancelButton:SetEnabled(model.canCancel)
  self.allButton:SetEnabled(view.state=="editing" and not view.paused);self.noneButton:SetEnabled(view.state=="editing" and not view.paused)
+ for _,b in ipairs(self.clearGroupButtons)do
+  b:SetHidden(not model.isEditor or not self.session.ClearPresetGroup)
+  b:SetEnabled(view.state=='editing' and not view.paused and (view.includedGroups or {})[b.group]==true)
+ end
  self.saveButton:SetHandler("OnMouseEnter",function()tooltip(self.saveButton,model.canSave and text(view.component and "COMPONENT_SAVE_HELP"or"RETURN_NOTE") or model.saveReason)end)
  self.saveButton:SetHandler("OnMouseExit",clearTooltip)
  self.cancelButton:SetHandler("OnMouseEnter",function()tooltip(self.cancelButton,model.canCancel and text(view.component and "COMPONENT_CANCEL_HELP"or"RETURN_NOTE") or model.reason)end)

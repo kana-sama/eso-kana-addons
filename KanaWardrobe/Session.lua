@@ -637,6 +637,7 @@ function B:GetView()
   else recovery={needsInspection=true}end
  end
  return KW.Copy({recovery=recovery,recoveryKey=key,state=j.state,kind=j.kind,page=j.page or self.activePage,component=j.component,selection=j.selection,selected=j.selection and j.selection.equipment or {},draft=j.experiment,attributesEnabled=j.selection and j.selection.attributes,
+  includedGroups=KW.BuildDraft.IncludedGroups(j.component,j.selection,j.originalPreset,j.clearedGroups),
   progress=j.progress,isEditor=j.kind~='apply',name=j.name,presetId=j.presetId,paused=j.paused,problem=j.problem,confirmation=j.confirmation,saved=j.saveCommitted==true,missing=j.missing or {}})
 end
 function B:GetRecoveryView()
@@ -759,6 +760,7 @@ function B:BeginComponent(preset,page,kind,allowMissing)
   end end
   draft.unresolved=missing
  end
+ if component=='abilities'then intent.abilities=KW.BuildDraft.AbilitiesForEditor(intent.abilities,catalogue)end
  local plan;plan,problem=self.services.buildPlanner.Build(snapshot,intent,catalogue,self.capabilities);if not plan then return self:Fail(problem)end
  draft:Replace(plan.target[component])
  self:NewBuildJournal(kind,preset,snapshot,page,draft)
@@ -796,6 +798,12 @@ end
 function B:SetAttributesEnabled(value)
  local j,problem=self:Editable();if not j then return nil,problem end
  local ok;ok,problem=self.draft:SetAttributesEnabled(value);if not ok then return nil,problem end
+ j.selection=self.draft:GetSelection();self:Notify();return true
+end
+function B:ClearPresetGroup(group)
+ local j,problem=self:Editable();if not j then return nil,problem end
+ local ok;ok,problem=self.draft:ClearSelection(group);if not ok then return nil,problem end
+ j.clearedGroups=j.clearedGroups or {};j.clearedGroups[group]=true
  j.selection=self.draft:GetSelection();self:Notify();return true
 end
 function B:ResolveMissing(slot,choice)
@@ -863,9 +871,11 @@ function B:CommitComponent(apply)
  if apply then plan,problem=self.services.buildPlanner.Build(snapshot,applyExperiment,catalogue,self.capabilities);if not plan then return self:Fail(problem)end end
  local selected=self.draft:GetPresetBuild()
  for slot,ref in pairs(selected.equipment or {})do if ref.kind=='item' and not snapshot.equipmentState.byUid[ref.uid]then return self:Fail(KW.Problem('unresolvedMissing',{slot=slot}))end end
- local patch=KW.BuildModel.HasParts(selected) and {op='replace',value=selected[j.component]} or {op='remove'}
- local candidate=KW.Copy(j.originalPreset or {});candidate.slots=nil;candidate[j.component]=patch.op=='replace' and KW.Copy(patch.value) or nil;candidate.name=j.name
- local normalized;normalized,problem=KW.BuildModel.Normalize(candidate);if not normalized or not KW.BuildModel.HasParts(normalized)then return self:Fail(problem or KW.Problem('invalidPreset'))end
+ local normalized;normalized,problem=KW.BuildDraft.PresetCandidate(j.originalPreset,j.component,selected,j.clearedGroups)
+ if not normalized or not KW.BuildModel.HasParts(normalized)then return self:Fail(problem or KW.Problem('invalidPreset'))end
+ normalized.name=j.name
+ local patches={}
+ for _,part in ipairs({'equipment','abilities','attributes'})do patches[part]=normalized[part] and {op='replace',value=normalized[part]}or {op='remove'}end
  if self.repo:NameExists(j.name,j.presetId)then return self:Fail(KW.Problem('duplicateName'))end
  local current=j.presetId and self.repo:Get(j.presetId);if current and current.revision~=j.revision then return self:Fail(KW.Problem('revisionConflict'))end
  j.commitCandidate=KW.Copy(normalized);j.phase='locking';self:Persist();self.committing=true
@@ -883,7 +893,7 @@ function B:CommitComponent(apply)
   plan=checked
  end
  j.phase='committing';self:Persist();self.committing=true
- local completed,stored,err=pcall(self.repo.PatchComponent,self.repo,j.presetId,j.component,patch,j.name,j.revision,function(canonical)
+ local completed,stored,err=pcall(self.repo.PatchComponents,self.repo,j.presetId,patches,j.name,j.revision,function(canonical)
   j.presetId=canonical.id;j.revision=canonical.revision;j.committedRevision=canonical.revision;j.commitCandidate=KW.Copy(canonical);j.saveCommitted=true;self:Persist()
  end)
  self.committing=false

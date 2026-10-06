@@ -8,7 +8,7 @@ local function setup()
  function session:GetView() return self.view end
  function session:IsEditorActive()return self.view.isEditor end
  function session:GetSelected(domain,key)if type(domain)=="number"then key=domain end;return self.view.selected[key]==true end
- for _,method in ipairs({"Apply","BeginEdit","BeginNew","Save","Cancel","Pause","Resume","Recover","RejectConfirmation","Confirm","SetName","SetSelected","ResolveMissing"}) do
+ for _,method in ipairs({"Apply","BeginEdit","BeginNew","Save","Cancel","Pause","Resume","Recover","RejectConfirmation","Confirm","SetName","SetSelected","ResolveMissing","ClearPresetGroup"}) do
   session[method]=function(self,...) self.calls[#self.calls+1]={method,...}; return true end
  end
  local preview={Hide=function(self) self.hidden=true end}
@@ -107,6 +107,25 @@ local function dialogRuntime(put)
  return rt
 end
 return {
+ clear_group_buttons_only_show_in_editor_and_follow_remaining_selection=function()
+  withNative(function()
+   local k,r,s,inv,_,preview=setup();local ui=k.UI.New(r,s,preview,inv);ui.visible=true
+   s.view={state='editing',isEditor=true,component='abilities',selected={},selection={},missing={},includedGroups={equipment=true,skills=true,bars=true,attributes=true}}
+   ui:Refresh();assert(#ui.clearGroupButtons==4)
+   for i,group in ipairs({'skills','bars','equipment','attributes'})do
+    local b=ui.clearGroupButtons[i]
+    assert(not b.hidden and b.enabled)
+    b.handlers.OnClicked();assert(s.calls[#s.calls][1]=='ClearPresetGroup' and s.calls[#s.calls][2]==group)
+    if i>1 then local previous=ui.clearGroupButtons[i-1];assert(b.anchors[1][5]>=previous.anchors[1][5]+previous.h)end
+   end
+   s.view.includedGroups={equipment=false,skills=false,bars=false,attributes=false}
+   assert(not ui:Refresh().canSave,'empty preset still appeared saveable')
+   for _,b in ipairs(ui.clearGroupButtons)do assert(not b.enabled)end
+   s.view.includedGroups.bars=true;assert(ui:Refresh().canSave)
+   s.view={state='idle',isEditor=false,selected={},missing={}};ui:Refresh()
+   for _,b in ipairs(ui.clearGroupButtons)do assert(b.hidden)end
+  end)
+ end,
  progress_colors_and_frame_driven_fill_do_not_use_nonexistent_vertex_mask=function()
   withNative(function(_,_,put)
    put('VERTEX_POINTS_ALL',nil)

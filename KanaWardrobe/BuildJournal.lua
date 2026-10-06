@@ -135,6 +135,8 @@ function J.Read(raw,repo)
   for _,key in ipairs({'originalPreset','commitCandidate'})do out[key]=canonical(raw[key])end
   assert(not component or out.original[component],'missing original component')
   out.selection=selection(raw.selection,component)
+  out.clearedGroups=pick(raw.clearedGroups,{'equipment','skills','bars','attributes'})
+  for _,flag in pairs(out.clearedGroups or {})do assert(type(flag)=='boolean','invalid cleared group')end
   out.editorPlan=plan(raw.editorPlan)
   if raw.confirmation then
    out.confirmation=pick(raw.confirmation,{'action','presetName'});out.confirmation.plan=plan(raw.confirmation.plan)

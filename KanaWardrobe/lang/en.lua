@@ -93,6 +93,11 @@ do
  local S=KanaWardrobe.Strings
  S.SAVE_AND_APPLY="Save and apply"
  S.ATTRIBUTES_INCLUDE="Save attributes"
+ S.CLEAR_skills="Remove skills"
+ S.CLEAR_bars="Remove action bars"
+ S.CLEAR_equipment="Remove equipment"
+ S.CLEAR_attributes="Remove attributes"
+ S.CLEAR_GROUP_HELP="Uncheck this part of the preset. Takes effect when you save; your character is unchanged."
  S.SAVE_AND_APPLY_HELP="Save selected entries, then apply every change in this page's current experiment, including unselected entries."
  S.COMPONENT_SAVE_HELP="Save the selected part and discard this page's experiment. Skills and attributes are not purchased."
  S.COMPONENT_CANCEL_HELP="Discard this page's experiment without saving or purchasing skills and attributes."

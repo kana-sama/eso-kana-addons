@@ -129,11 +129,16 @@ end
 -- The private commit barrier runs after durable assignment and before public observers.
 function Repo:PatchComponent(id,component,patch,name,expectedRevision,onCommitted)
     if component~="equipment" and component~="abilities" and component~="attributes" then return nil,KW.Problem("invalidComponent") end
+    return self:PatchComponents(id,{[component]=patch},name,expectedRevision,onCommitted)
+end
+function Repo:PatchComponents(id,patches,name,expectedRevision,onCommitted)
+    if type(patches)~="table" then return nil,KW.Problem("invalidComponentPatch") end
     local old=id and self.character.presets[id]
     if id~=nil and not old then return nil,KW.Problem("presetMissing") end
     if id==nil and expectedRevision~=nil or old and expectedRevision~=old.revision then return nil,KW.Problem("revisionConflict") end
     local candidate=old and KW.Copy(old) or {}
-    if patch~=nil then
+    for component,patch in pairs(patches)do
+        if component~="equipment" and component~="abilities" and component~="attributes" then return nil,KW.Problem("invalidComponent") end
         if type(patch)~="table" or (patch.op~="replace" and patch.op~="remove") then return nil,KW.Problem("invalidComponentPatch") end
         if patch.op=="remove" then candidate[component]=nil
         else

@@ -20,6 +20,7 @@ function M:GetView()
   component=editing and j.component or nil,isEditor=editing==true,name=j and j.name,presetId=j and j.presetId,
   kind=j and j.kind,selection=editing and j.selection or {},selected=editing and j.selection.equipment or {},
   draft=editing and j.experiment,attributesEnabled=editing and j.selection.attributes,
+  includedGroups=editing and KW.BuildDraft.IncludedGroups(j.component,j.selection,j.originalPreset,j.clearedGroups),
   missing=editing and j.missing or {},saved=j and j.saveCommitted==true,operation=self.operations and self.operations.operation~=nil})
 end
 function M:IsEditorActive()return self.journal~=nil and self.journal.state=='editing' and not self.operations.operation end
@@ -125,6 +126,7 @@ function M:PrepareEditor(intent,snapshot,catalogue)
   end end
   draft.unresolved=missing
  end
+ if component=='abilities'then wanted.abilities=KW.BuildDraft.AbilitiesForEditor(wanted.abilities,catalogue)end
  local raw;raw,problem=self.services.buildPlanner.Build(snapshot,wanted,catalogue,self.capabilities)
  if not raw then return nil,problem end
  local replaced;replaced,problem=draft:Replace(raw.target[component]);if not replaced then return nil,problem end
@@ -174,16 +176,19 @@ function M:PrepareExit(intent,snapshot,catalogue)
  end
  if intent.kind~='cancel' then
   local name,problem=KW.Presets.NormalizeName(j.name);if not name then return nil,problem end
-  local value=j.selectedBuild and j.selectedBuild[c];local patch=value and {op='replace',value=value}or {op='remove'}
-  local candidate=KW.Copy(j.originalPreset or {});candidate.slots=nil;candidate[c]=value;candidate.name=name
-  candidate,problem=KW.BuildModel.Normalize(candidate)
+  local candidate;candidate,problem=KW.BuildDraft.PresetCandidate(j.originalPreset,c,j.selectedBuild,j.clearedGroups)
   if not candidate or not KW.BuildModel.HasParts(candidate)then return nil,problem or KW.Problem('invalidPreset')end
+  candidate.name=name
+  local patches={}
+  for _,part in ipairs({'equipment','abilities','attributes'})do
+   patches[part]=candidate[part] and {op='replace',value=candidate[part]}or {op='remove'}
+  end
   if not j.saveCommitted then
    if self.repo:NameExists(name,j.presetId)then return nil,KW.Problem('duplicateName')end
    local current=j.presetId and self.repo:Get(j.presetId)
    if j.presetId and (not current or current.revision~=j.revision)then return nil,KW.Problem('revisionConflict')end
   end
-  add(steps,'save',{patch=patch,name=name,candidate=candidate})
+  add(steps,'save',{patches=patches,name=name,candidate=candidate})
  end
  if c~='equipment'then add(steps,'closeDraft')end
  for _,step in ipairs(result.following or {})do steps[#steps+1]=step end;result.following=nil
@@ -240,7 +245,7 @@ function M:LocalStep(step,op,report,done)
  if step.kind=='save'then
   if j.saveCommitted then done({saved=true,id=j.presetId,revision=j.revision,already=true});return end
   local locked,problem=self.protection:EnsureBuild(step.candidate);if not locked then return failure(done,problem)end
-  local ok,stored,err=pcall(self.repo.PatchComponent,self.repo,j.presetId,j.component,step.patch,step.name,j.revision,function(preset)
+  local ok,stored,err=pcall(self.repo.PatchComponents,self.repo,j.presetId,step.patches or {[j.component]=step.patch},step.name,j.revision,function(preset)
    j.presetId=preset.id;j.revision=preset.revision;j.saveCommitted=true;j.commitCandidate=KW.Copy(preset)
    self.journal=j;op.context.editor=KW.Copy(j);op.intent.editor=KW.Copy(j);self:Persist()
    report({saved=true,id=preset.id,revision=preset.revision})

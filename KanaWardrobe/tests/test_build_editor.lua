@@ -19,6 +19,14 @@ local function setup()
  f:Reload();return f
 end
 return {
+ bar_morph_without_a_selected_talent_is_local_to_the_editor=function()
+  local f=setup();local key='10:active:51'
+  local p=f:Preset({abilities={bars={front={[3]={kind='skill',skillKey=key,expectedMorph=2}}}}})
+  local ok,problem=f.session:BeginEdit(p.id,false,'skills');assert(ok,problem and problem.code)
+  assert(f.skills:CaptureDraft().skills[key].morph==2 and not f.session:GetSelected('skills',key))
+  assert(f.session:Cancel())
+  assert(f.skillObjects[1]:GetCurrentMorphSlot()==1 and #f.requests.skills==0 and f.repo:Get(p.id).revision==p.revision)
+ end,
  session_publishes_attribute_progress_without_equipment=function()
   local f=setup();local p=f:Preset({attributes={health=0,magicka=0,stamina=64}})
   assert(f.session:Apply(p.id))

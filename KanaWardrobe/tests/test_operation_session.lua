@@ -19,7 +19,122 @@ local function create(saved)
  function f:SavePreset(build,name)return assert(self.repo:PatchComponent(nil,'equipment',build.equipment and {op='replace',value=build.equipment}or nil,name or 'Test',nil))end
  return f
 end
+local function allGroupsPreset(f)
+ local gear=f:AddItem('ring',EQUIP_SLOT_RING1,true)
+ f.actualBars[0][3]={type=1,id=511};f.api.ACTION_BAR_ASSIGNMENT_MANAGER:ResetPlayerHotbars()
+ local p=assert(f.repo:PatchComponent(nil,'equipment',{op='replace',value={[EQUIP_SLOT_RING1]=gear}},'All parts'))
+ p=assert(f.repo:PatchComponent(p.id,'abilities',{op='replace',value={
+  skills={['10:active:51']={kind='active',purchased=true,morph=1}},
+  bars={front={[1]={kind='skill',skillKey='10:active:51',expectedMorph=1}},back={[1]={kind='empty'}},werewolf={[2]={kind='empty'}}}}},p.name,p.revision))
+ return assert(f.repo:PatchComponent(p.id,'attributes',{op='replace',value=f.attributes:Capture()},p.name,p.revision))
+end
 return {
+ bar_only_preset_opens_its_morph_in_the_draft_without_selecting_the_skill=function()
+  for _,finish in ipairs({'Save','Cancel'})do
+   local f=create();local key='10:active:51'
+   local p=assert(f.repo:PatchComponent(nil,'abilities',{op='replace',value={bars={front={[3]={kind='skill',skillKey=key,expectedMorph=2}}}}},'Bar morph'))
+   assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(6)
+   local operation=f.x:GetView()
+   assert(f.session:IsEditorActive(),operation and operation.steps[operation.index].problem.code)
+   local draft=assert(f.skills:CaptureDraft())
+   assert(draft.skills[key].morph==2 and draft.bars.front[3].expectedMorph==2)
+   assert(not f.session:GetSelected('skills',key),'draft dependency became a preset selection')
+   assert(f.session:GetSelected('bars',{bar='front',slot=3}))
+   assert(f.skillObjects[1]:GetCurrentMorphSlot()==1 and #f.requests.skills==0)
+   assert(f.session[finish](f.session));f:Tick(8);assert(not f.x:GetView())
+   local stored=f.repo:Get(p.id)
+   assert(not stored.abilities.skills and stored.abilities.bars.front[3].expectedMorph==2)
+   assert(f.skillObjects[1]:GetCurrentMorphSlot()==1 and #f.requests.skills==0 and not f.skills.mounted)
+  end
+ end,
+ bar_only_editor_can_repair_the_preset_by_selecting_its_skill=function()
+  local f=create();local key='10:active:51'
+  local p=assert(f.repo:PatchComponent(nil,'abilities',{op='replace',value={bars={back={[2]={kind='skill',skillKey=key,expectedMorph=2}}}}},'Bar morph'))
+  assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(6);assert(f.session:IsEditorActive())
+  assert(f.session:SetSelected('skills',key,true))
+  assert(f.session:Save());f:Tick(8);assert(not f.x:GetView())
+  local stored=f.repo:Get(p.id);assert(stored.abilities.skills[key].morph==2)
+  assert(f:Plan(stored),'repaired preset still fails preflight')
+  assert(f.skillObjects[1]:GetCurrentMorphSlot()==1 and #f.requests.skills==0)
+ end,
+ bar_only_apply_still_preserves_unselected_skills=function()
+  local f=create();local key='10:active:51'
+  local p=assert(f.repo:PatchComponent(nil,'abilities',{op='replace',value={bars={front={[3]={kind='skill',skillKey=key,expectedMorph=2}}}}},'Bar morph'))
+  assert(f.session:Apply(p.id));f:Tick(4)
+  local operation=f.x:GetView()
+  assert(operation.status=='failed' and operation.steps[operation.index].problem.code=='skillMorphMismatch')
+  assert(#f.requests.skills==0 and f.skillObjects[1]:GetCurrentMorphSlot()==1)
+ end,
+ clear_other_groups_does_not_read_or_mount_their_native_editors=function()
+  local f=create();local p=allGroupsPreset(f)
+  assert(f.session:BeginEdit(p.id,false,'inventory'));f:Tick(6)
+  local function unwanted()error('clearing selection accessed another native editor')end
+  f.skills.Catalogue=unwanted;f.skills.Capture=unwanted;f.skills.MountDraft=unwanted
+  f.attributes.Capture=unwanted;f.attributes.MountDraft=unwanted
+  for _,g in ipairs({'skills','bars','attributes'})do assert(f.session:ClearPresetGroup(g))end
+  assert(f.session:Save());f:Tick(8);assert(not f.x:GetView())
+  local stored=f.repo:Get(p.id);assert(stored.equipment and not stored.abilities and not stored.attributes)
+ end,
+ cleared_checkboxes_can_be_selected_again_before_save_apply=function()
+  local f=create();local p=allGroupsPreset(f)
+  assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(6)
+  for _,g in ipairs({'equipment','skills','bars','attributes'})do assert(f.session:ClearPresetGroup(g))end
+  assert(f.session:SetSelected('skills','10:active:51',true))
+  assert(f.session:SetSelected('bars',{bar='werewolf',slot=2},true))
+  assert(f.session:SaveAndApply());f:Tick(8);assert(not f.x:GetView())
+  local stored=f.repo:Get(p.id)
+  assert(not stored.equipment and not stored.attributes and stored.abilities.skills['10:active:51'])
+  assert(stored.abilities.bars.werewolf[2].kind=='empty' and not stored.abilities.bars.front and not stored.abilities.bars.back)
+  assert(#f.requests.skills==0 and #f.api.requests==0 and f.attributeSends==0)
+ end,
+ clear_preset_group_from_any_page_only_changes_saved_selection=function()
+  for _,page in ipairs({'inventory','skills','stats'})do for _,group in ipairs({'equipment','skills','bars','attributes'})do
+   local f=create();local p=allGroupsPreset(f);local original=f.k.Copy(p)
+   assert(f.session:BeginEdit(p.id,false,page));f:Tick(6);assert(f.session:IsEditorActive())
+   local experiment=f.k.BuildJournal.Key(f.session.draft:GetBuild())
+   assert(f.session:ClearPresetGroup(group))
+   local view=f.session:GetView();assert(not view.includedGroups[group])
+   assert(f.k.BuildJournal.Key(f.session.draft:GetBuild())==experiment,'clear changed the native experiment')
+   assert(f.k.BuildJournal.Key(f.repo:Get(p.id))==f.k.BuildJournal.Key(original),'clear saved immediately')
+   assert(f.session:Save());f:Tick(8);assert(not f.x:GetView())
+   local stored=f.repo:Get(p.id);assert(stored.revision==p.revision+1,'save must be a single commit')
+   for _,g in ipairs({'equipment','skills','bars','attributes'})do
+    local value=(g=='skills' or g=='bars') and stored.abilities and stored.abilities[g] or stored[g]
+    if g==group then assert(value==nil,'group remained: '..group..' on '..page)
+    else assert(value~=nil,'unrelated group removed: '..g)end
+   end
+   assert(#f.api.requests==0 and #f.requests.skills==0 and f.attributeSends==0)
+  end end
+ end,
+ clearing_groups_can_be_cancelled_or_reselected_without_saving_an_empty_preset=function()
+  local f=create();local p=allGroupsPreset(f)
+  assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(6)
+  for _,g in ipairs({'equipment','skills','bars','attributes'})do assert(f.session:ClearPresetGroup(g))end
+  local view=f.session:GetView();for _,v in pairs(view.includedGroups)do assert(not v)end
+  assert(f.session:SetSelected('skills','10:active:51',true))
+  assert(f.session:GetView().includedGroups.skills)
+  assert(f.session:Cancel());f:Tick(8)
+  assert(f.repo:Get(p.id).revision==p.revision and f.repo:Get(p.id).equipment)
+  assert(f.session:BeginEdit(p.id,false,'skills'));f:Tick(6)
+  for _,g in ipairs({'equipment','skills','bars','attributes'})do assert(f.session:ClearPresetGroup(g))end
+  assert(f.session:Save());f:Tick(6)
+  assert(f.x:GetView().status=='failed' and f.repo:Get(p.id).revision==p.revision)
+ end,
+ clearing_other_parts_survives_reload_during_save_and_observer_failure=function()
+  local f=create();local p=allGroupsPreset(f)
+  assert(f.session:BeginEdit(p.id,false,'stats'));f:Tick(6)
+  assert(f.session:ClearPresetGroup('skills'));assert(f.session:ClearPresetGroup('equipment'))
+  assert(f.session:Save());assert(f.x:Pause());f:ReloadSession()
+  f.repo.emit=function()error('observer failed')end
+  assert(f.x:Continue());f:Tick(6)
+  assert(f.x:GetView().status=='failed')
+  local stored=f.repo:Get(p.id)
+  assert(not stored.equipment and not stored.abilities.skills and stored.abilities.bars and stored.attributes)
+  assert(stored.revision==p.revision+1)
+  f.repo.emit=function()end;assert(f.x:Continue());f:Tick(8)
+  assert(not f.x:GetView() and f.repo:Get(p.id).revision==stored.revision)
+  assert(#f.requests.skills==0 and f.attributeSends==0)
+ end,
  native_skill_cancel_releases_editor_before_or_after_page_hiding=function()
   for _,resetFirst in ipairs({false,true})do
    local f=create();local key='10:active:51'
