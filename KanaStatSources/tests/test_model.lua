@@ -37,6 +37,16 @@ return {
         local b=K.Model.Build(T.snapshot({weaponDamage=4218}),{T.flat('base','weaponDamage',4219)}).weaponDamage
         T.eq(b.unknown,-1);T.eq(T.sumRows(b),4218)
     end,
+    compensated_source_sum_keeps_exact_half_unit=function()
+        local cs={}
+        for i,value in ipairs({1000,1132,124,72.18,48.12,150,481.2})do cs[#cs+1]=T.flat(tostring(i),'weaponDamage',value)end
+        local b=K.Model.Build(T.snapshot({weaponDamage=3008}),cs).weaponDamage
+        T.eq(b.rawExplained,3007.5);T.eq(b.unknown,0);T.eq(T.sumRows(b),3008)
+    end,
+    values_truly_below_half_do_not_gain_rounding_tolerance=function()
+        local b=K.Model.Build(T.snapshot({weaponDamage=3008}),{T.flat('base','weaponDamage',3007.49999999)}).weaponDamage
+        T.eq(b.unknown,1);T.eq(b.explained,3007)
+    end,
     zero_bonuses_do_not_produce_rows=function()
         local c={T.flat('base','physicalResistance',10812),T.flat('resolve','physicalResistance',0,'skills')}
         local b=K.Model.Build(T.snapshot({physicalResistance=10812}),c).physicalResistance
@@ -72,7 +82,7 @@ return {
         T.eq(b.maxHealth.total,nil);T.eq(b.maxHealth.available,false)
     end,
     effective_native_values_are_not_scaled_twice=function()
-        local c=T.flat('attribute','maxHealth',100,'attributes');c.operation='effectiveFlat'
+        local c=T.flat('mundus','maxHealth',100,'mundus');c.operation='effectiveFlat'
         local cs={T.flat('base','maxHealth',1000),c,T.percent('bonus','maxHealth',10,'resources')}
         local b=K.Model.Build(T.snapshot({maxHealth=1200}),cs,{}, {maxHealth={groups={{id='resources',scope={'flat'},requireBase=true}}}}).maxHealth
         T.eq(b.explained,1200)

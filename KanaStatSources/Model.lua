@@ -6,9 +6,13 @@ local function roundRows(rows)
     -- Round the known subtotal once, then apportion its fractional units.
     -- Independently rounding percentage rows (440.72 + 629.60) creates a
     -- fictitious -1 residual even though their combined bonus rounds to 1070.
-    local rawSum,floorSum,fractions=0,0,{}
+    local rawSum,correction,floorSum,fractions=0,0,0,{}
     for i,r in ipairs(rows)do
-        rawSum=rawSum+r.rawValue;r.value=math.floor(r.rawValue);floorSum=floorSum+r.value
+        -- Compensate addition error so a mathematically exact half unit
+        -- (3007.5 in the tank dump) is not rounded down after seven additions.
+        local adjusted=r.rawValue-correction;local nextSum=rawSum+adjusted
+        correction=(nextSum-rawSum)-adjusted;rawSum=nextSum
+        r.value=math.floor(r.rawValue);floorSum=floorSum+r.value
         local fraction=r.rawValue-r.value
         if fraction>0 then fractions[#fractions+1]={row=r,fraction=fraction,index=i}end
     end

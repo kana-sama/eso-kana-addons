@@ -7,6 +7,20 @@ local function row(b,key)
     error('missing source '..key)
 end
 return {
+ latest_remaining_unknowns_are_only_unverified_critical_conversion=function()
+    local b=K.App.New({}):Explain(snapshot())
+    for _,d in ipairs(K.Stats.Definitions)do
+        T.eq(b[d[1]].unknown,(d[1]=='weaponCritical' or d[1]=='spellCritical') and -10 or 0)
+    end
+ end,
+ latest_damage_includes_active_sword_and_board=function()
+    local b=K.App.New({}):Explain(snapshot())
+    for _,key in ipairs({'weaponDamage','spellDamage'})do
+        T.eq(b[key].unknown,0)
+        local r=row(b[key],'skill:29397:1');T.eq(r.amount,3);T.eq(r.base,2406);T.near(r.rawValue,72.18)
+        T.near(b[key].rawExplained,3007.5);T.eq(T.sumRows(b[key]),3008)
+    end
+ end,
  latest_recovery_has_verified_base_and_current_passives=function()
     local b=K.App.New({}):Explain(snapshot())
     T.eq(b.healthRecovery.unknown,0);T.eq(row(b.healthRecovery,'base:healthRecovery').rawValue,309)

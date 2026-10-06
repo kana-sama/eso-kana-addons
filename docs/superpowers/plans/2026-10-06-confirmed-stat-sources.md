@@ -40,15 +40,16 @@
 
 ### Task 2: Active Sword and Board
 
-**Files:** `Rules.lua`, `tests/test_skills.lua`, `tests/test_live_ru_tank.lua` under `KanaStatSources`.
+**Files:** `Rules.lua`, `Model.lua`, `tests/test_skills.lua`, `tests/test_model.lua`, `tests/test_live_ru_tank.lua` under `KanaStatSources`.
 
 **Interfaces:** Registry rule `skill:29397` validates active main/offhand weapon types, then emits parsed percent clauses for weapon/spell damage.
 
-- [ ] Write failing tests for front/back activation, no shield/dual wield/two-handed/transformed/missing metadata, inactive or unpurchased line, and RU/EN current amount.
-- [ ] Run skills/replay tests; verify missing Sword and Board attribution fails.
-- [ ] Implement the explicit condition; leave all other weapon passives conservative.
-- [ ] Run full suite: tank damage totals 3008, residual zero, unknown injected bonuses preserved, crit residual unchanged.
-- [ ] Commit the active weapon rule with tests.
+- [x] Write failing tests for front/back activation, no shield/dual wield/two-handed/transformed/missing metadata, inactive or unpurchased line, and RU/EN current amount.
+- [x] Run skills/replay tests; verify missing Sword and Board attribution fails.
+- [x] Implement the explicit condition; leave all other weapon passives conservative.
+- [x] Use compensated summation for raw row subtotal: the seven tank sources total 3007.5 exactly, without introducing a rounding epsilon. Test a true value 3007.49999999 still leaves Unknown 1.
+- [x] Run full suite: tank damage totals 3008, residual zero, unknown injected bonuses preserved, crit residual unchanged.
+- [x] Commit the active weapon rule with tests.
 
 ### Task 3: Validation and release
 

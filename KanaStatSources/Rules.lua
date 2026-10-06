@@ -34,6 +34,35 @@ function R.Emit(out,source,clauses,evidence)
         out[#out+1]={key=source.key..':'..i,sourceKey=source.key,stat=stat,category=source.category,label=source.label,source=source,amount=c.amount,operation=c.operation,group=c.operation=='percent' and 'additive' or nil,active=true,evidence=evidence,bonusText=c.raw}
     end end
 end
+local function oneHandAndShield(_,s)
+    local c=s.constants or {};local bar=(s.context or {}).bar;local mainSlot,offSlot
+    if bar=='front' then mainSlot,offSlot=c.EQUIP_SLOT_MAIN_HAND,c.EQUIP_SLOT_OFF_HAND
+    elseif bar=='back' then mainSlot,offSlot=c.EQUIP_SLOT_BACKUP_MAIN,c.EQUIP_SLOT_BACKUP_OFF
+    else return false end
+    if not K.Core.Finite(mainSlot) or not K.Core.Finite(offSlot) or not K.Core.Finite(c.WEAPONTYPE_SHIELD) then return false end
+    local main,off
+    for _,item in ipairs(s.equipment or {})do
+        if item.slot==mainSlot then main=item end
+        if item.slot==offSlot then off=item end
+    end
+    if not main or not off or off.weaponType~=c.WEAPONTYPE_SHIELD then return false end
+    for _,name in ipairs({'WEAPONTYPE_AXE','WEAPONTYPE_HAMMER','WEAPONTYPE_SWORD','WEAPONTYPE_DAGGER'})do
+        if K.Core.Finite(c[name]) and main.weaponType==c[name] then return true end
+    end
+    return false
+end
+R.Register({id=29397,kind='skill',active=oneHandAndShield,evidence='native Sword and Board ID; one-hand weapon and shield on the active normal bar',build=function(source,s)
+    local language=(s.meta or {}).language
+    if language~='ru' and language~='en' then return {}end
+    local text,values=K.Descriptions.Tokens(source.description,language)
+    text=text:gsub('%s+',' ')
+    local pattern=language=='ru' and '^ваша сила оружия и заклинаний увеличивается на @([0-9]+)@%%, а количество урона, которое вы можете заблокировать, — на @[0-9]+@%%%.?$'
+        or '^increases your weapon and spell damage by @([0-9]+)@%% and the amount of damage you can block by @[0-9]+@%%%.?$'
+    local index=text:match(pattern);local amount=index and values[tonumber(index)]
+    if not K.Core.Finite(amount) then return {}end
+    local out={};R.Emit(out,source,{{stats={'weaponDamage','spellDamage'},amount=amount,operation='percent'}},'native Sword and Board current description; verified active one-hand weapon plus shield')
+    return out
+end})
 -- These passives expose a native "Current bonus" already calculated from the
 -- current armor or skill bar. Read that total rather than multiplying per-piece
 -- or per-ability values from the preceding conditional sentence.
