@@ -24,7 +24,7 @@ end
 function K.Core.Diagnostic(source,reason)
     return {sourceKey=source.sourceKey or source.key,category=source.category,stat=source.stat,reason=reason,source=source.source or source,ruleId=source.ruleId}
 end
-function K.Core.Reader(api,errors)
+function K.Core.Reader(api,errors,capabilities)
     local reported={}
     local counts={GetNumBuffs=1024,GetNumSkillTypes=64,GetNumSkillLines=512,GetNumSkillAbilities=512,GetNumChampionDisciplines=32,GetNumChampionDisciplineSkills=1024,GetNumAdvancedStatCategories=128,GetAbilityNumDerivedStats=64,GetAttributeSpentPoints=4096,GetAttributeUnspentPoints=4096,GetNumPointsSpentOnChampionSkill=4096}
     local requiredNumbers={GetPlayerStat=true,GetCriticalStrikeChance=true,GetAttributeDerivedStatPerPointValue=true}
@@ -34,6 +34,7 @@ function K.Core.Reader(api,errors)
     end
     return function(name,...)
         local fn=api[name]
+        if capabilities then capabilities[name]=type(fn)=='function'end
         local values
         if type(fn)=='function' then values=pack(pcall(fn,...)) else values={n=2,false,'API unavailable'} end
         if not values[1] then

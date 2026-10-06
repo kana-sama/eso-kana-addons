@@ -1,8 +1,8 @@
 local K=KanaStatSources
 K.CaptureEquipment={}
-function K.CaptureEquipment.Read(api)
+function K.CaptureEquipment.Read(api,capabilities)
     local data={equipment={},sets={}},errors
-    errors={};local read=K.Core.Reader(api,errors)
+    errors={};local read=K.Core.Reader(api,errors,capabilities)
     local first,last=api.EQUIP_SLOT_ITERATION_BEGIN,api.EQUIP_SLOT_ITERATION_END
     if not first or not last then errors[#errors+1]={api='equip slots',reason='slot iteration unavailable'};return data,errors end
     for slot=first,last do

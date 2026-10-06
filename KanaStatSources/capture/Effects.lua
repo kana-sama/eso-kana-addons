@@ -1,8 +1,8 @@
 local K=KanaStatSources
 K.CaptureEffects={}
 local fields={'name','startTime','endTime','buffSlot','stacks','icon','deprecatedBuffType','effectType','abilityType','statusEffectType','abilityId','canClickOff','castByPlayer'}
-function K.CaptureEffects.Read(api)
-    local errors={};local read=K.Core.Reader(api,errors)
+function K.CaptureEffects.Read(api,capabilities)
+    local errors={};local read=K.Core.Reader(api,errors,capabilities)
     local data={effects={},context={}}
     for i=1,read('GetNumBuffs','player') or 0 do
         local values={read('GetUnitBuffInfo','player',i)};local e={index=i}

@@ -2,6 +2,31 @@ local T=dofile('KanaStatSources/tests/support.lua')
 local K=T.load({'Core','Stats','Rules','Critical','Model','capture/Equipment','capture/Build','capture/Effects','Snapshot'})
 local makeApi=dofile('KanaStatSources/tests/fixtures/capture.lua')
 return {
+ private_globals_are_not_enumerated=function()
+    local api=makeApi();api.ITEM_TRAIT_TYPE_WEAPON_PRECISE=4;api.EQUIP_SLOT_MAIN_HAND=4
+    local originalPairs=pairs
+    -- ESO's global table includes inaccessible private functions. Enumerating
+    -- their values is forbidden even when the caller never invokes them.
+    pairs=function(value)
+        if value==api then error("Attempt to access a private function 'PickupStoreItem' from insecure code")end
+        return originalPairs(value)
+    end
+    local ok,result=pcall(function()
+        local collector=K.Snapshot.New(api)
+        return {collector:Capture(false),collector:Capture(true)}
+    end)
+    pairs=originalPairs
+    T.eq(ok,true)
+    for _,s in ipairs(result)do
+        T.eq(s.consistent,true);T.eq(s.stats.maxHealth.total,101)
+        T.eq(s.constants.ITEM_TRAIT_TYPE_WEAPON_PRECISE,4)
+        T.eq(s.constants.EQUIP_SLOT_MAIN_HAND,4)
+        T.eq(s.capabilities.GetPlayerStat,true)
+        T.eq(s.capabilities.GetNumBuffs,true)
+        T.eq(s.capabilities.GetItemLinkWeaponType,false)
+        T.eq(s.capabilities.PickupStoreItem,nil)
+    end
+ end,
  malformed_results=function()
     local api=makeApi();api.GetItemLinkSetInfo=function()return true,'Set',1,2,5,0/0,0 end
     local s=K.Snapshot.New(api):Capture(false)
@@ -52,7 +77,9 @@ return {
     build_is_cached_until_invalidated=function()
         local api=makeApi();local calls=0
         api.GetNumSkillTypes=function()calls=calls+1;return 0 end
-        local c=K.Snapshot.New(api);c:Capture(false);c:Capture(false);T.eq(calls,1)
+        local c=K.Snapshot.New(api);c:Capture(false);local cached=c:Capture(false);T.eq(calls,1)
+        T.eq(cached.capabilities.GetNumSkillTypes,true)
+        T.eq(cached.capabilities.GetNumChampionDisciplines,true)
         c:Invalidate('build');c:Capture(false);T.eq(calls,2)
     end,
 }

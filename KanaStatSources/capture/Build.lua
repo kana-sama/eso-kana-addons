@@ -1,8 +1,8 @@
 local K=KanaStatSources
 K.CaptureBuild={}
-function K.CaptureBuild.Read(api)
+function K.CaptureBuild.Read(api,capabilities)
     local data={attributes={},skills={},bars={front={},back={},werewolf={}},champion={}},errors
-    errors={};local read=K.Core.Reader(api,errors)
+    errors={};local read=K.Core.Reader(api,errors,capabilities)
     local resources={{'health','ATTRIBUTE_HEALTH','STAT_HEALTH_MAX'},{'magicka','ATTRIBUTE_MAGICKA','STAT_MAGICKA_MAX'},{'stamina','ATTRIBUTE_STAMINA','STAT_STAMINA_MAX'}}
     for _,a in ipairs(resources) do
         data.attributes[a[1]]={spent=read('GetAttributeSpentPoints',api[a[2]]),perPoint=read('GetAttributeDerivedStatPerPointValue',api[a[2]],api[a[3]])}
