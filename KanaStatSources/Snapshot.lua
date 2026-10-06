@@ -30,6 +30,8 @@ function Instance:Capture(full)
     for attempt=1,2 do
         local s={schemaVersion=1,errors={},capabilities={},categoryStatus={},generation=self.generation,consistent=true,preview={},advancedStats={},criticalSamples={}}
         local read=K.Core.Reader(api,s.errors)
+        s.constants={}
+        for name,value in pairs(api) do if type(value)=='number' and (name:match('^ITEM_TRAIT_TYPE_') or name:match('^EQUIP_SLOT_') or name:match('^ARMORTYPE_') or name:match('^WEAPONTYPE_')) then s.constants[name]=value end end
         s.meta={addonVersion=K.version,apiVersion=read('GetAPIVersion'),language=read('GetCVar','language.2') or 'en',characterId=read('GetCurrentCharacterId'),characterName=read('GetUnitName','player'),time=read('GetTimeStamp'),timeMs=read('GetGameTimeMilliseconds')}
         s.stats=stats(api,s.errors)
         local equipment,gearErrors=K.CaptureEquipment.Read(api);merge(s,equipment,gearErrors,'equipment')

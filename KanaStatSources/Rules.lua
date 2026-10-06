@@ -9,3 +9,8 @@ function R.Resolve(source,snapshot)
     for _,c in ipairs(cs) do c.ruleId=rule.kind..':'..tostring(rule.id);c.evidence=c.evidence or rule.evidence end
     return cs,{}
 end
+function R.Emit(out,source,clauses,evidence)
+    for i,c in ipairs(clauses) do for _,stat in ipairs(c.stats) do
+        out[#out+1]={key=source.key..':'..i,sourceKey=source.key,stat=stat,category=source.category,label=source.label,source=source,amount=c.amount,operation=c.operation,group=c.operation=='percent' and 'additive' or nil,active=true,evidence=evidence,bonusText=c.raw}
+    end end
+end
