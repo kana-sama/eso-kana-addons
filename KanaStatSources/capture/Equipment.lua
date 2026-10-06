@@ -12,6 +12,32 @@ function K.CaptureEquipment.ReadInfo(api,capabilities)
     end
     return out,errors
 end
+-- These independent native readings are diagnostic only. They never replace
+-- a source amount or run while hovering a stat; a full dump requests them.
+function K.CaptureEquipment.Audit(api,equipment,capabilities)
+    local out={equipmentAudit={},setAudit={}};local errors={};local read=K.Core.Reader(api,errors,capabilities)
+    local function bonus(fn,...)
+        local required,description,perfected=read(fn,...)
+        return {required=required,description=description,perfected=perfected}
+    end
+    for _,item in ipairs(equipment or {})do
+        local r={slot=item.slot,link=item.link,statValue=read('GetItemStatValue',api.BAG_WORN,item.slot),weaponPower=read('GetItemLinkWeaponPower',item.link)}
+        out.equipmentAudit[#out.equipmentAudit+1]=r
+        local hasSet,_,count,_,_,id=read('GetItemLinkSetInfo',item.link,true)
+        if hasSet and id then
+            r.setId=id;r.equippedBonuses={};r.unequippedBonuses={}
+            for i=1,count or 0 do
+                r.equippedBonuses[i]=bonus('GetItemLinkSetBonusInfo',item.link,true,i)
+                r.unequippedBonuses[i]=bonus('GetItemLinkSetBonusInfo',item.link,false,i)
+            end
+            if not out.setAudit[id]then
+                local set={bonuses={}};out.setAudit[id]=set
+                for i=1,count or 0 do set.bonuses[i]=bonus('GetItemSetBonusInfo',id,i)end
+            end
+        end
+    end
+    return out,errors
+end
 function K.CaptureEquipment.Read(api,capabilities)
     local data={equipment={},sets={}},errors
     errors={};local read=K.Core.Reader(api,errors,capabilities)
@@ -32,6 +58,14 @@ function K.CaptureEquipment.Read(api,capabilities)
             if hasSet and id then
                 local family=read('GetItemSetUnperfectedSetId',id)
                 r.setId=id;r.familyId=family and family>0 and family or id
+                -- Read each item's own level/quality values once per equipment
+                -- change. Equipped descriptions already average the set and
+                -- cannot be used as inputs to the damage averaging rule.
+                r.setBonuses={}
+                for i=1,count or 0 do
+                    local required,description,isPerfect=read('GetItemLinkSetBonusInfo',link,false,i)
+                    r.setBonuses[#r.setBonuses+1]={index=i,required=required,description=description,perfected=isPerfect}
+                end
                 local set=data.sets[id]
                 if not set then
                     set={id=id,familyId=r.familyId,name=name,icon=r.icon,normal=normal,perfected=perfect,max=max,bonuses={}}

@@ -44,9 +44,38 @@ function View:Name(row,language)
     if self.api.zo_strformat then name=self.api.zo_strformat('<<1>>',name) end
     return name
 end
+function View:Percent(value,language,preserveSmall)
+    -- Use the same formatter as ZO_StatEntry_Keyboard:GetDisplayValue for
+    -- every critical cell. Its default one fractional digit turns the native
+    -- 9.953449% into 10.0%; mixing it with two-digit source cells gave 9.95%.
+    if value==0 then value=0 end -- Normalize literal negative zero too.
+    local display=value
+    if preserveSmall and value~=0 and tonumber(string.format('%.1f',value))==0 then
+        -- Preserve a nonzero source that native one-digit formatting would
+        -- turn into +/-0.0%. A string argument keeps these extra digits in
+        -- zo_strformat; the total continues to use the native numeric path.
+        local digits=2
+        while digits<15 and math.abs(value)*10^digits<1 do digits=digits+1 end
+        display=string.format('%.'..digits..'f',value)
+        if tonumber(display)==0 then display=string.format('%.3g',value) end
+    end
+    if self.api.zo_strformat and self.api.SI_STAT_VALUE_PERCENT then
+        return self.api.zo_strformat(self.api.SI_STAT_VALUE_PERCENT,display)
+    end
+    -- Native grammar expects English separators and performs localization.
+    -- Passing -0,002 to it interprets the comma as grouping, yielding -2%.
+    if type(display)=='string' then
+        if language=='ru' then display=display:gsub('%.',',')end
+        return display..'%'
+    end
+    return K.Stats.Number(value,language,1)..'%'
+end
 function View:Effect(row,b,language)
     if b.critical then
-        if b.critical.verified then return K.Stats.Number(row.value/b.critical.pointsPerPercent,language,2)..'%' end
+        if b.critical.verified then
+            local rating=K.Core.Finite(row.rawValue) and row.rawValue or row.value
+            return self:Percent(rating/b.critical.pointsPerPercent,language,true)
+        end
         return K.Stats.Text(language,'unavailable')
     end
     local value=K.Stats.Number(row.value,language)
@@ -75,7 +104,7 @@ function View:Render(b,language,bounds)
     local totalLabel=K.Stats.Text(language,'total')
     local totalValue=b.available and K.Stats.Number(b.total,language) or K.Stats.Text(language,'unavailable')
     if b.critical then
-        totalValue=K.Core.Finite(b.critical.chance) and K.Stats.Number(b.critical.chance,language,1)..'%' or K.Stats.Text(language,'unavailable')
+        totalValue=K.Core.Finite(b.critical.chance) and self:Percent(b.critical.chance,language) or K.Stats.Text(language,'unavailable')
     end
     local preview=b.preview and K.Stats.Text(language,'preview') or ''
     local previewValue=b.preview and ('+'..K.Stats.Number(b.preview.amount,language)..' → '..K.Stats.Number(b.preview.total,language)) or ''

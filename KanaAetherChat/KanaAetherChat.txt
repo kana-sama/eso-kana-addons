@@ -1,7 +1,7 @@
 ## Title: KanaAetherChat
 ## APIVersion: 102000 102001
-## Version: 1.5.0
-## AddOnVersion: 10500
+## Version: 1.6.0
+## AddOnVersion: 10600
 ## Author: Kana
 ## Description: Escape closes AetherChat; opening it activates chat input and cursor mode.
 ## DependsOn: AetherChat
@@ -16,3 +16,5 @@ NativeChat.lua
 LastChannel.lua
 
 Widget.lua
+
+CompactNativeChat.lua

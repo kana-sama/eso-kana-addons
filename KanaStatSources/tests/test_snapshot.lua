@@ -2,6 +2,56 @@ local T=dofile('KanaStatSources/tests/support.lua')
 local K=T.load({'Core','Stats','Rules','Critical','Model','capture/Equipment','capture/Build','capture/Effects','Snapshot'})
 local makeApi=dofile('KanaStatSources/tests/fixtures/capture.lua')
 return {
+ item_specific_set_values_are_cached_and_refreshed_with_equipment=function()
+    local api=makeApi();local value=58;local calls=0
+    api.GetItemLinkSetBonusInfo=function(link,equipped,index)
+        if not equipped then calls=calls+1;return 2,'Adds '..value..' Weapon and Spell Damage.',false end
+        return 2,'Adds 63 Weapon and Spell Damage.',false
+    end
+    local collector=K.Snapshot.New(api);local s=collector:Capture(false)
+    T.eq(type(s.equipment[1].setBonuses),'table')
+    T.eq(s.equipment[1].setBonuses[1].description,'Adds 58 Weapon and Spell Damage.')
+    T.eq(calls,2)
+    value=67;s=collector:Capture(false);T.eq(calls,2)
+    T.eq(s.equipment[1].setBonuses[1].description,'Adds 58 Weapon and Spell Damage.')
+    collector:Invalidate('equipment');s=collector:Capture(false);T.eq(calls,4)
+    T.eq(s.equipment[1].setBonuses[1].description,'Adds 67 Weapon and Spell Damage.')
+ end,
+ full_dump_captures_independent_item_and_set_values=function()
+    local api=makeApi()
+    api.GetItemStatValue=function(bag,slot)T.eq(bag,api.BAG_WORN);return slot==0 and 606 or 0 end
+    api.GetItemSetBonusInfo=function(id,index)T.eq(id,100);T.eq(index,1);return 2,'Generic set description',false end
+    api.GetItemLinkSetBonusInfo=function(link,equipped,index)
+        T.eq(index,1)
+        return 2,equipped and 'Adds 63 Weapon and Spell Damage.' or 'Adds 60 Weapon and Spell Damage.',false
+    end
+    local s=K.Snapshot.New(api):Capture(true)
+    T.eq(s.equipmentAudit[1].slot,0);T.eq(s.equipmentAudit[1].statValue,606)
+    T.eq(s.equipmentAudit[1].weaponPower,0)
+    T.eq(s.equipmentAudit[1].equippedBonuses[1].description,'Adds 63 Weapon and Spell Damage.')
+    T.eq(s.equipmentAudit[1].unequippedBonuses[1].description,'Adds 60 Weapon and Spell Damage.')
+    T.eq(s.setAudit[100].bonuses[1].description,'Generic set description')
+    T.eq(s.sets[100].bonuses[1].description,'Adds 63 Weapon and Spell Damage.')
+    T.eq(s.categoryStatus.equipmentAudit,'available')
+ end,
+ equipment_audit_does_not_run_on_hover=function()
+    local api=makeApi();local calls=0
+    api.GetItemStatValue=function()calls=calls+1;return 100 end
+    local collector=K.Snapshot.New(api)
+    local s=collector:Capture(false);collector:Capture(false)
+    T.eq(calls,0);T.eq(s.equipmentAudit,nil);T.eq(s.setAudit,nil)
+    collector:Capture(true);T.eq(calls,2)
+    collector:Capture(false);T.eq(calls,2)
+ end,
+ unavailable_audit_api_preserves_stats_and_records_failure=function()
+    local api=makeApi();api.GetItemStatValue=function()error('item stat unavailable')end
+    local s=K.Snapshot.New(api):Capture(true)
+    T.eq(s.stats.maxHealth.total,101);T.eq(s.equipmentAudit[1].statValue,nil)
+    T.eq(s.categoryStatus.equipmentAudit,'partial')
+    local found=false
+    for _,e in ipairs(s.errors)do if e.api=='GetItemStatValue' and e.category=='equipmentAudit' then found=true end end
+    T.eq(found,true)
+ end,
  descriptions_are_not_read_twice=function()
     local api=makeApi();local calls=0;local original=api.GetAbilityDescription
     api.GetAbilityDescription=function(id,...)if id==1001 then calls=calls+1 end;return original(id,...)end

@@ -284,7 +284,7 @@ tests.original_preset_background_expands_only_owner_width_independent_of_descrip
   unchanged(ZO_Character,character)
  end)
 end
-tests.description_surface_has_fixed_feather_and_no_native_mutation=function()
+tests.description_surface_is_a_bounded_translucent_rectangle_without_native_mutation=function()
  G.With(5120,2880,2,function(f)
   local native=ZO_SharedWideLeftPanelBackground
   local before=snapshot(native:GetNamedChild("Left"))
@@ -293,19 +293,24 @@ tests.description_surface_has_fixed_feather_and_no_native_mutation=function()
   local surface=kw.SoftPanel.New(panel,"DescriptionSurfaceTestArt")
   surface:Layout(700,500)
   local tiles=surface.tiles
-  local center=tiles[5]
+  assert(#tiles==1)
+  local center=tiles[1]
   assert(center.texture=="eso-kana-addons/KanaWardrobe/assets/panel_feather.dds","surface needs explicit texture alpha, not untextured vertex tint")
-  assert(center.textureCoords[1]==.25 and center.textureCoords[2]==.75)
-  assert(tiles[1].textureCoords[1]==0 and tiles[1].textureCoords[2]==.25)
   local file=assert(io.open(ROOT.."/assets/panel_feather.dds","rb"));local dds=file:read('*a');file:close()
   assert(dds:sub(1,4)=='DDS ')
   local function alpha(x,y)return dds:byte(128+(y*64+x)*4+4)end
-  assert(alpha(0,0)==0 and alpha(32,32)>=200 and alpha(32,32)<240,'surface must be readable but remain translucent')
-  assert(alpha(32,0)==0 and alpha(63,32)==0,'edges must fade to transparent')
-  assert(tiles[6]:GetRight()>panel:GetRight(),"feather must extend beyond content")
-  local width,height=tiles[6]:GetWidth(),tiles[8]:GetHeight()
+  assert(alpha(32,32)>=200 and alpha(32,32)<240,'surface must be readable but remain translucent')
+  local uv=center.textureCoords
+  for y=math.floor(uv[3]*64),math.ceil(uv[4]*64)do
+   for x=math.floor(uv[1]*64),math.ceil(uv[2]*64)do
+    assert(alpha(x,y)==alpha(32,32),'sampled rectangle must have uniform opacity')
+   end
+  end
+  assert(center:GetLeft()==panel:GetLeft() and center:GetTop()==panel:GetTop())
+  assert(center:GetRight()==panel:GetRight() and center:GetBottom()==panel:GetBottom())
+  panel:SetDimensions(900,1000)
   surface:Layout(900,1000)
-  assert(tiles[6]:GetWidth()==width and tiles[8]:GetHeight()==height,"resizing must not stretch feather")
+  assert(center:GetRight()==panel:GetRight() and center:GetBottom()==panel:GetBottom())
   for _,tile in ipairs(tiles)do assert(tile.mouse==false and tile.layer==DL_BACKGROUND)end
   unchanged(native:GetNamedChild("Left"),before)
  end)

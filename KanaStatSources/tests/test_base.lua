@@ -40,23 +40,39 @@ return {
         T.eq(b[p[1]].rows[2].icon,'/esoui/art/characterwindow/Gamepad/gp_characterSheet_'..p[2]..'Icon.dds')
     end
  end,
- base_critical_ten_percent_uses_client_conversion=function()
+ base_critical_rating_uses_native_baseline_independently_of_conversion=function()
     for _,divisor in ipairs({200,219.12})do
         local s=T.snapshot({weaponCritical=5000,spellCritical=5000});s.meta={apiVersion=101051}
+        s.stats.weaponCritical.withoutBonus=2181;s.stats.spellCritical.withoutBonus=1234
         for _,key in ipairs({'weaponCritical','spellCritical'})do
             s.criticalSamples[key]={{rating=0,chance=0},{rating=1,chance=1/divisor},{rating=5000,chance=5000/divisor}}
         end
         local cs=K.Sources.Base.Build(s);local b=K.Model.Build(s,cs)
-        for _,key in ipairs({'weaponCritical','spellCritical'})do
-            T.eq(b[key].rows[1].category,'base');T.near(b[key].rows[1].rawValue,10*divisor)
-            T.eq(b[key].rows[1].amount,10);T.eq(type(b[key].rows[1].icon),'string')
+        for key,expected in pairs({weaponCritical=2181,spellCritical=1234})do
+            T.eq(b[key].rows[1].category,'base');T.eq(b[key].rows[1].rawValue,expected)
+            T.eq(b[key].rows[1].amount,expected);T.eq(type(b[key].rows[1].icon),'string')
+            T.eq(b[key].unknown,5000-expected)
             T.eq(T.sumRows(b[key]),5000)
         end
     end
  end,
- uncalibrated_critical_base_is_diagnostic=function()
+ missing_or_invalid_native_critical_base_is_never_inferred_from_ten_percent=function()
+    for _,value in ipairs({false,-1,math.huge,0/0,2181.5})do
+        local s=T.snapshot({weaponCritical=5000});s.meta={apiVersion=101051}
+        s.stats.weaponCritical.withoutBonus=value
+        s.criticalSamples.weaponCritical={{rating=0,chance=0},{rating=1,chance=0.005},{rating=5000,chance=25}}
+        local c,diagnostics=K.Sources.Base.Build(s);local b=K.Model.Build(s,c,diagnostics).weaponCritical
+        T.eq(b.explained,0);T.eq(b.unknown,5000);T.eq(#b.diagnostics,1)
+    end
     local s=T.snapshot({weaponCritical=5000});s.meta={apiVersion=101051}
-    local c=K.Sources.Base.Build(s);local b=K.Model.Build(s,c).weaponCritical
+    s.criticalSamples.weaponCritical={{rating=0,chance=0},{rating=1,chance=0.005},{rating=5000,chance=25}}
+    local c,diagnostics=K.Sources.Base.Build(s);local b=K.Model.Build(s,c,diagnostics).weaponCritical
     T.eq(b.explained,0);T.eq(b.unknown,5000);T.eq(#b.diagnostics,1)
+ end,
+ native_critical_base_is_explained_when_conversion_is_unavailable=function()
+    local s=T.snapshot({weaponCritical=5000});s.meta={apiVersion=101051}
+    s.stats.weaponCritical.withoutBonus=2181
+    local c=K.Sources.Base.Build(s);local b=K.Model.Build(s,c).weaponCritical
+    T.eq(b.explained,2181);T.eq(b.unknown,2819);T.eq(b.critical.verified,false)
  end,
 }

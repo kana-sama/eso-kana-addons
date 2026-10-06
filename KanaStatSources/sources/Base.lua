@@ -17,7 +17,16 @@ function K.Sources.Base.Build(s)
     else diagnostics[#diagnostics+1]={category='base',reason='base scaling not verified for this context'} end
     if (s.meta or {}).apiVersion==101051 then
         for _,stat in ipairs({'weaponCritical','spellCritical'})do
-            out[#out+1]={key='base:'..stat,category='base',stat=stat,amount=10,operation='criticalChance',label=K.Stats.Text(language,'base'),icon=baseIcon,evidence='ZOS v1.6.5 base Critical Hit chance 10%; running-client GetCriticalStrikeChance calibration'}
+            local raw=(s.stats or {})[stat] or {};local base=raw.withoutBonus
+            -- Only critical stats use this native baseline. Other stats can
+            -- return their full total with DONT_APPLY_BONUS (see recovery).
+            -- A naked API 101051 character has 2181 rating, or 9.953449%, so
+            -- converting a nominal 10% back to rating creates a false -10.
+            if K.Core.Finite(base) and base>=0 and base==math.floor(base) then
+                out[#out+1]={key='base:'..stat,category='base',stat=stat,amount=base,operation='flat',label=K.Stats.Text(language,'base'),icon=baseIcon,evidence='GetPlayerStat(critical stat, STAT_BONUS_OPTION_DONT_APPLY_BONUS); API 101051 naked/no-critical-CP dump #4 confirms native critical baseline'}
+            elseif K.Core.Finite(raw.total) then
+                diagnostics[#diagnostics+1]={category='base',stat=stat,reason='native critical baseline unavailable or invalid'}
+            end
         end
     end
     for _,p in ipairs({{'health','maxHealth'},{'magicka','maxMagicka'},{'stamina','maxStamina'}}) do

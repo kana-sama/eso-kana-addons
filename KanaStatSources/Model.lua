@@ -50,8 +50,14 @@ function M.Build(snapshot,contributions,diagnostics,policies)
             local v=c.amount
             if not c.evidence or not K.Core.Finite(v) then b.diagnostics[#b.diagnostics+1]=K.Core.Diagnostic(c,'invalid or unverified amount')
             elseif c.operation=='percent' then pending[#pending+1]=c
-            elseif c.operation=='criticalChance' then
+            elseif c.operation=='criticalChance' or c.operation=='criticalChanceInteger' then
                 local rating,reason=K.Critical.RatingForChance(v,b.critical)
+                -- Precise item traits supply integer rating. Native 6.2% maps
+                -- to 1358.544... before quantization, but adds 1358 in dump #6;
+                -- each 3.1% dagger adds 679 in dump #7. Quantize the source
+                -- before subtotal apportionment, without consulting residuals.
+                -- Ordinary fractional percentage sources keep their policy.
+                if rating and c.operation=='criticalChanceInteger' then rating=math.floor(rating)end
                 if rating then append(b,c,rating) else b.diagnostics[#b.diagnostics+1]=K.Core.Diagnostic(c,reason) end
             elseif c.operation=='flat' or c.operation=='effectiveFlat' then append(b,c,v)
             else b.diagnostics[#b.diagnostics+1]=K.Core.Diagnostic(c,'unsupported operation') end

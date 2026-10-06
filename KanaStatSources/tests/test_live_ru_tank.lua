@@ -15,10 +15,10 @@ local function row(b,key)
     error('missing source '..key)
 end
 return {
- latest_remaining_unknowns_are_only_unverified_critical_conversion=function()
+ latest_main_stats_have_no_unidentified_contributions=function()
     local b=K.App.New({}):Explain(snapshot())
     for _,d in ipairs(K.Stats.Definitions)do
-        T.eq(b[d[1]].unknown,(d[1]=='weaponCritical' or d[1]=='spellCritical') and -10 or 0)
+        T.eq(b[d[1]].unknown,0)
     end
  end,
  latest_damage_includes_active_sword_and_board=function()
@@ -51,13 +51,13 @@ return {
     local b=K.App.New({}):Explain(snapshot()).criticalResistance
     T.eq(b.unknown,0);T.eq(#b.rows,1);T.eq(row(b,'base:criticalResistance').value,1320)
  end,
- unknown_sources_and_critical_discrepancy_are_retained=function()
+ unidentified_recovery_is_retained_with_verified_critical_baseline=function()
     local s=snapshot();s.stats.magickaRecovery.total=s.stats.magickaRecovery.total+7
     -- withoutBonus mirrors the changed total; it must not become a guessed base.
     s.stats.magickaRecovery.withoutBonus=s.stats.magickaRecovery.total
     local b=K.App.New({}):Explain(s)
     T.eq(b.magickaRecovery.unknown,7)
-    T.eq(b.weaponCritical.unknown,-10);T.eq(b.spellCritical.unknown,-10)
+    T.eq(b.weaponCritical.unknown,0);T.eq(b.spellCritical.unknown,0)
     for _,d in ipairs(K.Stats.Definitions)do T.eq(T.sumRows(b[d[1]]),s.stats[d[1]].total)end
  end,
 }

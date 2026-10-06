@@ -110,6 +110,8 @@ function Instance:Capture(full)
             for _,d in ipairs(K.Stats.List(api)) do local ok,v=pcall(api.STATS.GetPendingStatBonuses,api.STATS,d.id);if ok and K.Core.Finite(v) then s.preview[d.key]=v end end
         end
         if full then
+            local audit,auditErrors=capture(api,function(a,c)return K.CaptureEquipment.Audit(a,s.equipment,c)end,{equipmentAudit={},setAudit={}},s.capabilities)
+            merge(s,audit,auditErrors,'equipmentAudit')
             local errorCount=#s.errors
             for ci=1,read('GetNumAdvancedStatCategories') or 0 do
                 local id=read('GetAdvancedStatsCategoryId',ci)

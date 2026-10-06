@@ -139,7 +139,8 @@ function Preview.New(parent)
     background:SetMouseEnabled(false)
     self.background=background
     self.headingDivider=wm:CreateControl(self.name.."HeadingDivider",self.control,CT_TEXTURE)
-    self.headingDivider:SetTexture("EsoUI/Art/CharacterWindow/characterWindow_leftSide_divider.dds")
+    self.headingDivider:SetColor(0.57,0.53,0.39,0.65)
+    self.headingDivider:SetDrawLayer(DL_CONTROLS)
     self.headingDivider:SetMouseEnabled(false);self.headingDivider:SetHidden(true)
     self.title = wm:CreateControl(self.name .. "Title", self.control, CT_LABEL)
     self.title:SetAnchor(TOPLEFT, self.control, TOPLEFT, PADDING, PADDING)
@@ -462,15 +463,15 @@ function Instance:RefreshEffects(summary)
     local width=math.max(96,math.min(1140,available))
     if area then width=math.min(1140,area.width*area.scale/scale)end
     self.title:SetWidth(width-52);self.title:SetText((zo_strupper or string.upper)(summary.name or text("PRESET_SUMMARY","Preset summary")))
-    self.title:ClearAnchors();self.title:SetAnchor(TOPLEFT,self.control,TOPLEFT,12,10)
+    self.title:ClearAnchors();self.title:SetAnchor(TOPLEFT,self.control,TOPLEFT,16,10)
     local message=""
     if summary.complete==false then message=message..(message~="" and " · " or "")..text("SET_DATA_UNAVAILABLE","Incomplete data")
     elseif summary.availableToEquip==false then message=message..(message~="" and " · " or "")..text("SET_ITEMS_MISSING","Some items are unavailable")end
     self.message:SetWidth(width-32);self.message:SetText(message);self.message:SetHidden(message=="")
     local dividerY=math.max(47,15+self.title:GetHeight()/scale)
     self.headingDivider:ClearAnchors()
-    self.headingDivider:SetAnchor(TOPLEFT,self.control,TOPLEFT,0,dividerY)
-    self.headingDivider:SetDimensions(width-16,4)
+    self.headingDivider:SetAnchor(TOPLEFT,self.control,TOPLEFT,16,dividerY)
+    self.headingDivider:SetDimensions(width-ZO_SCROLL_BAR_WIDTH-32,1)
     local header=dividerY+16
     self.message:ClearAnchors();self.message:SetAnchor(TOPLEFT,self.control,TOPLEFT,16,header)
     if message~="" then header=header+self.message:GetHeight()/scale+8 end

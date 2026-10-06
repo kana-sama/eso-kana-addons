@@ -859,7 +859,7 @@ return {
             assert(p.control:GetTop()==panel:GetTop() and p.control:GetLeft()==panel:GetRight()+36)
             assert(p.control:GetHeight()<panel:GetHeight(),"short description must not leave an empty block below")
             assert(p.background:IsHidden() and not p.headingDivider:IsHidden())
-            assert(p.surface and #p.surface.tiles==9)
+            assert(p.surface and #p.surface.tiles==1)
             assert(p.background:GetLeft()==p.control:GetLeft() and p.background:GetRight()==p.control:GetRight())
             assert(p.background:GetBottom()==p.control:GetBottom())
             assert(p.title.font=="ZoFontHeader4")
