@@ -8,7 +8,7 @@ function Table.New(api,tooltip)
     v.body=control(v.control,api.CT_SCROLL);v.body:SetScrollBounding(api.SCROLL_BOUNDING_CONTAINED)
     v.content=control(v.body,api.CT_CONTROL)
     local function label(parent)
-        local l=control(parent,api.CT_LABEL);l:SetFont('ZoFontGameSmall');l:SetColor(0.9,0.9,0.9,1);return l
+        local l=control(parent,api.CT_LABEL);l:SetFont('ZoFontGame');l:SetColor(0.9,0.9,0.9,1);return l
     end
     v.makeLabel=label
     for i=1,3 do v.headers[i]=label(v.control);v.headers[i]:SetColor(0.75,0.72,0.56,1) end
@@ -40,7 +40,6 @@ function View:Render(b,language,bounds)
     local footer=K.Stats.Text(language,b.critical and 'rating' or 'total')..': '..(b.available and K.Stats.Number(b.total,language) or K.Stats.Text(language,'unavailable'))
     if b.critical then footer=footer..'\n'..K.Critical.Formula(b.critical,language) end
     if b.preview then footer=footer..'\n'..K.Stats.Text(language,'preview')..': +'..K.Stats.Number(b.preview.amount,language)..' → '..K.Stats.Number(b.preview.total,language) end
-    footer=footer..'\n'..K.Stats.Text(language,'scroll')
     self.footer:SetDimensions(width,0);self.footer:SetText(footer);self.footer:SetHidden(false)
     local footerHeight=self.footer:GetTextHeight()+4;local y=0
     for i,row in ipairs(b.rows or {}) do
@@ -60,6 +59,11 @@ function View:Render(b,language,bounds)
     -- Reserve a positive viewport before fitting the complete block. A zero
     -- height scroll control cannot expose any source regardless of its offset.
     self.bodyHeight=math.max(math.min(y,24),math.min(y,available-headerHeight-footerHeight-8))
+    if y>self.bodyHeight then
+        self.footer:SetText(footer..'\n'..K.Stats.Text(language,'scroll'))
+        footerHeight=self.footer:GetTextHeight()+4
+        self.bodyHeight=math.max(math.min(y,24),math.min(y,available-headerHeight-footerHeight-8))
+    end
     self.height=headerHeight+footerHeight+self.bodyHeight+8
     -- Even a tiny viewport keeps the footer within the remaining space.
     local fit=math.min(1,available/math.max(1,self.height));self.control:SetScale(fit)

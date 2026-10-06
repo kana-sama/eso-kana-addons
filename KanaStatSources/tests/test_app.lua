@@ -8,6 +8,21 @@ local function api()
     return a
 end
 return {
+ prewarm_after_start=function()
+    local a=api();local app=K.App.New(a,K.Dump.Storage(a));app:Start()
+    local callback=a.EVENT_MANAGER.updates[K.name..':refresh'];T.eq(type(callback),'function')
+    callback();T.eq(app.lastSnapshot~=nil,true)
+    local captured=app.collector.Capture;app.collector.Capture=function()error('hover performed a full capture')end
+    app:GetBreakdown('maxStamina');app.collector.Capture=captured
+ end,
+ cached_hovers=function()
+    local a=api();local app=K.App.New(a,K.Dump.Storage(a));local calls=0
+    local capture=app.collector.Capture
+    app.collector.Capture=function(self,full)calls=calls+1;return capture(self,full)end
+    app:GetBreakdown('maxHealth');app:GetBreakdown('maxStamina');app:GetBreakdown('weaponDamage')
+    T.eq(calls,1)
+    app:Invalidate('equipment');app:GetBreakdown('maxHealth');T.eq(calls,2)
+ end,
  passive_effect_identity=function()
     local a=api();local app=K.App.New(a,K.Dump.Storage(a));local s=dofile('KanaStatSources/tests/fixtures/complete_build.lua')()
     s.skills={{id=123,purchased=true,passive=true,lineActive=true,name='Passive',description='Increases Maximum Health by 1000.'},{id=124,purchased=true,passive=true,lineActive=true,name='Independent',description='Increases Maximum Health by 1000.'}}

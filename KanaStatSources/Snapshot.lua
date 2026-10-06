@@ -4,6 +4,7 @@ local Instance={};Instance.__index=Instance
 -- Read known enum names directly. Iterating _G also retrieves private native
 -- functions, which ESO forbids even when they are never called.
 local constantNames={
+    'SKILL_TYPE_WEAPON',
     'EQUIP_SLOT_ITERATION_BEGIN','EQUIP_SLOT_ITERATION_END','ARMORTYPE_HEAVY','ARMORTYPE_LIGHT',
     'ARMORTYPE_MEDIUM','ARMORTYPE_NONE','EQUIP_SLOT_BACKUP_MAIN','EQUIP_SLOT_BACKUP_OFF',
     'EQUIP_SLOT_BACKUP_POISON','EQUIP_SLOT_CHEST','EQUIP_SLOT_CLASS1','EQUIP_SLOT_CLASS2',
@@ -70,7 +71,14 @@ function Instance:Capture(full)
         for _,name in ipairs(constantNames)do local value=api[name];if K.Core.Finite(value)then s.constants[name]=value end end
         s.meta={addonVersion=K.version,apiVersion=read('GetAPIVersion'),language=read('GetCVar','language.2') or 'en',characterId=read('GetCurrentCharacterId'),characterName=read('GetUnitName','player'),time=read('GetTimeStamp'),timeMs=read('GetGameTimeMilliseconds')}
         s.stats=stats(api,s.errors,s.capabilities)
-        local equipment,gearErrors=capture(api,K.CaptureEquipment.Read,{equipment={},sets={}},s.capabilities);merge(s,equipment,gearErrors,'equipment')
+        local gear=self.cache.equipment
+        if not gear then
+            local capabilities={}
+            local data,errors=capture(api,K.CaptureEquipment.Read,{equipment={},sets={}},capabilities)
+            gear={data=data,errors=errors,capabilities=capabilities};self.cache.equipment=gear
+        end
+        for name in pairs(gear.capabilities)do s.capabilities[name]=type(api[name])=='function'end
+        merge(s,K.Core.CopySerializable(gear.data),K.Core.CopySerializable(gear.errors),'equipment')
         local effects,effectErrors=capture(api,K.CaptureEffects.Read,{effects={},context={}},s.capabilities);merge(s,effects,effectErrors,'effects')
         local build=self.cache.build
         if not build then
@@ -80,6 +88,9 @@ function Instance:Capture(full)
         end
         for name in pairs(build.capabilities)do s.capabilities[name]=type(api[name])=='function'end
         merge(s,K.Core.CopySerializable(build.data),K.Core.CopySerializable(build.errors),'build')
+        for _,skill in ipairs(s.skills or {})do
+            if K.Rules.DynamicSkills[skill.id]then skill.description=read('GetAbilityDescription',skill.id,nil,'player')end
+        end
         -- Attribute deltas can scale when effects change: read their native current values each capture.
         for _,a in ipairs({{'health','ATTRIBUTE_HEALTH','STAT_HEALTH_MAX'},{'magicka','ATTRIBUTE_MAGICKA','STAT_MAGICKA_MAX'},{'stamina','ATTRIBUTE_STAMINA','STAT_STAMINA_MAX'}}) do
             s.attributes[a[1]]=s.attributes[a[1]] or {}
@@ -111,9 +122,10 @@ function Instance:Capture(full)
             s.categoryStatus.advancedStats=#s.errors==errorCount and 'available' or 'partial'
         end
         local endStats=stats(api,{},s.capabilities)
-        local endEquipment=capture(api,K.CaptureEquipment.Read,{equipment={},sets={}},s.capabilities)
-        local endEffects=capture(api,K.CaptureEffects.Read,{effects={},context={}},s.capabilities)
-        s.consistent=self.generation==s.generation and endEffects.context.weaponPair==s.context.weaponPair and K.Core.Signature(endStats)==K.Core.Signature(s.stats) and K.Core.Signature(endEquipment.equipment)==K.Core.Signature(s.equipment) and K.Core.Signature(endEffects.effects)==K.Core.Signature(s.effects)
+        local endEquipment=K.CaptureEquipment.ReadInfo(api,s.capabilities)
+        local endEffects=K.CaptureEffects.ReadInfo(api,s.capabilities)
+        local endPair=read('GetActiveWeaponPairInfo')
+        s.consistent=self.generation==s.generation and endPair==s.context.weaponPair and K.Core.Signature(endStats)==K.Core.Signature(s.stats) and K.CaptureEquipment.Identity(endEquipment)==K.CaptureEquipment.Identity(s.equipment) and K.CaptureEffects.Identity(endEffects)==K.CaptureEffects.Identity(s.effects)
         last=s
         if s.consistent then return s end
         self.cache={}

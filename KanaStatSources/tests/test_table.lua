@@ -1,5 +1,14 @@
 local T=dofile('KanaStatSources/tests/support.lua');local K=T.load({'Core','Stats','Rules','Critical','Model','Table'})
 return {
+ scroll_hint_only_on_overflow=function()
+    local api=dofile('KanaStatSources/tests/fixtures/controls.lua')();local v=K.Table.New(api,api.InformationTooltip)
+    local b={available=true,total=10,rows={{label='Source',value=10}}}
+    v:Render(b,'ru',{width=1280,height=720,scale=1,nativeHeight=100})
+    T.eq(v.footer.text:find('мыши',1,true),nil)
+    for i=2,80 do b.rows[i]={label='Source '..i,value=1}end
+    v:Render(b,'ru',{width=1280,height=720,scale=1,nativeHeight=100})
+    T.eq(v.footer.text:find('мыши',1,true)~=nil,true)
+ end,
  very_small_body=function()
     local api=dofile('KanaStatSources/tests/fixtures/controls.lua')();local v=K.Table.New(api,api.InformationTooltip)
     local b={available=true,total=10000,rows={},critical={verified=true,rating=10000,pointsPerPercent=200,chance=50,offset=0}}

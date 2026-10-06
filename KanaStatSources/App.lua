@@ -25,26 +25,32 @@ function Instance:Explain(snapshot)
     return K.Model.Build(snapshot,unique,diagnostics,K.Rules.Policies),unique,diagnostics
 end
 function Instance:GetBreakdown(key)
-    local snapshot=self.collector:Capture(false)
-    local breakdowns=self:Explain(snapshot)
-    self.lastSnapshot=snapshot;self.lastBreakdowns=breakdowns
-    return breakdowns[key],snapshot.meta.language
+    if not self.lastSnapshot or self.lastSnapshot.generation~=self.collector.generation then
+        local snapshot=self.collector:Capture(false)
+        self.lastBreakdowns=self:Explain(snapshot);self.lastSnapshot=snapshot
+    end
+    return self.lastBreakdowns[key],self.lastSnapshot.meta.language
+end
+function Instance:QueueRefresh()
+    if self.refreshQueued then return end
+    self.refreshQueued=true;local name=K.name..':refresh';local events=self.api.EVENT_MANAGER
+    events:RegisterForUpdate(name,100,function()
+        events:UnregisterForUpdate(name);self.refreshQueued=false
+        self:GetBreakdown('maxHealth')
+        if self.bridge and self.bridge.active then self.bridge:Refresh()end
+    end)
 end
 function Instance:Invalidate(category)
     self.collector:Invalidate(category)
-    if self.bridge and self.bridge.active and not self.refreshQueued then
-        self.refreshQueued=true;local name=K.name..':refresh';local events=self.api.EVENT_MANAGER
-        events:RegisterForUpdate(name,100,function()
-            events:UnregisterForUpdate(name);self.refreshQueued=false
-            if self.bridge.active then self.bridge:Refresh()end
-        end)
-    end
+    local fragment=self.api.STATS_FRAGMENT
+    if (self.bridge and self.bridge.active) or (fragment and fragment.IsShowing and fragment:IsShowing()) or category=='all' then self:QueueRefresh()end
 end
 function Instance:Dump()
     local api=self.api;local saved,reason=K.Dump.Storage(api)
     if not saved then if api.d then api.d(K.name..': '..reason)end;return nil,reason end
     self.saved=saved;self.collector:Invalidate('all')
     local snapshot=self.collector:Capture(true);local breakdowns,c,d=self:Explain(snapshot)
+    self.lastSnapshot=snapshot;self.lastBreakdowns=breakdowns
     for _,v in ipairs((self.bridge or {}).diagnostics or {})do d[#d+1]=v end
     local report=K.Dump.Build(snapshot,breakdowns,c,d)
     local id=K.Dump.Append(saved,report)
@@ -59,6 +65,7 @@ function Instance:Start()
         elseif api.d then api.d('/kanastats dump — '..(api.GetCVar('language.2')=='ru' and 'сохранить данные персонажа и источники характеристик' or 'save character data and stat sources'))end
     end
     self.bridge=K.Tooltip.Install(api,function(key)return self:GetBreakdown(key)end)
+    self:QueueRefresh()
     local function register(name,category,callback,playerFilter)
         if api[name] then
             local registration=K.name..':'..name
@@ -69,7 +76,8 @@ function Instance:Start()
     register('EVENT_STATS_UPDATED','stats',function(_,tag)if tag=='player'then self:Invalidate('stats')end end,true)
     register('EVENT_EFFECT_CHANGED','effects',function(_,_,_,_,tag)if tag=='player'then self:Invalidate('effects')end end,true)
     register('EVENT_LEVEL_UPDATE','all',function(_,tag)if tag=='player'then self:Invalidate('all')end end,true)
-    for _,name in ipairs({'EVENT_INVENTORY_SINGLE_SLOT_UPDATE','EVENT_INVENTORY_FULL_UPDATE','EVENT_ACTIVE_WEAPON_PAIR_CHANGED'})do register(name,'equipment')end
+    register('EVENT_INVENTORY_SINGLE_SLOT_UPDATE','equipment',function(_,bag)if bag==nil or bag==api.BAG_WORN then self:Invalidate('equipment')end end)
+    for _,name in ipairs({'EVENT_INVENTORY_FULL_UPDATE','EVENT_ACTIVE_WEAPON_PAIR_CHANGED'})do register(name,'equipment')end
     for _,name in ipairs({'EVENT_ATTRIBUTE_UPGRADE_UPDATED','EVENT_CHAMPION_PURCHASE_RESULT','EVENT_CHAMPION_POINT_GAINED','EVENT_SKILLS_FULL_UPDATE','EVENT_SKILL_POINTS_CHANGED','EVENT_SKILL_RANK_UPDATE','EVENT_ABILITY_PROGRESSION_RANK_UPDATE','EVENT_SKILL_LINE_ADDED','EVENT_HOTBAR_SLOT_UPDATED','EVENT_ACTION_SLOTS_ALL_HOTBARS_UPDATED'})do register(name,'build')end
     register('EVENT_PLAYER_ACTIVATED','all')
     register('EVENT_PLAYER_DEACTIVATED',nil,function()self.bridge:Clear();self.collector:Invalidate('all')end)

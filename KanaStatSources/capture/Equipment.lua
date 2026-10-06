@@ -1,5 +1,17 @@
 local K=KanaStatSources
 K.CaptureEquipment={}
+function K.CaptureEquipment.Identity(equipment)
+    local out={};for i,e in ipairs(equipment)do out[i]={slot=e.slot,link=e.link}end
+    return K.Core.Signature(out)
+end
+function K.CaptureEquipment.ReadInfo(api,capabilities)
+    local errors={};local read=K.Core.Reader(api,errors,capabilities);local out={}
+    for slot=api.EQUIP_SLOT_ITERATION_BEGIN or 0,api.EQUIP_SLOT_ITERATION_END or -1 do
+        local link=read('GetItemLink',api.BAG_WORN,slot,api.LINK_STYLE_DEFAULT)
+        if link and link~='' then out[#out+1]={slot=slot,link=link}end
+    end
+    return out,errors
+end
 function K.CaptureEquipment.Read(api,capabilities)
     local data={equipment={},sets={}},errors
     errors={};local read=K.Core.Reader(api,errors,capabilities)
@@ -10,7 +22,6 @@ function K.CaptureEquipment.Read(api,capabilities)
         if link and link~='' then
             local r={slot=slot,link=link,name=read('GetItemLinkName',link),id=read('GetItemLinkItemId',link)}
             r.slotName=read('GetString','SI_EQUIPSLOT',slot)
-            if slot==api.EQUIP_SLOT_RING1 or slot==api.EQUIP_SLOT_RING2 then r.slotName=(r.slotName or '')..' '..(slot==api.EQUIP_SLOT_RING1 and '1' or '2')end
             for field,fn in pairs({armorType='GetItemLinkArmorType',weaponType='GetItemLinkWeaponType',equipType='GetItemLinkEquipType',level='GetItemLinkRequiredLevel',cp='GetItemLinkRequiredChampionPoints',quality='GetItemLinkDisplayQuality',condition='GetItemLinkCondition',charges='GetItemLinkNumEnchantCharges',enchantId='GetItemLinkFinalEnchantId'}) do r[field]=read(fn,link) end
             r.armorRating=read('GetItemLinkArmorRating',link,true);r.weaponPower=read('GetItemLinkWeaponPower',link)
             local traitId,traitDescription=read('GetItemLinkTraitInfo',link)

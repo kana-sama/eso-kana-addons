@@ -1,14 +1,31 @@
 local K=KanaStatSources
 K.CaptureEffects={}
 local fields={'name','startTime','endTime','buffSlot','stacks','icon','deprecatedBuffType','effectType','abilityType','statusEffectType','abilityId','canClickOff','castByPlayer'}
-function K.CaptureEffects.Read(api,capabilities)
-    local errors={};local read=K.Core.Reader(api,errors,capabilities)
-    local data={effects={},context={}}
+function K.CaptureEffects.Identity(effects)
+    local out={}
+    for i,e in ipairs(effects)do out[i]={id=e.abilityId,slot=e.buffSlot,startTime=e.startTime,endTime=e.endTime,stacks=e.stacks,castByPlayer=e.castByPlayer}end
+    return K.Core.Signature(out)
+end
+function K.CaptureEffects.ReadInfo(api,capabilities)
+    local errors={};local read=K.Core.Reader(api,errors,capabilities);local effects={}
     for i=1,read('GetNumBuffs','player') or 0 do
         local values={read('GetUnitBuffInfo','player',i)};local e={index=i}
-        for n,name in ipairs(fields) do e[name]=values[n] end
+        for n,name in ipairs(fields)do e[name]=values[n]end
+        effects[#effects+1]=e
+    end
+    return effects,errors
+end
+function K.CaptureEffects.Read(api,capabilities)
+    local effects,errors=K.CaptureEffects.ReadInfo(api,capabilities);local read=K.Core.Reader(api,errors,capabilities)
+    local data={effects=effects,context={}}
+    for _,e in ipairs(effects)do
         if e.abilityId then
             e.description=read('GetAbilityDescription',e.abilityId,nil,'player')
+            if api.GetAbilityEffectDescription and e.buffSlot then
+                local description=read('GetAbilityEffectDescription',e.buffSlot)
+                if description and description~='' then e.effectDescription=description end
+            end
+            if api.IsAbilityPermanent then e.permanent=read('IsAbilityPermanent',e.abilityId)end
             e.buffType=read('GetAbilityBuffType',e.abilityId,'player')
             e.mundusType=read('GetAbilityMundusStoneType',e.abilityId)
             e.derivedStats={}
@@ -17,7 +34,6 @@ function K.CaptureEffects.Read(api,capabilities)
                 e.derivedStats[#e.derivedStats+1]={id=stat,stat=K.Stats.KeyForId(api,stat),value=value}
             end
         end
-        data.effects[#data.effects+1]=e
     end
     local c=data.context
     c.weaponPair,c.weaponSwapLocked=read('GetActiveWeaponPairInfo')

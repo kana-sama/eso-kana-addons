@@ -16,7 +16,11 @@ function C.Calibrate(samples,rating)
     for _,s in ipairs(samples or {}) do
         if not K.Core.Finite(s.rating) or not K.Core.Finite(s.chance) then return out end
         local p=offset+s.rating*slope
-        if math.abs(p-s.chance)>1e-6 then
+        -- Native chances have float32 rounding (visible in the real client
+        -- probes). Allow two float32 relative epsilons, well below 0.1% UI
+        -- precision, while still rejecting nonlinear conversion.
+        local tolerance=math.max(1e-6,math.abs(p)*2e-7)
+        if math.abs(p-s.chance)>tolerance then
             if math.abs(s.chance-100)<1e-6 and p>=100 then cap=100 else return out end
         end
     end

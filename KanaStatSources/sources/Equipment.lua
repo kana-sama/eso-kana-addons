@@ -24,7 +24,7 @@ function E.Build(s)
     local function parse(source,text,kind)
         local clauses,tail=K.Descriptions.Parse(text,language,kind)
         K.Rules.Emit(out,source,clauses,'native '..kind..' description; complete unconditional stat clause')
-        if tail~='' then source.description=text;diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'unrecognized or conditional description') end
+        if tail~='' then source.description=text;local d=K.Core.Diagnostic(source,'unrecognized or conditional description');d.unparsed=tail;diagnostics[#diagnostics+1]=d end
     end
     for _,item in ipairs(s.equipment or {}) do if E.Active(item,s) then
         local slotName=item.slotName or (s.slotNames or {})[item.slot] or ('#'..item.slot)

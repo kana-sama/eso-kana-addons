@@ -2,6 +2,24 @@ local T=dofile('KanaStatSources/tests/support.lua')
 local K=T.load({'Core','Stats','Rules','Critical','Model','capture/Equipment','capture/Build','capture/Effects','Snapshot'})
 local makeApi=dofile('KanaStatSources/tests/fixtures/capture.lua')
 return {
+ descriptions_are_not_read_twice=function()
+    local api=makeApi();local calls=0;local original=api.GetAbilityDescription
+    api.GetAbilityDescription=function(id,...)if id==1001 then calls=calls+1 end;return original(id,...)end
+    K.Snapshot.New(api):Capture(false);T.eq(calls,1)
+ end,
+ equipment_cached_until_changed=function()
+    local api=makeApi();local calls=0;local original=api.GetItemLinkEnchantInfo
+    api.GetItemLinkEnchantInfo=function(...)calls=calls+1;return original(...)end
+    local collector=K.Snapshot.New(api);collector:Capture(false);collector:Capture(false);T.eq(calls,2)
+    collector:Invalidate('equipment');collector:Capture(false);T.eq(calls,4)
+ end,
+ native_current_bonus_refreshes=function()
+    local api=makeApi();local collector=K.Snapshot.New(api)
+    collector:Capture(false)
+    collector.cache.build.data.skills={{id=45572,description='old'}}
+    api.GetAbilityDescription=function(id)return id==45572 and 'new' or 'effect'end
+    local s=collector:Capture(false);T.eq(s.skills[1].description,'new')
+ end,
  private_globals_are_not_enumerated=function()
     local api=makeApi();api.ITEM_TRAIT_TYPE_WEAPON_PRECISE=4;api.EQUIP_SLOT_MAIN_HAND=4
     local originalPairs=pairs

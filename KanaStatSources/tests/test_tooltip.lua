@@ -9,6 +9,7 @@ return {
     api.ZO_StatsEntry_OnMouseEnter(row)
     row:GetHandler('OnMouseWheel')(row,-1);T.eq(bridge.view.offset,36);T.eq(nativeWheelCalls,1)
     bridge.view.body:GetHandler('OnMouseWheel')(bridge.view.body,-1);T.eq(bridge.view.offset,72)
+    bridge:Refresh();T.eq(bridge.view.offset,72)
     T.eq(bridge.view.body.mouse,true);api.ZO_StatsEntry_OnMouseExit(row)
     row:GetHandler('OnMouseWheel')(row,-1);T.eq(bridge.view.offset,0);T.eq(nativeWheelCalls,2)
  end,

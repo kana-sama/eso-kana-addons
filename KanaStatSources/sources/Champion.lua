@@ -13,7 +13,7 @@ function K.Sources.Champion.Build(s)
         else
             local clauses,tail=K.Descriptions.Parse(star.currentBonus,language,'champion')
             K.Rules.Emit(out,source,clauses,'GetChampionSkillCurrentBonusText(id, savedPoints); native step calculation; active star')
-            if #clauses==0 or tail~='' then diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'current CP bonus not recognized; full description is not a total') end
+            if #clauses==0 or tail~='' then local d=K.Core.Diagnostic(source,'current CP bonus not recognized; full description is not a total');d.unparsed=tail;diagnostics[#diagnostics+1]=d end
         end
     end
     return out,diagnostics

@@ -9,8 +9,8 @@ S.Definitions={
     {'physicalResistance','STAT_PHYSICAL_RESIST'}, {'spellResistance','STAT_SPELL_RESIST'}, {'criticalResistance','STAT_CRITICAL_RESISTANCE'},
 }
 S.Strings={
-    ru={source='Источник',bonus='Бонус',value='Вклад в итог',total='Итого',unknown='Неизвестно',base='Базовое значение',attributes='Атрибуты',preview='Предпросмотр атрибутов',unavailable='Данные недоступны',formulaUnknown='Формула не распознана',rating='Итого рейтинг',scroll='Колесо мыши: источники',dump='Снимок',disk='Для записи на диск: /reloadui или выход из игры.',rank='ранг',points='очков'},
-    en={source='Source',bonus='Bonus',value='Contribution',total='Total',unknown='Unknown',base='Base value',attributes='Attributes',preview='Attribute preview',unavailable='Data unavailable',formulaUnknown='Formula not recognized',rating='Total rating',scroll='Mouse wheel: sources',dump='Snapshot',disk='Use /reloadui or exit the game to save to disk.',rank='rank',points='points'},
+    ru={source='Источник',bonus='Бонус',value='Вклад в итог',total='Итого',unknown='Неизвестно',base='Базовое значение',attributes='Атрибуты',preview='Предпросмотр атрибутов',unavailable='Данные недоступны',formulaUnknown='Формула не распознана',rating='Итого рейтинг',scroll='Прокрутка: колесо мыши над характеристикой',dump='Снимок',disk='Для записи на диск: /reloadui или выход из игры.',rank='ранг',points='очков'},
+    en={source='Source',bonus='Bonus',value='Contribution',total='Total',unknown='Unknown',base='Base value',attributes='Attributes',preview='Attribute preview',unavailable='Data unavailable',formulaUnknown='Formula not recognized',rating='Total rating',scroll='Scroll: mouse wheel over the stat',dump='Snapshot',disk='Use /reloadui or exit the game to save to disk.',rank='rank',points='points'},
 }
 function S.Text(language,key) return (S.Strings[language] or S.Strings.en)[key] or key end
 function S.List(api)

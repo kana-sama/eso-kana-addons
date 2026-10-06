@@ -2,7 +2,14 @@ local K=KanaStatSources
 local T={};K.Tooltip=T
 local Bridge={};Bridge.__index=Bridge
 function Bridge:Clear() self.active=nil;self.stat=nil;if self.view then self.view:Clear()end end
-function Bridge:Refresh() local active=self.active;if active then self.api.ZO_StatsEntry_OnMouseEnter(active)end end
+function Bridge:Refresh()
+    local active=self.active
+    if active then
+        local offset=self.view.offset
+        self.api.ZO_StatsEntry_OnMouseEnter(active)
+        self.view.offset=offset;self.view:Scroll(0)
+    end
+end
 function T.Install(api,getBreakdown)
     if api.KanaStatSourcesTooltipBridge then return api.KanaStatSourcesTooltipBridge end
     local b=setmetatable({api=api,getBreakdown=getBreakdown,diagnostics={},hooked=setmetatable({},{__mode='k'})},Bridge)

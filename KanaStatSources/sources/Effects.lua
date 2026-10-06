@@ -9,12 +9,12 @@ function E.Build(s)
     for _,index in pairs(context.mundusIndices or {}) do mundus[index]=true end
     for _,effect in ipairs(s.effects or {}) do
         local id=effect.abilityId
-        local active=effect.endTime==0 or (K.Core.Finite(effect.endTime) and K.Core.Finite(context.now) and effect.endTime>context.now/1000)
+        local active=effect.permanent==true or effect.endTime==0 or (K.Core.Finite(effect.startTime) and effect.endTime==effect.startTime) or (K.Core.Finite(effect.endTime) and K.Core.Finite(context.now) and effect.endTime>context.now/1000)
         if id and active then
             local category=mundus[effect.index] and 'mundus' or (E.FoodIds[id] and 'food' or 'effects')
             local canonical=effect.buffType and effect.buffType>0 and ('buff:'..effect.buffType) or ('effect:'..id)
             if category~='effects' then canonical=category..':'..id end
-            local source={key=canonical,kind='effect',category=category,id=id,label=effect.name or tostring(id),description=effect.description,stacks=effect.stacks,castByPlayer=effect.castByPlayer,buffType=effect.buffType}
+            local source={key=canonical,kind='effect',category=category,id=id,label=effect.name or tostring(id),description=effect.effectDescription or effect.description,stacks=effect.stacks,castByPlayer=effect.castByPlayer,buffType=effect.buffType}
             if not seen[canonical] then
                 seen[canonical]=true
                 if K.Rules.registry['effect:'..id] then
@@ -25,9 +25,10 @@ function E.Build(s)
                     K.Rules.Emit(out,source,clauses,'active native Mundus index; GetAbilityDerivedStatAndEffectByIndex; no second Divines multiplier')
                     if #clauses==0 then diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'native Mundus contribution unavailable') end
                 else
-                    local clauses,tail=K.Descriptions.Parse(effect.description,language,'effect')
-                    K.Rules.Emit(out,source,clauses,'GetUnitBuffInfo currently active; GetAbilityDescription caster player; complete current stat clause')
-                    if #clauses==0 or tail~='' then diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'effect scaling or condition not recognized') end
+                    local clauses,tail=K.Descriptions.Parse(source.description,language,'effect')
+                    local evidence=effect.effectDescription and 'GetAbilityEffectDescription(buffSlot)' or 'GetAbilityDescription caster player'
+                    K.Rules.Emit(out,source,clauses,'GetUnitBuffInfo currently active; '..evidence..'; complete current stat clause')
+                    if #clauses==0 or tail~='' then local d=K.Core.Diagnostic(source,'effect scaling or condition not recognized');d.unparsed=tail;diagnostics[#diagnostics+1]=d end
                 end
             end
         elseif id and effect.endTime==nil then diagnostics[#diagnostics+1]={category='effects',source={id=id,name=effect.name},reason='effect lifetime unavailable'} end
