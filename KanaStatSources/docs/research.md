@@ -15,3 +15,7 @@ Native source: [ESO UI repository](https://github.com/esoui/esoui), API document
 Descriptions support complete RU/EN stat clauses. The parser stops at a conditional/unknown tail, retaining recognized permanent prefixes. It never treats item quantities, proc probability or duration as stat amounts. Raw text, IDs and parsing diagnostics are preserved in dumps.
 
 Critical conversion is calibrated from `GetCriticalStrikeChance(0/1/100/1000/current/current+1000)` on the running client. It validates slope, intercept and saturation before displaying a formula. No universal coefficient is hardcoded.
+
+[Native champion data manager](https://github.com/esoui/esoui/blob/live/esoui/ingame/champion/championdatamanager.lua) initializes pending points to saved points. Therefore description/current-bonus calls receive the **saved total**, not zero or a delta. `CanChampionSkillTypeBeSlotted` handles both native slottable types. Active slots come from the committed champion bar. `GetChampionSkillJumpPoints` is captured; no stage is estimated from prose. Current bonus text alone supplies numeric contributions; a per-stage description is never used as a total.
+
+Skills use purchased ability IDs at committed ranks and `GetSkillLineDynamicInfo`'s `isActive` result. Only complete unconditional passive clauses are generic rules. Conditional weapon, armor-count, slotted-skill and subclass interactions require an ID rule with an activation predicate; unsupported interactions remain candidates. Inactive skill lines and unpurchased abilities cannot contribute.

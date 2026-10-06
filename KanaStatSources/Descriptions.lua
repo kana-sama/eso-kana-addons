@@ -50,6 +50,7 @@ function D.Parse(raw,language,kind)
                 local a=escape(alias);local index,percent,tail,sign
                 index,percent,tail=text:match('^adds @([0-9]+)@([%%]?) '..a..'(.*)$')
                 if not index then index,percent,tail=text:match('^'..a..'[ \t]*%+@([0-9]+)@([%%]?)(.*)$') end
+                if not index and kind=='champion' then index,percent,tail=text:match('^'..a..':[ \t]*@([0-9]+)@([%%]?)(.*)$') end
                 if not index then
                     for _,verb in ipairs({'increases? your ','increases? ','increase ','увеличивает ваши ','увеличивает ваше ','увеличивает ','повышает '}) do
                         index,percent,tail=text:match('^'..verb..a..' [bn][ya] @([0-9]+)@([%%]?)(.*)$')

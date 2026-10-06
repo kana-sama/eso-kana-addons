@@ -26,7 +26,8 @@ function K.CaptureBuild.Read(api)
             local points=id and read('GetNumPointsSpentOnChampionSkill',id)
             if points and points>0 then
                 local kind=read('GetChampionSkillType',id)
-                data.champion[#data.champion+1]={id=id,points=points,discipline=discipline,name=read('GetChampionSkillName',id),description=read('GetChampionSkillDescription',id,points),currentBonus=read('GetChampionSkillCurrentBonusText',id,points),skillType=kind,slottable=kind~=nil and api.CHAMPION_SKILL_TYPE_SLOTTABLE~=nil and kind==api.CHAMPION_SKILL_TYPE_SLOTTABLE or nil,slot=slots[id],abilityId=read('GetChampionAbilityId',id)}
+                local slottable=kind and read('CanChampionSkillTypeBeSlotted',kind)
+                data.champion[#data.champion+1]={id=id,points=points,discipline=discipline,name=read('GetChampionSkillName',id),description=read('GetChampionSkillDescription',id,points),currentBonus=read('GetChampionSkillCurrentBonusText',id,points),skillType=kind,slottable=slottable,slot=slots[id],abilityId=read('GetChampionAbilityId',id),jumpPoints={read('GetChampionSkillJumpPoints',id)}}
             end
         end
     end
