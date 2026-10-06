@@ -24,3 +24,23 @@ end
 function K.Core.Diagnostic(source,reason)
     return {sourceKey=source.sourceKey or source.key,category=source.category,stat=source.stat,reason=reason,source=source.source or source,ruleId=source.ruleId}
 end
+function K.Core.Reader(api,errors)
+    local reported={}
+    return function(name,...)
+        local fn=api[name]
+        local values
+        if type(fn)=='function' then values={pcall(fn,...)} else values={false,'API unavailable'} end
+        if not values[1] then
+            if not reported[name] then errors[#errors+1]={api=name,reason=tostring(values[2])};reported[name]=true end
+            return nil
+        end
+        return (unpack or table.unpack)(values,2,table.maxn and table.maxn(values) or 32)
+    end
+end
+function K.Core.Signature(value)
+    if type(value)~='table' then return tostring(value) end
+    local keys={};for key in pairs(value) do keys[#keys+1]=key end
+    table.sort(keys,function(a,b)return tostring(a)<tostring(b) end)
+    local out={};for _,key in ipairs(keys) do out[#out+1]=tostring(key)..'='..K.Core.Signature(value[key]) end
+    return table.concat(out,';')
+end
