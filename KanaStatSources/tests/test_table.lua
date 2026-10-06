@@ -49,6 +49,11 @@ return {
     T.eq(v.footer.text,'Total');T.eq(v.footerValue.text,'50.0%')
     T.eq(v.formula,nil)
  end,
+ unverified_critical_conversion_does_not_display_rating=function()
+    local v=view()
+    v:Render({available=true,total=6864,critical={verified=false,chance=31.3253},rows={{name='Unknown',value=6864}}},'en',{width=1280,height=720})
+    T.eq(v.footerValue.text,'31.3%');T.eq(v.rows[1].labels[2].text,'Data unavailable')
+ end,
  native_minimum_width_and_description_does_not_widen=function()
     local v,api=view()
     v:Render({available=true,total=10,rows={{name='Short',value=10}}},'en',{width=1800,height=900,title='A title long enough to wrap rather than enlarge the tooltip',description=string.rep('Long description ',30)})

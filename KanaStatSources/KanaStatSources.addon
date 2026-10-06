@@ -1,7 +1,7 @@
 ## Title: KanaStatSources
 ## Author: Kana
-## Version: 1.0.3
-## AddOnVersion: 10003
+## Version: 1.0.4
+## AddOnVersion: 10004
 ## APIVersion: 101051
 ## Description: Sources of main character stats in native tooltips; /kanastats dump
 ## SavedVariables: KanaStatSourcesSaved

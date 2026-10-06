@@ -50,6 +50,27 @@ return {
     T.eq(footerY+v.footer.height<=v.height,true)
     v:Scroll(-10000);T.eq(v.offset+v.bodyHeight,v.contentHeight)
  end,
+ russian_preview_does_not_enlarge_source_width=function()
+    local a=api();local v=K.Table.New(a,a.InformationTooltip)
+    local b={available=true,total=12000,rows={{name='Базовое значение',value=12000}}}
+    local bounds={width=1200,height=800,title='Макс. магия'}
+    v:Render(b,'ru',bounds);local height=v.height;T.eq(a.InformationTooltip:GetWidth(),350)
+    b.preview={amount=100,total=12100};bounds.keepLayout=true;v:Render(b,'ru',bounds)
+    T.eq(a.InformationTooltip:GetWidth(),350);T.eq(v.height,height)
+    T.eq(v.preview.height>=v.preview:GetTextHeight(),true)
+    v:Scroll(-10000);T.eq(v.offset+v.bodyHeight,v.contentHeight)
+ end,
+ narrower_source_width_keeps_title_body_and_footer_inside=function()
+    local a=api();local v=K.Table.New(a,a.InformationTooltip)
+    local b={available=true,total=10,rows={{name=string.rep('N',100),value=10}}}
+    local bounds={width=1800,height=900,title=string.rep('Title ',25)}
+    v:Render(b,'en',bounds)
+    b.rows[1].name='Short';bounds.keepLayout=true;v:Render(b,'en',bounds)
+    T.eq(a.InformationTooltip:GetWidth(),350);T.eq(v.bodyHeight>=22,true)
+    T.eq(v.title.height>=v.title:GetTextHeight(),true)
+    T.eq(v.footer.anchor[5]+v.footer.height<=v.height,true)
+    T.eq(v.rows[1].labels[1].hidden,false)
+ end,
  empty_tooltip_can_gain_sources=function()
     local a=api();local v=K.Table.New(a,a.InformationTooltip)
     local b={available=true,total=0,rows={}}

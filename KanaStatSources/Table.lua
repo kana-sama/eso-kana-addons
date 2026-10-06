@@ -45,8 +45,9 @@ function View:Name(row,language)
     return name
 end
 function View:Effect(row,b,language)
-    if b.critical and b.critical.verified then
-        return K.Stats.Number(row.value/b.critical.pointsPerPercent,language,2)..'%'
+    if b.critical then
+        if b.critical.verified then return K.Stats.Number(row.value/b.critical.pointsPerPercent,language,2)..'%' end
+        return K.Stats.Text(language,'unavailable')
     end
     local value=K.Stats.Number(row.value,language)
     if row.operation=='percent' and K.Core.Finite(row.amount) then value=value..' ('..K.Stats.Number(row.amount,language,2)..'%)' end
@@ -83,8 +84,8 @@ function View:Render(b,language,bounds)
     if self.descriptionText~=description then self.description:SetText(description);self.descriptionText=description end
     self.footer:SetText(totalLabel);self.footerValue:SetText(totalValue)
     self.preview:SetText(preview);self.previewValue:SetText(previewValue);self.hint:SetText(hint)
-    local nameWidth=math.max(self:NaturalWidth(totalLabel),self:NaturalWidth(preview))
-    local valueWidth=math.max(self:NaturalWidth(totalValue),self:NaturalWidth(previewValue))
+    local nameWidth=self:NaturalWidth(totalLabel)
+    local valueWidth=self:NaturalWidth(totalValue)
     for i,row in ipairs(b.rows or {}) do
         local r=self.rows[i]
         if not r then
@@ -108,6 +109,9 @@ function View:Render(b,language,bounds)
     valueWidth=math.min(math.ceil(valueWidth)+1,math.max(1,width-ICON-ICON_GAP-COLUMN_GAP-1))
     nameWidth=math.max(1,width-ICON-ICON_GAP-COLUMN_GAP-valueWidth)
     local old=bounds.keepLayout and self.layout
+    -- A changed source width can wrap the title onto more lines. Refit height
+    -- for that actual geometry change; unchanged widths keep their viewport.
+    if old and old.width~=width then old=nil end
     self.width=width
     local function place(l,parent,x,y,w,h)
         l:ClearAnchors();l:SetDimensions(w,h);l:SetAnchor(api.TOPLEFT,parent,api.TOPLEFT,x,y)
