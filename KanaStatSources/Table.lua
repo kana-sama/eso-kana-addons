@@ -18,6 +18,7 @@ function Table.New(api,tooltip)
     v.makeLabel=label
     v.title=label(v.control,true);v.title:SetMaxLineCount(1)
     v.measure=label(v.control);v.measure:SetHidden(true)
+    v.measureLine=label(v.control);v.measureLine:SetHidden(true);v.measureLine:SetMaxLineCount(1)
     v.body=control(v.control,api.CT_SCROLL);v.body:SetScrollBounding(api.SCROLL_BOUNDING_CONTAINED)
     v.content=control(v.body,api.CT_CONTROL)
     v.description=label(v.content)
@@ -55,6 +56,17 @@ function View:Effect(row,b,language)
     if row.operation=='percent' and K.Core.Finite(row.amount) then value=value..' ('..K.Stats.Number(row.amount,language,2)..'%)' end
     return value
 end
+function View:Measure(text,width,singleLine)
+    if text=='' then return 0,0 end
+    local probe=singleLine and self.measureLine or self.measure
+    -- Measure complete text in a hidden, vertically unconstrained native label.
+    -- Reading/resetting a visible label can measure its truncated layout. Native
+    -- GetTextDimensions returns UI units; GetStringWidth returns scaled pixels.
+    probe:SetDimensions(width or 0,10000);probe:SetText(text)
+    local w,h=probe:GetTextDimensions()
+    return math.ceil(w),math.ceil(h)
+end
+function View:NaturalWidth(text)local w=self:Measure(text);return w end
 function View:Render(b,language,bounds)
     bounds=bounds or {};local api=self.api
     -- GuiRoot and controls both use logical UI units. Neither previous tooltip
@@ -69,11 +81,12 @@ function View:Render(b,language,bounds)
     local preview=b.preview and K.Stats.Text(language,'preview') or ''
     local previewValue=b.preview and ('+'..K.Stats.Number(b.preview.amount,language)..' → '..K.Stats.Number(b.preview.total,language)) or ''
     local hint=K.Stats.Text(language,'scroll')
-    self.title:SetText(title);self.description:SetText(description)
+    if self.titleText~=title then self.title:SetText(title);self.titleText=title end
+    if self.descriptionText~=description then self.description:SetText(description);self.descriptionText=description end
     self.footer:SetText(totalLabel);self.footerValue:SetText(totalValue)
     self.formula:SetText(formula);self.preview:SetText(preview);self.previewValue:SetText(previewValue);self.hint:SetText(hint)
-    local nameWidth=math.max(self.measure:GetStringWidth(totalLabel),self.measure:GetStringWidth(preview))
-    local valueWidth=math.max(self.measure:GetStringWidth(totalValue),self.measure:GetStringWidth(previewValue))
+    local nameWidth=math.max(self:NaturalWidth(totalLabel),self:NaturalWidth(preview))
+    local valueWidth=math.max(self:NaturalWidth(totalValue),self:NaturalWidth(previewValue))
     for i,row in ipairs(b.rows or {}) do
         local r=self.rows[i]
         if not r then
@@ -83,8 +96,8 @@ function View:Render(b,language,bounds)
         end
         r.name=self:Name(row,language);r.effect=self:Effect(row,b,language)
         r.labels[1]:SetText(r.name);r.labels[2]:SetText(r.effect)
-        nameWidth=math.max(nameWidth,self.measure:GetStringWidth(r.name))
-        valueWidth=math.max(valueWidth,self.measure:GetStringWidth(r.effect))
+        nameWidth=math.max(nameWidth,self:NaturalWidth(r.name))
+        valueWidth=math.max(valueWidth,self:NaturalWidth(r.effect))
         local icon=row.icon or (row.source or {}).icon
         if icon and icon~='' then r.icon:SetTexture(icon)end
         r.icon:SetHidden(not icon or icon=='')
@@ -93,7 +106,7 @@ function View:Render(b,language,bounds)
     -- The title/formula may need more room; the description wraps at that same
     -- width. One-line names are capped only by the physical screen boundary.
     local width=ICON+ICON_GAP+math.ceil(nameWidth)+COLUMN_GAP+math.ceil(valueWidth)+1
-    width=math.min(maxWidth,math.max(width,self.measure:GetStringWidth(title),self.measure:GetStringWidth(formula)))
+    width=math.min(maxWidth,math.max(width,self:NaturalWidth(title),self:NaturalWidth(formula)))
     valueWidth=math.min(math.ceil(valueWidth)+1,math.max(1,width-ICON-ICON_GAP-COLUMN_GAP-1))
     nameWidth=math.max(1,width-ICON-ICON_GAP-COLUMN_GAP-valueWidth)
     local old=bounds.keepLayout and self.layout
@@ -102,11 +115,11 @@ function View:Render(b,language,bounds)
     local function place(l,parent,x,y,w,h)
         l:ClearAnchors();l:SetDimensions(w,h);l:SetAnchor(api.TOPLEFT,parent,api.TOPLEFT,x,y)
     end
-    local function textHeight(l,text)
-        l:SetDimensions(width,0);l:SetHidden(text=='')
-        return text=='' and 0 or l:GetTextHeight()
+    local function textHeight(l,text,singleLine)
+        l:SetHidden(text=='')
+        local _,h=self:Measure(text,width,singleLine);return h
     end
-    local titleHeight=textHeight(self.title,title)
+    local titleHeight=textHeight(self.title,title,true)
     local descriptionHeight=textHeight(self.description,description)
     if old then titleHeight=old.titleHeight end
     place(self.title,self.control,0,0,width,titleHeight)
@@ -118,8 +131,9 @@ function View:Render(b,language,bounds)
     local y=descriptionHeight+(descriptionHeight>0 and SECTION_GAP or 0)
     for i=1,#(b.rows or {}) do
         local r=self.rows[i]
-        r.labels[1]:SetDimensions(nameWidth,0);r.labels[2]:SetDimensions(valueWidth,0)
-        local h=math.max(ICON,r.labels[1]:GetTextHeight(),r.labels[2]:GetTextHeight())
+        local _,nameHeight=self:Measure(r.name,nameWidth,true)
+        local _,valueHeight=self:Measure(r.effect,valueWidth,true)
+        local h=math.max(ICON,nameHeight,valueHeight)
         place(r.labels[1],self.content,ICON+ICON_GAP,y,nameWidth,h)
         place(r.labels[2],self.content,width-valueWidth,y,valueWidth,h)
         r.labels[1]:SetHidden(false);r.labels[2]:SetHidden(false)
@@ -135,20 +149,22 @@ function View:Render(b,language,bounds)
         -- text can wrap inside its own two cells; reserve enough width for each
         -- word/number so neither caption nor draft total is truncated.
         local function longestWord(text)
-            local w=0;for word in text:gmatch('%S+')do w=math.max(w,self.measure:GetStringWidth(word))end;return w
+            local w=0;for word in text:gmatch('%S+')do w=math.max(w,self:NaturalWidth(word))end;return w
         end
         local gap=12
         local previewNameWidth=math.min(math.max(longestWord(preview),(width-gap)*0.6),math.max(1,width-gap-longestWord(previewValue)))
         local previewValueWidth=math.max(1,width-previewNameWidth-gap)
-        self.preview:SetDimensions(previewNameWidth,0);self.previewValue:SetDimensions(previewValueWidth,0)
-        local h=math.max(ICON,self.preview:GetTextHeight(),self.previewValue:GetTextHeight())
+        local _,previewNameHeight=self:Measure(preview,previewNameWidth)
+        local _,previewValueHeight=self:Measure(previewValue,previewValueWidth)
+        local h=math.max(ICON,previewNameHeight,previewValueHeight)
         place(self.preview,self.content,0,y,previewNameWidth,h)
         place(self.previewValue,self.content,width-previewValueWidth,y,previewValueWidth,h)
         y=y+h+ROW_GAP
     end
     self.contentHeight=math.max(0,y-ROW_GAP)
-    self.footer:SetDimensions(width-valueWidth-COLUMN_GAP,0);self.footerValue:SetDimensions(valueWidth,0)
-    local totalHeight=math.max(self.footer:GetTextHeight(),self.footerValue:GetTextHeight())
+    local _,totalLabelHeight=self:Measure(totalLabel,width-valueWidth-COLUMN_GAP,true)
+    local _,totalValueHeight=self:Measure(totalValue,valueWidth,true)
+    local totalHeight=math.max(totalLabelHeight,totalValueHeight)
     local formulaHeight=textHeight(self.formula,formula)
     local footerHeight=totalHeight+(formulaHeight>0 and formulaHeight+ROW_GAP or 0)
     local available=(old and old.height or maxHeight)-headerHeight-footerHeight-SECTION_GAP

@@ -10,13 +10,23 @@ return function()
     function C:SetDimensionConstraints(...)self.constraints={...}end
     function C:GetResizeToFitPadding()return 32,32 end
     function C:SetText(v)self.text=v end
+    local function stringWidth(text)
+        local _,bytes=(text or ''):gsub('[\128-\191]','');return (#(text or '')-bytes)*8
+    end
     function C:GetTextHeight()
         local lines=0
-        for line in ((self.text or '')..'\n'):gmatch('(.-)\n') do lines=lines+math.max(1,math.ceil(self:GetStringWidth(line)/math.max(1,self.width or 400)))end
+        local width=self.width==0 and math.huge or math.max(1,self.width or 400)
+        for line in ((self.text or '')..'\n'):gmatch('(.-)\n') do lines=lines+math.max(1,math.ceil(stringWidth(line)/width))end
         return math.max(1,math.min(self.maxLines or lines,lines))*18
     end
     function C:SetFont(v)self.font=v end
-    function C:GetStringWidth(text)local _,bytes=(text or ''):gsub('[\128-\191]','');return (#(text or '')-bytes)*8 end
+    function C:GetStringWidth(text)return stringWidth(text)*api.GetUIGlobalScale()end
+    function C:GetTextDimensions()
+        local width=0
+        for line in ((self.text or '')..'\n'):gmatch('(.-)\n')do width=math.max(width,stringWidth(line))end
+        if self.width and self.width>0 then width=math.min(width,self.width)end
+        return width,self:GetTextHeight()
+    end
     function C:SetMaxLineCount(v)self.maxLines=v end
     function C:SetTexture(v)self.texture=v end
     function C:SetColor(...)self.color={...} end
