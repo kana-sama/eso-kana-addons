@@ -28,7 +28,7 @@ function E.Build(s)
     end
     for _,item in ipairs(s.equipment or {}) do if E.Active(item,s) then
         local slotName=item.slotName or (s.slotNames or {})[item.slot] or ('#'..item.slot)
-        local root={key='item:'..item.slot,category='equipment',slot=item.slot,link=item.link,id=item.id,label=(item.name or tostring(item.slot))..' ['..slotName..']'}
+        local root={key='item:'..item.slot,category='equipment',slot=item.slot,link=item.link,id=item.id,name=item.name or tostring(item.slot),icon=item.icon,label=(item.name or tostring(item.slot))..' ['..slotName..']'}
         local function source(suffix,label) local r=K.Core.CopySerializable(root);r.key=r.key..':'..suffix;r.label=r.label..' — '..label;return r end
         if K.Core.Finite(item.armorRating) and item.armorRating>0 then
             K.Rules.Emit(out,source('armor',language=='ru' and 'броня' or 'armor'),{{stats={'physicalResistance','spellResistance'},amount=item.armorRating,operation='flat'}},'GetItemLinkArmorRating(link, true); includes condition and local armor traits')
@@ -69,7 +69,7 @@ function E.Build(s)
             local family=set.familyId or id;local identity=family..':'..tostring(bonus.required)..':'..tostring(bonus.perfected or false)..':'..K.Descriptions.Clean(bonus.description)
             if count and bonus.required and count>=bonus.required and not seen[identity] then
                 seen[identity]=true
-                parse({key='set:'..identity,category='sets',id=id,familyId=family,label=(set.name or tostring(id))..' ('..bonus.required..')',required=bonus.required,perfected=bonus.perfected},bonus.description,'set')
+                parse({key='set:'..identity,category='sets',id=id,familyId=family,name=set.name or tostring(id),icon=set.icon,label=(set.name or tostring(id))..' ('..bonus.required..')',required=bonus.required,perfected=bonus.perfected},bonus.description,'set')
             end
         end
     end

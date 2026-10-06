@@ -14,7 +14,7 @@ function E.Build(s)
             local category=mundus[effect.index] and 'mundus' or (E.FoodIds[id] and 'food' or 'effects')
             local canonical=effect.buffType and effect.buffType>0 and ('buff:'..effect.buffType) or ('effect:'..id)
             if category~='effects' then canonical=category..':'..id end
-            local source={key=canonical,kind='effect',category=category,id=id,label=effect.name or tostring(id),description=effect.effectDescription or effect.description,stacks=effect.stacks,castByPlayer=effect.castByPlayer,buffType=effect.buffType}
+            local source={key=canonical,kind='effect',category=category,id=id,name=effect.name or tostring(id),icon=effect.icon,label=effect.name or tostring(id),description=effect.effectDescription or effect.description,stacks=effect.stacks,castByPlayer=effect.castByPlayer,buffType=effect.buffType}
             if not seen[canonical] then
                 seen[canonical]=true
                 if K.Rules.registry['effect:'..id] then

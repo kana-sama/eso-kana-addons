@@ -3,7 +3,7 @@ K.Sources.Champion={}
 function K.Sources.Champion.Build(s)
     local out,diagnostics={},{};local language=(s.meta or {}).language or 'en'
     for _,star in ipairs(s.champion or {}) do
-        local source={key='champion:'..star.id,kind='champion',id=star.id,category='champion',label=star.name or tostring(star.id),points=star.points,slot=star.slot,description=star.description,currentBonus=star.currentBonus}
+        local source={key='champion:'..star.id,kind='champion',id=star.id,category='champion',name=star.name or tostring(star.id),icon=star.icon,label=star.name or tostring(star.id),points=star.points,slot=star.slot,description=star.description,currentBonus=star.currentBonus}
         if star.points then source.label=source.label..' ('..star.points..' '..K.Stats.Text(language,'points')..')'end
         if not star.points or star.points<=0 then
         elseif star.slottable==nil then diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'champion skill type unavailable')

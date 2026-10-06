@@ -16,7 +16,8 @@ function M.Build(snapshot,contributions,diagnostics,policies)
     end
     local pending={}
     local function append(b,c,value,base)
-        local r={key=c.key,label=c.label or c.key,category=c.category,source=c.source,evidence=c.evidence,rawValue=value,value=K.Core.Round(value),amount=c.amount,operation=c.operation,group=c.group,base=base}
+        local source=c.source or {}
+        local r={key=c.key,label=c.label or c.key,name=c.name or source.name,icon=c.icon or source.icon,category=c.category,source=c.source,evidence=c.evidence,rawValue=value,value=K.Core.Round(value),amount=c.amount,operation=c.operation,group=c.group,base=base}
         b.rows[#b.rows+1]=r
     end
     for _,c in ipairs(contributions or {}) do

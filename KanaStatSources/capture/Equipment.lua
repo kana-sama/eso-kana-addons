@@ -20,7 +20,7 @@ function K.CaptureEquipment.Read(api,capabilities)
     for slot=first,last do
         local link=read('GetItemLink',api.BAG_WORN,slot,api.LINK_STYLE_DEFAULT)
         if link and link~='' then
-            local r={slot=slot,link=link,name=read('GetItemLinkName',link),id=read('GetItemLinkItemId',link)}
+            local r={slot=slot,link=link,name=read('GetItemLinkName',link),id=read('GetItemLinkItemId',link),icon=read('GetItemLinkIcon',link)}
             r.slotName=read('GetString','SI_EQUIPSLOT',slot)
             for field,fn in pairs({armorType='GetItemLinkArmorType',weaponType='GetItemLinkWeaponType',equipType='GetItemLinkEquipType',level='GetItemLinkRequiredLevel',cp='GetItemLinkRequiredChampionPoints',quality='GetItemLinkDisplayQuality',condition='GetItemLinkCondition',charges='GetItemLinkNumEnchantCharges',enchantId='GetItemLinkFinalEnchantId'}) do r[field]=read(fn,link) end
             r.armorRating=read('GetItemLinkArmorRating',link,true);r.weaponPower=read('GetItemLinkWeaponPower',link)
@@ -34,7 +34,7 @@ function K.CaptureEquipment.Read(api,capabilities)
                 r.setId=id;r.familyId=family and family>0 and family or id
                 local set=data.sets[id]
                 if not set then
-                    set={id=id,familyId=r.familyId,name=name,normal=normal,perfected=perfect,max=max,bonuses={}}
+                    set={id=id,familyId=r.familyId,name=name,icon=r.icon,normal=normal,perfected=perfect,max=max,bonuses={}}
                     data.sets[id]=set
                     for i=1,count or 0 do
                         local required,description,isPerfect=read('GetItemLinkSetBonusInfo',link,true,i)

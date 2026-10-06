@@ -21,13 +21,23 @@ function K.CaptureBuild.Read(api,capabilities)
     end
     for slot=1,12 do local id=read('GetSlotBoundId',slot,api.HOTBAR_CATEGORY_CHAMPION);if id and id>0 then slots[id]=slot end end
     for discipline=1,read('GetNumChampionDisciplines') or 0 do
+        local disciplineId=read('GetChampionDisciplineId',discipline)
+        local disciplineType=disciplineId and read('GetChampionDisciplineType',disciplineId)
+        local icon
+        -- Native ZO_ChampionDisciplineData:GetPointPoolIcon uses these three
+        -- already coloured textures, selected by discipline type (not index).
+        for _,entry in ipairs({
+            {'CHAMPION_DISCIPLINE_TYPE_WORLD','EsoUI/Art/Champion/champion_points_stamina_icon.dds'},
+            {'CHAMPION_DISCIPLINE_TYPE_COMBAT','EsoUI/Art/Champion/champion_points_magicka_icon.dds'},
+            {'CHAMPION_DISCIPLINE_TYPE_CONDITIONING','EsoUI/Art/Champion/champion_points_health_icon.dds'},
+        }) do if api[entry[1]]~=nil and disciplineType==api[entry[1]] then icon=entry[2] end end
         for index=1,read('GetNumChampionDisciplineSkills',discipline) or 0 do
             local id=read('GetChampionSkillId',discipline,index)
             local points=id and read('GetNumPointsSpentOnChampionSkill',id)
             if points and points>0 then
                 local kind=read('GetChampionSkillType',id)
                 local slottable=kind and read('CanChampionSkillTypeBeSlotted',kind)
-                data.champion[#data.champion+1]={id=id,points=points,discipline=discipline,name=read('GetChampionSkillName',id),description=read('GetChampionSkillDescription',id,points),currentBonus=read('GetChampionSkillCurrentBonusText',id,points),skillType=kind,slottable=slottable,slot=slots[id],abilityId=read('GetChampionAbilityId',id),jumpPoints={read('GetChampionSkillJumpPoints',id)}}
+                data.champion[#data.champion+1]={id=id,points=points,discipline=discipline,disciplineId=disciplineId,disciplineType=disciplineType,icon=icon,name=read('GetChampionSkillName',id),description=read('GetChampionSkillDescription',id,points),currentBonus=read('GetChampionSkillCurrentBonusText',id,points),skillType=kind,slottable=slottable,slot=slots[id],abilityId=read('GetChampionAbilityId',id),jumpPoints={read('GetChampionSkillJumpPoints',id)}}
             end
         end
     end

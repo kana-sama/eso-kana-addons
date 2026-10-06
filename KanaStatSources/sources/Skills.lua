@@ -3,7 +3,7 @@ K.Sources.Skills={}
 function K.Sources.Skills.Build(s)
     local out,diagnostics={},{};local language=(s.meta or {}).language or 'en'
     for _,skill in ipairs(s.skills or {}) do
-        local source={key='skill:'..tostring(skill.id),kind='skill',id=skill.id,category='skills',label=skill.name or tostring(skill.id),rank=skill.rank,lineId=skill.lineId,description=skill.description}
+        local source={key='skill:'..tostring(skill.id),kind='skill',id=skill.id,category='skills',name=skill.name or tostring(skill.id),icon=skill.icon,label=skill.name or tostring(skill.id),rank=skill.rank,lineId=skill.lineId,description=skill.description}
         if skill.rank then source.label=source.label..' ('..K.Stats.Text(language,'rank')..' '..skill.rank..')'end
         if skill.purchased and skill.lineActive==true then
             if K.Rules.registry['skill:'..tostring(skill.id)] then
