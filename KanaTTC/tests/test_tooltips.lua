@@ -162,10 +162,10 @@ local function tooltip(width)
     control:SetHandler('OnCleared', function() nativeClears = nativeClears + 1 end)
     return control
 end
-local function priceInfo(suggested, average, sales, items)
+local function priceInfo(suggested, average, sales, listings)
     return {SuggestedPrice = suggested, SaleAvg = average,
-        SaleEntryCount = sales, SaleAmountCount = items,
-        Avg = 999, Min = 1, Max = 9999, EntryCount = 888, AmountCount = 777}
+        SaleEntryCount = sales, SaleAmountCount = 555,
+        Avg = 999, Min = 1, Max = 9999, EntryCount = listings, AmountCount = 777}
 end
 local function append(tip, info)
     nextLink = nextLink + 1
@@ -188,21 +188,21 @@ local function expect(condition, message)
     assert(condition, message)
     passed = passed + 1
 end
-local function expectValues(tip, low, average, sales, items)
+local function expectValues(tip, low, average, sales, listings)
     local texts = labels(tip)
     expect(#texts == 8, 'four header/value pairs, without extra labels')
     expect(texts[2]:gsub('%s*|t.-|t', '') == low, 'suggested low: ' .. texts[2])
     expect(texts[4]:gsub('%s*|t.-|t', '') == average, 'sale average: ' .. texts[4])
     expect(texts[6] == sales, 'sales counter must come from sale entries')
-    expect(texts[8] == items, 'items counter must come from sold quantities')
+    expect(texts[8] == listings, 'listings counter must come from listing entries')
     expect(not texts[6]:find('|t', 1, true) and not texts[8]:find('|t', 1, true), 'counters have no currency icon')
 end
 
 local tip = tooltip()
 append(tip, priceInfo(950, 1560, 42, 126))
 expectValues(tip, '950', '1,560', '42', '126')
-expect(labels(tip)[1] == 'Рек. мин.' and labels(tip)[3] == 'Ср. продаж', 'Russian price labels distinguish both prices')
-expect(labels(tip)[5] == 'Продаж' and labels(tip)[7] == 'Предметов', 'Russian counters distinguish sales and items')
+expect(labels(tip)[1] == 'Рек. цена' and labels(tip)[3] == 'Средняя', 'Russian price labels distinguish both prices')
+expect(labels(tip)[5] == 'Продажи' and labels(tip)[7] == 'Предложения', 'Russian counters distinguish sales and listings')
 expect(originalCalls == 0, 'compact table works when original TTC output is disabled')
 expect(tip.body.anchor[1] == CENTER and tip.body.anchor[2] == nil, 'anchor inside the cell supplied by native AddControl')
 expect(tip.body.width <= tip.width - 32 and tip.body.height <= 40, 'compact table fits the native tooltip')
@@ -235,7 +235,7 @@ local english = tooltip()
 append(english, priceInfo(0, 0, 1, 200))
 expectValues(english, '0', '0', '1', '200')
 expect(labels(english)[1] == 'Sugg. low' and labels(english)[3] == 'Sale avg', 'English labels preserve TTC terms')
-expect(labels(english)[5] == 'Sales' and labels(english)[7] == 'Items', 'English counters have distinct labels')
+expect(labels(english)[5] == 'Sales' and labels(english)[7] == 'Listings', 'English counters have distinct labels')
 
 english:ClearLines()
 append(english, priceInfo(23400, 99999, 4, 400))
@@ -325,7 +325,7 @@ TamrielTradeCentrePrice.PriceTable = {Data = {
 local actual = tooltip()
 itemInfos['actual:17'] = {ID = 17, QualityID = 1, Level = 1, ItemType = 1}
 PopupTooltip.SetLink(actual, 'actual:17')
-expectValues(actual, '23.4k', '19.5k', '42', '126')
+expectValues(actual, '23.4k', '19.5k', '42', '888')
 actual:ClearLines()
 TamrielTradeCentrePrice.PriceTable = nil
 PopupTooltip.SetLink(actual, 'actual:17')

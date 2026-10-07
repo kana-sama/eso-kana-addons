@@ -6,8 +6,8 @@ local HEADER_FONT = '$(MEDIUM_FONT)|14|soft-shadow-thin'
 local VALUE_FONT = '$(BOLD_FONT)|16|soft-shadow-thin'
 local GAP, HEIGHT = 10, 36
 local HEADERS = {
-    ru = {'Рек. мин.', 'Ср. продаж', 'Продаж', 'Предметов'},
-    en = {'Sugg. low', 'Sale avg', 'Sales', 'Items'},
+    ru = {'Рек. цена', 'Средняя', 'Продажи', 'Предложения'},
+    en = {'Sugg. low', 'Sale avg', 'Sales', 'Listings'},
 }
 
 local function FormatValue(value, isPrice, decimals)
@@ -57,7 +57,7 @@ local function LayoutTable(tooltip, state, info)
         FormatValue(info.SuggestedPrice, true, 0),
         FormatValue(info.SaleAvg, true, 2),
         FormatValue(info.SaleEntryCount, false, 0),
-        FormatValue(info.SaleAmountCount, false, 0),
+        FormatValue(info.EntryCount, false, 0),
     }
     local widths = {}
     -- Measure unconstrained labels: previous values must not constrain reuse.

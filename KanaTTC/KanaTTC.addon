@@ -1,8 +1,8 @@
 ## Title: KanaTTC
 ## Author: Kana
-## Description: Compact TTC tooltip table with suggested low, sale average, sales and sold items.
-## Version: 1.0.1
-## AddOnVersion: 10001
+## Description: Compact TTC tooltip table with suggested low, sale average, sales and listings.
+## Version: 1.0.2
+## AddOnVersion: 10002
 ## APIVersion: 101049 101050 101051
 ## DependsOn: TamrielTradeCentre
 
