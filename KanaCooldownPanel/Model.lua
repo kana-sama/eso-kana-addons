@@ -28,6 +28,12 @@ function addon:GetBars()
     if oneRow or (active ~= HOTBAR_CATEGORY_PRIMARY and active ~= HOTBAR_CATEGORY_BACKUP) then
         return {active}
     end
+    if self.settings.fixedBars then
+        if self.settings.frontBarPosition == 'top' then
+            return {HOTBAR_CATEGORY_PRIMARY, HOTBAR_CATEGORY_BACKUP}
+        end
+        return {HOTBAR_CATEGORY_BACKUP, HOTBAR_CATEGORY_PRIMARY}
+    end
     local inactive = active == HOTBAR_CATEGORY_PRIMARY and HOTBAR_CATEGORY_BACKUP or HOTBAR_CATEGORY_PRIMARY
     return {inactive, active}
 end
@@ -36,6 +42,13 @@ function addon:FormatTime(milliseconds)
     local seconds = milliseconds / 1000
     if seconds < 10 then return string.format('%.1f', math.ceil(seconds * 10) / 10) end
     return tostring(math.ceil(seconds))
+end
+
+function addon:GetIconAlpha(remaining, duration)
+    if remaining <= 0 then return 1 end
+    -- ESO can briefly report no duration while updating a slot's effect.
+    if not duration or duration <= 0 then return 0 end
+    return 0.9 * math.max(0, math.min(1, 1 - remaining / duration))
 end
 
 function addon:GetCellState(slot, bar, combat)
@@ -47,7 +60,7 @@ function addon:GetCellState(slot, bar, combat)
     local remaining = GetActionSlotEffectTimeRemaining(slot, bar) or 0
     if remaining > 0 then
         local state = important and remaining < 2000 and 'soon' or 'active'
-        return state, self:FormatTime(remaining)
+        return state, self:FormatTime(remaining), remaining
     end
     if important and combat then return 'missing', '!' end
     return 'skip', ''

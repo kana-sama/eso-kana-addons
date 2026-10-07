@@ -20,8 +20,12 @@ function methods:SetHandler(name, callback) self.handlers[name] = callback end
 function methods:SetText(text) self.text = text end
 function methods:SetColor(...) self.color = {...} end
 function methods:SetCenterColor(...) self.color = {...} end
+function methods:SetTexture(texture) self.texture = texture end
+function methods:SetAlpha(alpha) self.alpha = alpha end
+function methods:SetDrawLayer(layer) self.layer = layer end
+function methods:SetDrawLevel(level) self.level = level end
 for _, name in ipairs({'SetAnchorFill', 'SetEdgeColor', 'SetFont',
-    'SetHorizontalAlignment', 'SetVerticalAlignment', 'SetDrawTier'}) do
+    'SetHorizontalAlignment', 'SetVerticalAlignment', 'SetDrawTier', 'SetTextureCoords', 'SetBlendMode'}) do
     methods[name] = function() end
 end
 local function control(name, parent)
@@ -46,7 +50,8 @@ HUD_SCENE = {AddFragment = function(_, fragment) fragments[#fragments + 1] = fra
 HUD_UI_SCENE = HUD_SCENE
 GuiRoot = {GetHeight = function() return 1000 end}
 CT_BACKDROP, CT_LABEL, CT_CONTROL, DT_LOW = 1, 2, 3, 0
-TOP, TOPLEFT, TEXT_ALIGN_CENTER = 'TOP', 'TOPLEFT', 'CENTER'
+CT_TEXTURE, DL_BACKGROUND, DL_CONTROLS, DL_OVERLAY, TEX_BLEND_MODE_ADD = 4, 0, 1, 2, 1
+TOP, TOPLEFT, BOTTOMRIGHT, TEXT_ALIGN_CENTER = 'TOP', 'TOPLEFT', 'BOTTOMRIGHT', 'CENTER'
 MOUSE_BUTTON_INDEX_LEFT, MOUSE_BUTTON_INDEX_RIGHT = 1, 2
 HOTBAR_CATEGORY_PRIMARY, HOTBAR_CATEGORY_BACKUP, HOTBAR_CATEGORY_WEREWOLF, HOTBAR_CATEGORY_COMPANION = 0, 1, 2, 3
 ACTION_TYPE_NOTHING, ACTION_TYPE_ABILITY, ACTION_TYPE_CRAFTED_ABILITY = 0, 1, 2
@@ -70,6 +75,10 @@ GetActionSlotEffectTimeRemaining = function(slot, bar)
     calls[#calls + 1] = {slot, bar}
     local s = slotData(slot, bar); return s and s[2] or 0
 end
+GetActionSlotEffectDuration = function(slot, bar)
+    local s = slotData(slot, bar); return s and s.duration or 10000
+end
+GetSlotTexture = function(slot, bar) return 'skill-' .. GetSlotBoundId(slot, bar) .. '.dds' end
 IsUnitInCombat = function(unit) assert(unit == 'player'); return combat end
 IsPlayerInWerewolfForm = function() return wolf end
 GetActiveHotbarCategory = function() return activeBar end
@@ -107,6 +116,17 @@ ZO_AbilitySlot_OnSlotClicked = function(owner, button)
     end
 end
 local nativeShowMenu, nativeSlotClicked = ShowMenu, ZO_AbilitySlot_OnSlotClicked
+local settingsOptions, panelData, panelName
+LibAddonMenu2 = {
+    RegisterAddonPanel = function(_, name, data)
+        panelName, panelData = name, data
+        _G[name] = {name = name}
+        return _G[name]
+    end,
+    RegisterOptionControls = function(_, name, data)
+        assert(name == panelName); settingsOptions = data
+    end,
+}
 ZO_PreHook = function(name, hook)
     local original = _G[name]
     _G[name] = function(...)
@@ -116,6 +136,7 @@ ZO_PreHook = function(name, hook)
 end
 
 assert(loadfile('Model.lua'))()
+assert(loadfile('Settings.lua'))()
 assert(loadfile('KanaCooldownPanel.lua'))()
 assert(loadfile('Menu.lua'))()
 events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'KanaCooldownPanel')
@@ -233,7 +254,7 @@ local saved = KanaCooldownPanelSettings
 local function reload(characterId)
     ShowMenu, ZO_AbilitySlot_OnSlotClicked = nativeShowMenu, nativeSlotClicked
     GetCurrentCharacterId = function() return characterId end
-    dofile('Model.lua'); dofile('KanaCooldownPanel.lua'); dofile('Menu.lua')
+    dofile('Model.lua'); dofile('Settings.lua'); dofile('KanaCooldownPanel.lua'); dofile('Menu.lua')
     events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'KanaCooldownPanel')
     events[EVENT_PLAYER_ACTIVATED]()
 end
@@ -247,3 +268,85 @@ reload('character-a')
 assert(cell(8):IsHidden(), 'Original character restores hidden skills after reload')
 open(5, 0); assert(menu[2].checked, 'Restored preferences appear checked in the menu')
 print('PASS: four states, bars/rings, native menus, per-skill persistence, character isolation, migration, drag and scenes')
+
+assert(panelName ~= 'KanaCooldownPanel' and panelName ~= 'KanaCooldownPanelSettings',
+    'LAM panel must not overwrite addon or saved-variable globals')
+assert(panelData.registerForRefresh and #settingsOptions == 4, 'Four settings with live dependent refresh')
+local fixed, position, alert, style = unpack(settingsOptions)
+assert(fixed.getFunc() == false and position.disabled(), 'Frontbar position is disabled until fixed layout is enabled')
+assert(position.getFunc() == 'bottom' and alert.getFunc() == 'red' and style.getFunc() == 'square',
+    'Existing presentation remains the default')
+bars[0][3] = {401, 10000, duration = 10000}; bars[1][3] = {201, 8000, duration = 20000}
+activeBar, wolf, combat = 0, false, true
+fixed.setFunc(true); assert(not position.disabled(), 'Enabling fixed layout unlocks position')
+for _, placement in ipairs({'top', 'bottom'}) do
+    position.setFunc(placement)
+    for _, category in ipairs({0, 1}) do
+        activeBar = category; refresh()
+        local front, back = placement == 'top' and 1 or 6, placement == 'top' and 6 or 1
+        assert(label(front).text == '10' and label(back).text == '8.0', 'Fixed rows retain weapon identities across swaps')
+    end
+end
+position.setFunc('top'); fixed.setFunc(false)
+assert(position.disabled(), 'Turning fixed mode off disables the dependent option again')
+activeBar = 0; refresh(); assert(label(6).text == '10', 'Inactive fixed placement is ignored in dynamic mode')
+activeBar = 1; refresh(); assert(label(6).text == '8.0', 'Dynamic mode still keeps the active bar below')
+fixed.setFunc(true)
+for _, ringSlot in ipairs({EQUIP_SLOT_RING1, EQUIP_SLOT_RING2}) do
+    rings[ringSlot] = 187658; refresh()
+    assert(label(1).text == '8.0' and cell(6):IsHidden(), 'Single active row overrides fixed positions with Oakensoul')
+    rings[ringSlot] = nil
+end
+wolf, activeBar = true, 2; bars[2][3][2] = 7000; refresh()
+assert(label(1).text == '7.0' and cell(6):IsHidden(), 'Werewolf never displays a fixed weapon row')
+wolf, activeBar = false, 0; refresh()
+
+local function icon(i) return controls['KanaCooldownPanelIcon' .. i] end
+local function glow(i) return controls['KanaCooldownPanelGlow' .. i] end
+local function tint(i) return controls['KanaCooldownPanelTint' .. i] end
+style.setFunc('skill')
+assert(icon(1).texture == 'skill-401.dds' and icon(6).texture == 'skill-201.dds', 'Textures come from their native bar slots')
+assert(icon(1).alpha == 0 and cell(1).color[4] == 0 and white(1), 'Full timer: transparent icon/background, opaque white text')
+assert(math.abs(icon(6).alpha - 0.54) < 0.00001, 'Backbar opacity uses its own total duration')
+bars[0][3][2] = 5000; refresh()
+assert(math.abs(icon(1).alpha - 0.45) < 0.00001, 'Half duration gives half of the 0.9 opacity range')
+bars[0][3][2] = 1; refresh()
+assert(icon(1).alpha > 0.899 and icon(1).alpha < 0.9 and not tint(1):IsHidden(), 'Just before expiry icon approaches 0.9 with orange warning')
+bars[0][3][2] = 0; refresh()
+assert(icon(1).alpha == 1 and label(1).text == '!' and not tint(1):IsHidden(), 'Missing timer immediately makes the skill opaque with red alert')
+assert(tint(1).layer > icon(1).layer and label(1).level > tint(1).level,
+    'Red warning stays visible above opaque icons; timer stays above warning')
+assert(glow(1):IsHidden(), 'Red alert must not show a gold frame')
+alert.setFunc('gold')
+assert(not glow(1):IsHidden() and label(1).text == '' and tint(1):IsHidden(), 'Gold alert replaces the exclamation and red tint')
+assert(glow(1).color[1] > glow(1).color[2] and glow(1).color[2] > glow(1).color[3], 'Frame is tinted gold')
+local glowAlpha = glow(1).alpha
+now = now + 0.25; controls.KanaCooldownPanelContent.handlers.OnUpdate()
+assert(glow(1).alpha ~= glowAlpha and icon(1).alpha == 1, 'Gold frame pulses independently of the opaque skill icon')
+bars[0][3][2] = 10000; refresh()
+assert(glow(1):IsHidden() and icon(1).alpha == 0 and tint(1):IsHidden(), 'Reapplying the skill clears its alert and resets opacity')
+bars[0][3][2] = 15000; refresh(); assert(icon(1).alpha == 0, 'Extended effects never produce negative opacity')
+bars[0][3].duration = 0; refresh(); assert(icon(1).alpha == 0, 'Unavailable native duration never divides by zero')
+bars[0][3].duration = 10000
+bars[0][3] = {999, 5000, crafted = true, duration = 10000}; refresh()
+assert(icon(1).texture == 'skill-999.dds', 'Replacing a slot refreshes its icon, including crafted skills')
+open(3, 0); menu[3].callback(); bars[0][3][2] = 1000; refresh()
+assert(tint(1):IsHidden() and glow(1):IsHidden(), 'Unimportant uptime has no warning in skill mode')
+bars[0][3][2] = 0; refresh(); assert(cell(1):IsHidden(), 'Unimportant missing skill remains a hole')
+menu[3].callback(); open(3, 0); menu[2].callback()
+assert(cell(1):IsHidden() and glow(1):IsHidden(), 'Hidden skill cannot leave a glow behind')
+menu[2].callback()
+style.setFunc('square')
+assert(icon(1):IsHidden() and not glow(1):IsHidden() and isBlack(1), 'Gold alert also works for plain squares')
+alert.setFunc('red')
+assert(glow(1):IsHidden() and isRed(1) and label(1).text == '!', 'Changing alert style clears the previous treatment immediately')
+style.setFunc('skill'); alert.setFunc('gold')
+combat = false; refresh()
+assert(cell(1):IsHidden() and glow(1):IsEffectivelyHidden(), 'Gold skill warning is absent outside combat')
+reload('character-a')
+assert(settingsOptions[1].getFunc() and settingsOptions[2].getFunc() == 'top'
+    and settingsOptions[3].getFunc() == 'gold' and settingsOptions[4].getFunc() == 'skill',
+    'All four presentation settings survive reload')
+assert(KanaCooldownPanelSettings.y == 220 and KanaCooldownPanelSettings.characters['character-a'].skills['skill:10'].hidden,
+    'Presentation settings preserve existing position and skill preferences')
+print('PASS: live settings, fixed/dynamic rows, alert styles, native icons and opacity, persistence')
