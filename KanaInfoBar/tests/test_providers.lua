@@ -27,7 +27,8 @@ local sellLimit,sellsUsed=4,2
 function GetFenceSellTransactionInfo() return sellLimit,sellsUsed,3600 end
 function ZO_PostHook(object,method,callback) hooks[method]=callback end
 function zo_callLater(fn) fn() end
-SCENE_MANAGER={IsShowing=function() return false end}
+local shownScene
+SCENE_MANAGER={IsShowing=function() return false end,Show=function(_,name) shownScene=name end}
 dofile('KanaInfoBar/Logic.lua')
 KanaInfoBar.modules={}; KanaInfoBar.ids={}
 function KanaInfoBar:RegisterWidget(module)
@@ -37,11 +38,33 @@ dofile('KanaInfoBar/Providers.lua')
 local A=KanaInfoBar
 A:InitializeProviders()
 local function value(id) return A.modules[id].read() end
-assert(value('messages').visible==false,'missing AC must hide messages')
-AetherChat={Messenger={GetTotalUnreadCount=function() return 0 end}}
+local mail,notice=0,0
+function GetNumUnreadMail() return mail end
+NOTIFICATIONS={GetNumNotifications=function() return notice end}
+MENU_CATEGORY_NOTIFICATIONS='notifications'
+local opened={}
+SYSTEMS={GetObject=function(_,name)
+    assert(name=='mainMenu')
+    return {ToggleCategory=function(_,category) opened[#opened+1]=category end}
+end}
+assert(value('messages').visible==false,'all zero counts must hide the group')
+mail=2
+assert(value('messages').visible and value('messages').counts.chat==0 and value('messages').counts.mail==2,
+    'mail remains available when AetherChat is absent')
+mail=0
+AetherChat={Messenger={GetTotalUnreadCount=function() return 0 end,
+    Show=function() opened[#opened+1]='chat' end}}
 assert(value('messages').visible==false)
 AetherChat.Messenger.GetTotalUnreadCount=function() return 42 end
-assert(value('messages').text=='42')
+assert(value('messages').counts.chat==42 and value('messages').visible)
+mail=3; notice=7
+assert(value('messages').counts.mail==3 and value('messages').counts.notifications==7)
+A.modules.messages.badges[1].action()
+assert(opened[1]=='chat','chat badge opens AetherChat')
+A.modules.messages.badges[2].action()
+assert(shownScene=='mailInbox','mail badge opens the inbox scene')
+A.modules.messages.badges[3].action()
+assert(opened[2]=='notifications','notification badge opens native notifications')
 assert(value('ping').color=='red')
 assert(value('fps').text=='64')
 assert(value('inventory').color=='red')

@@ -1,7 +1,7 @@
 // Rebuild with Node and sharp available through NODE_PATH. Output: classic BGRA DDS.
 const fs=require('fs'), path=require('path'), sharp=require('sharp');
 (async()=>{
- for(const name of ['ping','fps','treasure','dps','inventory','messages','durability']) {
+ for(const name of ['ping','fps','treasure','dps','inventory','messages','mail','notifications','durability']) {
   // Normalize the visible silhouette, not the SVG canvas. Native ESO textures
   // have different transparent margins and cannot share a nominal icon size.
   const silhouette=await sharp(path.join(__dirname,name+'.svg')).trim().resize(56,56,{fit:'inside'}).png().toBuffer();

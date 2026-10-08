@@ -85,4 +85,30 @@ A.modules.dps.read=function() return {text='—',visible=true} end
 A:Refresh(true)
 assert(A.layout.slots.ping.x==A.currentWidths.fps+A.sv.gap,
     'empty DPS does not create excess space before second grid column')
+-- A single saved messages slot contains up to three independently clickable badges.
+local badgeCalls={}
+for i,badge in ipairs(A.modules.messages.badges) do badge.action=function() badgeCalls[#badgeCalls+1]=i end end
+A.sv.gridMode=false; A.sv.rows={{'messages'}}
+A.modules.messages.read=function() return {counts={chat=4,mail=0,notifications=8},visible=true} end
+A:Refresh(true)
+local group=A.controls.messages
+assert(A.currentWidths.messages==68,'two fixed 32px icon cells with a 4px gap')
+assert(not group.badges[1]:IsHidden() and group.badges[2]:IsHidden() and not group.badges[3]:IsHidden())
+assert(group.badges[3].counter:GetText()=='8','count appears on its own badge')
+H.mouseX=group.badges[3]:GetLeft()+10; H.mouseY=group.badges[3]:GetTop()+10
+group.handlers.OnMouseUp(nil,1,true)
+assert(#badgeCalls==1 and badgeCalls[1]==3,'click must target the badge under the pointer')
+A.modules.messages.read=function() return {counts={chat=4,mail=2,notifications=8},visible=true} end
+A:Refresh(true)
+assert(A.currentWidths.messages==104 and not group.badges[2]:IsHidden(),'three badge cells share one widget')
+A.modules.messages.read=function() return {counts={chat=0,mail=2,notifications=0},visible=true} end
+A:Refresh(true)
+assert(A.currentWidths.messages==32 and group.badges[1]:IsHidden() and not group.badges[2]:IsHidden(),
+    'only a nonzero mail count shows one fixed-width cell')
+A.modules.messages.read=function() return {counts={chat=0,mail=0,notifications=0},visible=false} end
+A:Refresh(true)
+assert(group:IsHidden(),'group disappears when all counts are zero')
+A:OpenEditor()
+assert(not group:IsHidden() and not group.badges[2]:IsHidden(),'all badge positions remain editable')
+A:CloseEditor(false)
 print('PASS: UI state, drag targets, save/cancel, anchor preservation and scene cleanup')

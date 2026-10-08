@@ -3,6 +3,7 @@ local H={events={},updates={},mouseX=0,mouseY=0,time=0,scene='hudui'}
 local C={}; C.__index=C
 local factors={TOPLEFT={0,0},TOP={.5,0},TOPRIGHT={1,0},LEFT={0,.5},CENTER={.5,.5},RIGHT={1,.5},BOTTOMLEFT={0,1},BOTTOM={.5,1},BOTTOMRIGHT={1,1}}
 for name in pairs(factors) do _G[name]=name end
+TEXT_ALIGN_RIGHT=3
 for _,name in ipairs({'CT_CONTROL','CT_LABEL','CT_TEXTURE','CT_BACKDROP','DT_MEDIUM','DT_HIGH','DL_BACKGROUND','DL_CONTROLS','DL_OVERLAY',
     'SCENE_SHOWN','SCENE_HIDING','SCENE_HIDDEN','SCENE_FRAGMENT_HIDING','SCENE_FRAGMENT_HIDDEN','KEYBIND_STRIP_ALIGN_RIGHT',
     'EVENT_ADD_ON_LOADED','EVENT_PLAYER_ACTIVATED','EVENT_SCREEN_RESIZED','EVENT_INVENTORY_SINGLE_SLOT_UPDATE',
@@ -37,7 +38,7 @@ function C:SetHidden(v) self.hidden=v end
 function C:IsHidden() return self.hidden==true end
 function C:SetHandler(k,v) self.handlers[k]=v end
 function C:SetColor(...) self.color={...} end
-for _,method in ipairs({'SetMouseEnabled','SetCenterColor','SetEdgeColor','SetEdgeTexture','SetDrawLayer','SetDrawLevel',
+for _,method in ipairs({'SetMouseEnabled','SetHorizontalAlignment','SetCenterColor','SetEdgeColor','SetEdgeTexture','SetDrawLayer','SetDrawLevel',
     'SetTexture','SetDesaturation','SetAlpha','SetClampedToScreen','SetDrawTier','AddLine'}) do C[method]=function() end end
 GuiRoot=H.control();GuiRoot:SetDimensions(1920,1080)
 WINDOW_MANAGER={CreateControl=function(_,_,parent) return H.control(parent) end,

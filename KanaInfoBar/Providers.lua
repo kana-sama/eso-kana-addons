@@ -88,21 +88,33 @@ A:RegisterWidget({id='dps',name='Свой DPS',sample='999k',
         end
     end,clickHint='ЛКМ — открыть Combat Metrics',
 })
-A:RegisterWidget({id='messages',name='Непрочитанные сообщения',sample='999',
-    icon='eso-kana-addons/KanaInfoBar/textures/messages.dds',
+A:RegisterWidget({id='messages',name='Сообщения, почта и уведомления',sample='999',kind='badges',
+    badges={
+        {key='chat',name='Сообщения AetherChat',icon='eso-kana-addons/KanaInfoBar/textures/messages.dds',
+            clickHint='ЛКМ — открыть AetherChat',action=function()
+                local messenger=AetherChat and AetherChat.Messenger
+                if messenger and messenger.Show then
+                    if messenger.RecordInteraction then messenger.RecordInteraction() end
+                    messenger.Show(false)
+                end
+            end},
+        {key='mail',name='Непрочитанные письма',icon='eso-kana-addons/KanaInfoBar/textures/mail.dds',
+            clickHint='ЛКМ — открыть почту',action=function() SCENE_MANAGER:Show('mailInbox') end},
+        {key='notifications',name='Уведомления',icon='eso-kana-addons/KanaInfoBar/textures/notifications.dds',
+            clickHint='ЛКМ — открыть уведомления',action=function()
+                SYSTEMS:GetObject('mainMenu'):ToggleCategory(MENU_CATEGORY_NOTIFICATIONS)
+            end},
+    },
     read=function()
         local messenger=AetherChat and AetherChat.Messenger
-        local n=messenger and messenger.GetTotalUnreadCount and messenger.GetTotalUnreadCount() or 0
-        return {text=tostring(n),visible=n>0,color='gold',clickable=messenger~=nil,
-            detail=messenger and ('Непрочитанных: '..n..'\nУчитываются настройки уведомлений AetherChat.') or 'AetherChat не загружен.'}
+        local chat=messenger and messenger.GetTotalUnreadCount and messenger.GetTotalUnreadCount() or 0
+        local mail=GetNumUnreadMail and GetNumUnreadMail() or 0
+        local notifications=NOTIFICATIONS and NOTIFICATIONS.GetNumNotifications and NOTIFICATIONS:GetNumNotifications() or 0
+        chat,mail,notifications=math.max(0,tonumber(chat) or 0),math.max(0,tonumber(mail) or 0),math.max(0,tonumber(notifications) or 0)
+        return {counts={chat=chat,mail=mail,notifications=notifications},
+            visible=chat+mail+notifications>0,
+            detail=string.format('Сообщения: %d\nПисьма: %d\nУведомления: %d',chat,mail,notifications)}
     end,
-    action=function()
-        local messenger=AetherChat and AetherChat.Messenger
-        if messenger and messenger.Show then
-            if messenger.RecordInteraction then messenger.RecordInteraction() end
-            messenger.Show(false)
-        end
-    end,clickHint='ЛКМ — открыть AetherChat',
 })
 A:RegisterWidget({id='ping',name='Пинг',sample='999',icon='eso-kana-addons/KanaInfoBar/textures/ping.dds',tooltip=false,
     read=function()
