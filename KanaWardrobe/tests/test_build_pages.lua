@@ -5,7 +5,7 @@ local function load()
 end
 local function native(f)
  local scenes={}
- for _,page in ipairs({'inventory','skills','stats'})do
+ for _,page in ipairs({'inventory','skills','stats','collectionsBook'})do
   local s={callbacks={},fragments={},state=SCENE_HIDDEN}
   function s:AddFragment(v)self.fragments[#self.fragments+1]=v end
   function s:RegisterCallback(_,cb)self.callbacks[#self.callbacks+1]=cb end
@@ -17,6 +17,7 @@ local function native(f)
  local function right(name,w,h)
   local c=f:Control(name,nil,nil,w,h);c:SetAnchor(RIGHT,GuiRoot,RIGHT,0,0);f:Put(name,c);return c
  end
+ right('ZO_CollectionsBook_TopLevel',930,690)
  right('ZO_Skills',930,690);local skillBg=right('ZO_SharedRightBackground',960,750)
  right('ZO_StatsPanel',645,730);local statsBg=right('ZO_SharedStatsBackground',645,750)
  -- Source-shaped native art: root width does NOT stretch these single-anchored textures.
@@ -97,7 +98,7 @@ return {
    local actual={equipment=inv:Capture(false).worn,attributes={health=1,magicka=2,stamina=3}};local captures=0
    local pages=kw.PageAdapters.New(_G)
    local ui=kw.UI.New(repo,s,{Hide=function()end},inv,{pages=pages,captureActual=function()captures=captures+1;return actual,{available=false}end})
-   for _,page in ipairs({'inventory','skills','stats'})do
+   for _,page in ipairs({'inventory','skills','stats','collectionsBook'})do
     scenes[page]:Fire(SCENE_SHOWN);local before=captures;local m=ui:Refresh();assert(captures==before+1,'one capture per refresh')
     assert(m.rows[1].id==first.id and m.quickId==kw.Presets.QUICK_ID)
     ui.newButton.handlers.OnClicked();assert(s.calls[#s.calls][2]==page)
@@ -114,8 +115,8 @@ return {
  native_background_width_is_restored_per_scene=function()
   G.With(1920,1080,1,function(f)
    local kw=load();local scenes=native(f);local p=kw.PageAdapters.New(_G)
-   local widths={inventory=ZO_SharedWideLeftPanelBackground:GetWidth(),skills=ZO_SharedRightBackground:GetWidth(),stats=ZO_SharedStatsBackground:GetWidth()}
-   for _,page in ipairs({'inventory','skills','stats'})do
+   local widths={inventory=ZO_SharedWideLeftPanelBackground:GetWidth(),skills=ZO_SharedRightBackground:GetWidth(),stats=ZO_SharedStatsBackground:GetWidth(),collectionsBook=ZO_SharedRightBackground:GetWidth()}
+   for _,page in ipairs({'inventory','skills','stats','collectionsBook'})do
     scenes[page]:Fire(SCENE_SHOWN);assert(p:Mount(page));p:SetBackgroundExpanded(page,true)
     assert(p:Get(page).background:GetWidth()>widths[page]);p:Unmount(page);assert(p:Get(page).background:GetWidth()==widths[page])
    end

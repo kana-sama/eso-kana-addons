@@ -56,6 +56,11 @@ function P.New(services)
   local requested,err=KW.BuildModel.Normalize(preset);if not requested then return nil,err end
   local current=actual(snapshot);if type(current)~='table' or type(snapshot.budgets)~='table'then return fail('invalidBuildSnapshot')end
   local plan={requested=KW.Copy(requested),target=KW.BuildModel.Merge(current,requested),capabilities=KW.Copy(capabilities or {}),extras={}}
+  if requested.appearance then
+   if not services.appearance then return fail('appearanceUnavailable')end
+   plan.appearanceRequest,err=services.appearance:Prepare(current.appearance,requested.appearance)
+   if not plan.appearanceRequest then return nil,err end
+  end
   if requested.attributes then
    local budget=snapshot.budgets.attributes
    if type(budget)~='number' or not services.attributes or not current.attributes then return fail('attributesUnavailable')end
@@ -107,7 +112,7 @@ function P.New(services)
   for domain,done in pairs(confirmed or {})do if done then completed[domain]=true end end
   confirmed=completed;local current=actual(snapshot);if not current then return fail('invalidBuildSnapshot')end
   local remaining=KW.Copy(plan.requested)
-  for _,domain in ipairs({'abilities','attributes','equipment'})do
+  for _,domain in ipairs({'abilities','attributes','equipment','appearance'})do
    local done=confirmed[domain] or (domain=='abilities' and confirmed.skills)
    if done then
     if not KW.BuildModel.Matches(current,{[domain]=plan.target[domain]})then return fail('confirmedBuildMismatch',{domain=domain})end

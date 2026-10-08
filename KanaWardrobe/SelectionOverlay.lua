@@ -31,10 +31,12 @@ function O.New(parent,resolveKey,onToggle)
  end)
  return self
 end
-function Overlay:Bind(icon,resolveKey)
+function Overlay:Bind(icon,resolveKey,placement)
  if self.destroyed then return end
  self.icon=icon;if resolveKey then self.resolveKey=resolveKey end
- self.control:ClearAnchors();self.control:SetAnchor(TOPRIGHT,icon,TOPRIGHT,-1,1)
+ self.control:ClearAnchors()
+ if placement=='before'then self.control:SetAnchor(RIGHT,icon,LEFT,-4,0)
+ else self.control:SetAnchor(TOPRIGHT,icon,TOPRIGHT,-1,1)end
 end
 function Overlay:SetSelected(value)
  ZO_CheckButton_SetCheckState(self.control,value==true)

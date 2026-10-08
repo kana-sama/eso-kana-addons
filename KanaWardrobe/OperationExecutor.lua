@@ -76,6 +76,9 @@ function I:RunCurrent()
   else result,problem=plainResult,plainProblem end
   finished=true;attempt.finishedAt=self.clock:NowMs()
   attempt.result=result;attempt.problem=problem
+  if not problem and result and result.paused then
+   step.status='pending';op.status='paused';op.pauseRequested=false;self:Publish();return
+  end
   if problem then
    step.problem=J.Plain(problem);step.status=problem.code=='operationUnconfirmed' and 'unconfirmed' or 'failed'
    op.status='failed';op.hadFailure=true;op.visible=true;op.pauseRequested=false;self:Publish();return

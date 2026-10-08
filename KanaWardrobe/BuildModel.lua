@@ -31,6 +31,14 @@ function M.Normalize(p)
             end
         end
     end
+    if p.appearance~=nil then
+        if type(p.appearance)~='table' then return invalid() end
+        result.appearance={}
+        for category,id in pairs(p.appearance) do
+            if not integer(category) or category==0 or not integer(id) then return invalid() end
+            result.appearance[category]=id
+        end
+    end
     if p.attributes~=nil then
         local a=p.attributes
         if type(a)~='table' or not integer(a.health) or not integer(a.magicka) or not integer(a.stamina)
@@ -97,7 +105,7 @@ local function subset(actual,target)
     return true
 end
 function M.Matches(actual,target)
-    for _,part in ipairs({'equipment','abilities','attributes'}) do
+    for _,part in ipairs({'equipment','abilities','attributes','appearance'}) do
         if target[part]~=nil and not subset(actual and actual[part],target[part]) then return false end
     end
     return true
@@ -128,6 +136,7 @@ function M.Differences(actual,target)
     end
     map('equipment',target.equipment,actual.equipment)
     map('attributes',target.attributes,actual.attributes)
+    map('appearance',target.appearance,actual.appearance)
     local wanted,current=target.abilities or {},actual.abilities or {}
     map('skills',wanted.skills,current.skills)
     for _,bar in ipairs({'front','back','werewolf'})do
@@ -155,6 +164,7 @@ function M.Select(build,selection)
         if next(output) then return output end
     end
     result.equipment=selectMap(build.equipment,selection.equipment)
+    result.appearance=selectMap(build.appearance,selection.appearance)
     local a=build.abilities or {};local skills=selectMap(a.skills,selection.skills);local bars={}
     for _,bar in ipairs({'front','back','werewolf'}) do bars[bar]=selectMap(a.bars and a.bars[bar],selection.bars and selection.bars[bar]) end
     if skills or next(bars) then result.abilities={skills=skills,bars=next(bars) and bars or nil} end
@@ -162,6 +172,7 @@ function M.Select(build,selection)
     return result
 end
 function M.HasParts(build)
+    if build.appearance and next(build.appearance) then return true end
     if build.attributes then return true end
     if build.equipment and next(build.equipment) then return true end
     local a=build.abilities

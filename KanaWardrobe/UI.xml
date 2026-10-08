@@ -1,5 +1,9 @@
 <GuiXml>
     <Controls>
+        <!-- Native collectible tile visuals, without native Use/Favorite/Preview handlers. -->
+        <Control name="KanaWardrobeAppearanceTile" inherits="ZO_CollectibleTile_Keyboard_Control" virtual="true">
+            <OnInitialized>self.kanaWardrobeReadOnly = true</OnInitialized>
+        </Control>
         <!-- Scene owns the root; Lua alone gates its Content child. -->
         <TopLevelControl name="KanaWardrobePanel" hidden="true" mouseEnabled="false">
             <Dimensions x="300" y="640"/>

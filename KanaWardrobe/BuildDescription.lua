@@ -86,6 +86,14 @@ end
 -- Only saved canonical parts select content; the catalogue supplies metadata.
 function Description.Build(preset,catalogue)
     local result={enabled={},disabled={}}
+    if preset.appearance and KW.AppearanceAdapter then
+        local adapter=KW.AppearanceAdapter.New()
+        result.appearance={}
+        for _,category in ipairs(adapter.order)do
+            local id=preset.appearance[category.category]
+            if id~=nil then result.appearance[#result.appearance+1]=adapter:Describe(category.category,id)end
+        end
+    end
     result.attributes=preset.attributes and copy(preset.attributes) or nil
     -- Detached UID map, NOT computed gear statistics. The renderer passes this
     -- canonical map through the existing SetModel/EffectModel equipment path.

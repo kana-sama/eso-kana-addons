@@ -108,7 +108,7 @@ do
  S.RECOVER_restore="Restore original equipment"
  S.RECOVER_relinquishUnsent="Release unsent request; keep native draft"
  S.RECOVERY_ACCEPT_HELP="Accept the current actual build as the endpoint and end this operation? A missing server result remains unknown. This does not resend the old request."
- S.QUICK_SAVE_HELP="Save current actual equipment, skills, both normal action bars and attributes to the shared quick slot. Pending edits are excluded."
+ S.QUICK_SAVE_HELP="Save current actual equipment, skills, both normal action bars, attributes and appearance to the shared quick slot. Pending edits are excluded."
  S.QUICK_LOAD_HELP="Apply every included part of the shared quick snapshot."
  local problems={
   invalidEditorPage="Open equipment, skills or character attributes to edit this part.",
@@ -199,3 +199,29 @@ KanaWardrobe.Strings.PROBLEMS.skillWerewolfOnly="Only werewolf skills can be ass
 KanaWardrobe.Strings.OP_MOVE_FRONT="“%s” will move to slot %d on the front bar."
 KanaWardrobe.Strings.OP_MOVE_BACK="“%s” will move to slot %d on the back bar."
 KanaWardrobe.Strings.OP_MOVE_WEREWOLF="“%s” will move to slot %d on the werewolf bar."
+
+KanaWardrobe.Strings.APPEARANCE='Appearance'
+KanaWardrobe.Strings.OP_APPEARANCE_COOLDOWN='Appearance cooldown: %d s remaining.'
+KanaWardrobe.Strings.OP_APPEARANCE_RETRY='Appearance is on cooldown. Automatic retry in %d s.'
+KanaWardrobe.Strings.OP_APPEARANCE_COOLDOWN_UNKNOWN='Waiting for the appearance cooldown.'
+KanaWardrobe.Strings.PROBLEMS.appearanceCooldownTimeout='The appearance cooldown has not finished. Try this step again.'
+KanaWardrobe.Strings.EMPTY_LIST='Create a preset on this page.'
+KanaWardrobe.Strings.OUTCOME_quickSaved='Current build saved to the quick slot.'
+KanaWardrobe.Strings.CLEAR_appearance='Remove appearance'
+KanaWardrobe.Strings.OP_appearance='Set appearance'
+KanaWardrobe.Strings.MISMATCH_appearance='Appearance'
+KanaWardrobe.Strings.APPEARANCE_MISMATCH='%s: expected “%s”; now “%s”. Try this step again.'
+KanaWardrobe.Strings.APPEARANCE_SAVE_HELP='Save selected categories and restore your previous appearance.'
+KanaWardrobe.Strings.APPEARANCE_CANCEL_HELP='Discard changes to the preset and restore your previous appearance.'
+KanaWardrobe.Strings.APPEARANCE_CLOSE_HELP='Save or discard the preset changes and restore your previous appearance, or continue editing.'
+KanaWardrobe.Strings.OUTCOME_appearanceSaved='Preset saved. Previous appearance restored.'
+KanaWardrobe.Strings.OUTCOME_appearanceCancelled='Editing cancelled. Previous appearance restored.'
+for key,value in pairs({COSTUME={'Costume','No costume'},HAT={'Hat','No hat'},HAIR={'Hairstyle','No hairstyle override'},
+ FACIAL_HAIR_HORNS={'Facial hair / horns','No facial hair / horns override'},FACIAL_ACCESSORY={'Facial accessory','No facial accessory'},
+ PIERCING_JEWELRY={'Adornments','No adornments'},HEAD_MARKING={'Head marking','No head marking'},BODY_MARKING={'Body marking','No body marking'},
+ SKIN={'Skin','No skin'},POLYMORPH={'Polymorph','No polymorph'},PERSONALITY={'Personality','No personality'}})do
+ KanaWardrobe.Strings['APPEARANCE_'..key]=value[1];KanaWardrobe.Strings['APPEARANCE_NONE_'..key]=value[2]
+end
+for key,value in pairs({appearanceUnavailable='Could not read your current appearance.',appearanceCategoryUnavailable='This appearance category is unavailable.',
+ appearanceWrongCategory='The saved collectible does not belong to this category.',appearanceLocked='The saved collectible is not unlocked.',
+ appearanceBlocked='ESO cannot apply this collectible right now.',appearanceUnconfirmed='ESO has not applied this appearance change.'})do KanaWardrobe.Strings.PROBLEMS[key]=value end

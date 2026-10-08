@@ -1,8 +1,8 @@
 local KW=KanaWardrobe
 local Draft={};KW.BuildDraft=Draft
 local Instance={};Instance.__index=Instance
-local pages={inventory='equipment',skills='abilities',stats='attributes'}
-local groups={equipment=true,skills=true,bars=true,attributes=true}
+local pages={inventory='equipment',skills='abilities',stats='attributes',collectionsBook='appearance'}
+local groups={equipment=true,skills=true,bars=true,attributes=true,appearance=true}
 function Draft.Component(page)return pages[page or 'inventory']end
 -- A saved bar can reference a morph whose talent checkbox is off. Opening the
 -- editor prepares that morph locally; selection and the apply planner stay strict.
@@ -30,9 +30,10 @@ function Draft.IncludedGroups(component,selection,preset,cleared)
  end
  preset=preset or {};cleared=cleared or {};selection=selection or {}
  local abilities=preset.abilities or {}
- local included={equipment=any(preset.equipment),skills=any(abilities.skills),bars=bars(abilities.bars),attributes=preset.attributes~=nil}
+ local included={appearance=any(preset.appearance),equipment=any(preset.equipment),skills=any(abilities.skills),bars=bars(abilities.bars),attributes=preset.attributes~=nil}
  for group in pairs(groups)do if cleared[group]then included[group]=false end end
- if component=='equipment'then included.equipment=any(selection.equipment)
+ if component=='appearance'then included.appearance=any(selection.appearance)
+ elseif component=='equipment'then included.equipment=any(selection.equipment)
  elseif component=='abilities'then included.skills=any(selection.skills);included.bars=bars(selection.bars)
  elseif component=='attributes'then included.attributes=selection.attributes==true end
  return included
@@ -43,6 +44,7 @@ function Draft.PresetCandidate(preset,component,selected,cleared)
  local candidate=KW.Copy(preset or {});candidate.slots=nil
  cleared=cleared or {}
  if cleared.equipment then candidate.equipment=nil end
+ if cleared.appearance then candidate.appearance=nil end
  if cleared.attributes then candidate.attributes=nil end
  if candidate.abilities then
   if cleared.skills then candidate.abilities.skills=nil end
@@ -57,11 +59,12 @@ function Draft.New(original,preset,page)
  if not original[component] then return nil,KW.Problem('buildCapabilityUnavailable',{component=component})end
  local normalized,err=KW.BuildModel.Normalize({[component]=original[component]});if not normalized then return nil,err end
  local wanted=preset and preset[component];local build=KW.BuildModel.Merge(normalized,wanted and {[component]=wanted} or {})
- local self=setmetatable({component=component,page=page or 'inventory',original=KW.Copy(normalized),build=build,selection={equipment={},skills={},bars={front={},back={},werewolf={}},attributes=false}},Instance)
+ local self=setmetatable({component=component,page=page or 'inventory',original=KW.Copy(normalized),build=build,selection={appearance={},equipment={},skills={},bars={front={},back={},werewolf={}},attributes=false}},Instance)
  local existing=preset and preset.id~=nil
  local seed=wanted or (not preset or not preset.id) and original[component]
  if seed then
   if component=='attributes'then self.selection.attributes=true
+  elseif component=='appearance'then for key,id in pairs(seed)do self.selection.appearance[key]=existing or id>0 end
   elseif component=='equipment'then for key,ref in pairs(seed)do self.selection.equipment[key]=existing or ref.kind=='item' end
   else for key,state in pairs(seed.skills or {})do self.selection.skills[key]=existing or state.kind=='active' and state.purchased==true or state.kind=='passive' and state.rank>0 end;for _,bar in ipairs({'front','back','werewolf'})do for key,ref in pairs(seed.bars and seed.bars[bar] or {})do self.selection.bars[bar][key]=existing or bar~='werewolf' and ref.kind=='skill' end end end
  end
@@ -71,7 +74,7 @@ function Instance:SetValue(domain,key,value)
  if domain=='bars' and type(key)=='table'then domain,key=key.bar,key.slot end
  local build=KW.Copy(self.build)
  if domain==self.component and domain~='abilities'then
-  if domain=='attributes' then build.attributes[key]=KW.Copy(value)else build.equipment[key]=KW.Copy(value)end
+  if domain=='attributes' then build.attributes[key]=KW.Copy(value)else build[domain][key]=KW.Copy(value)end
  elseif self.component=='abilities' and domain=='skills'then build.abilities.skills=build.abilities.skills or {};build.abilities.skills[key]=KW.Copy(value)
  elseif self.component=='abilities' and (domain=='front' or domain=='back' or domain=='werewolf')then build.abilities.bars=build.abilities.bars or {};build.abilities.bars[domain]=build.abilities.bars[domain]or {};build.abilities.bars[domain][key]=KW.Copy(value)
  else return nil,KW.Problem('editorDomainMismatch')end
@@ -81,7 +84,8 @@ end
 function Instance:SetSelected(domain,key,value)
  if domain=='bars' and type(key)=='table'then domain,key=key.bar,key.slot end
  if type(value)~='boolean'then return nil,KW.Problem('invalidSelection')end
- if self.component=='equipment' and domain=='equipment' and KW.Slots.IsSupported(key)then self.selection.equipment[key]=value
+ if self.component=='appearance' and domain=='appearance' and self.build.appearance[key]~=nil then self.selection.appearance[key]=value
+ elseif self.component=='equipment' and domain=='equipment' and KW.Slots.IsSupported(key)then self.selection.equipment[key]=value
  elseif self.component=='abilities' and domain=='skills' and self.build.abilities.skills and self.build.abilities.skills[key]then self.selection.skills[key]=value
  elseif self.component=='abilities' and (domain=='front' or domain=='back' or domain=='werewolf')and type(key)=='number' and key>=1 and key<=6 and key%1==0 then self.selection.bars=self.selection.bars or {};self.selection.bars[domain]=self.selection.bars[domain]or {};self.selection.bars[domain][key]=value
  else return nil,KW.Problem('editorDomainMismatch')end

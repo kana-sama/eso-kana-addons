@@ -110,9 +110,9 @@ return {
  clear_group_buttons_only_show_in_editor_and_follow_remaining_selection=function()
   withNative(function()
    local k,r,s,inv,_,preview=setup();local ui=k.UI.New(r,s,preview,inv);ui.visible=true
-   s.view={state='editing',isEditor=true,component='abilities',selected={},selection={},missing={},includedGroups={equipment=true,skills=true,bars=true,attributes=true}}
-   ui:Refresh();assert(#ui.clearGroupButtons==4)
-   for i,group in ipairs({'skills','bars','equipment','attributes'})do
+   s.view={state='editing',isEditor=true,component='abilities',selected={},selection={},missing={},includedGroups={equipment=true,skills=true,bars=true,attributes=true,appearance=true}}
+   ui:Refresh();assert(#ui.clearGroupButtons==5)
+   for i,group in ipairs({'skills','bars','equipment','attributes','appearance'})do
     local b=ui.clearGroupButtons[i]
     assert(not b.hidden and b.enabled)
     b.handlers.OnClicked();assert(s.calls[#s.calls][1]=='ClearPresetGroup' and s.calls[#s.calls][2]==group)

@@ -2,6 +2,7 @@ local KW=KanaWardrobe
 local P={};KW.PageAdapters=P
 local Pages={};Pages.__index=Pages
 local definitions={
+ collectionsBook={root='ZO_CollectionsBook_TopLevel',background='ZO_SharedRightBackground',side='left'},
  inventory={root='ZO_Character',background='ZO_SharedWideLeftPanelBackground',side='right'},
  skills={root='ZO_Skills',background='ZO_SharedRightBackground',side='left',manager='SKILLS_WINDOW',group='keybindStripDescriptor',key='UI_SHORTCUT_SECONDARY',domain='skills'},
  stats={root='ZO_StatsPanel',background='ZO_SharedStatsBackground',side='left',manager='STATS',group='keybindButtons',key='UI_SHORTCUT_PRIMARY',domain='attributes'},
@@ -31,6 +32,7 @@ function Pages:Bounds(page)
   height=math.min((stats:GetTop()+stats:GetHeight()-gui:GetTop())/factor,sh-64)-top
   x=math.max(12,math.min(x,sw-width-12))
  else
+  if page=='collectionsBook'then left=left-28 end
   if page=='stats' then
    local advanced=a.ZO_AdvancedStatsPanel
    if advanced and not advanced:IsHidden()then left=math.min(left,(advanced:GetLeft()-gui:GetLeft())/factor)end
@@ -136,13 +138,13 @@ function Pages:SetBackgroundExpanded(page,expanded)
  -- page. Skills preserves the native edge/remainder with slices; Stats keeps
  -- its existing width extension. Inventory uses other art.
  if p.side=='left'and not self.textureWidths[bg]then
-  local ok,texture=pcall(bg.GetNamedChild,bg,page=='skills'and 'Left'or 'BG')
+  local ok,texture=pcall(bg.GetNamedChild,bg,(page=='skills' or page=='collectionsBook')and 'Left'or 'BG')
   if ok and texture then self.textureWidths[bg]={control=texture,width=texture:GetWidth()/scale(texture)}end
  end
  local art=self.textureWidths[bg]
  if math.abs(bg:GetWidth()/factor-target)>.01 then bg:SetWidth(target)end
  if art then
-  if page=='skills'then self:ExpandSkillArt(art,(target-self.widths[bg])*factor)
+  if page=='skills' or page=='collectionsBook'then self:ExpandSkillArt(art,(target-self.widths[bg])*factor)
   else
    local textureScale=scale(art.control)
    local artWidth=art.width+(target-self.widths[bg])*factor/textureScale
@@ -152,7 +154,7 @@ function Pages:SetBackgroundExpanded(page,expanded)
  -- Skills has a second native layer (TREE_UNDERLAY_FRAGMENT). Its Left art
  -- begins at the same edge as the main background. Extend both by the same
  -- physical delta, preserving each texture's fade rather than stretching it.
- if page=='skills'then
+ if page=='skills' or page=='collectionsBook'then
   local owner=self.api.ZO_SharedTreeUnderlay
   if owner and not self.underlays[page]then
    local ok,texture=pcall(owner.GetNamedChild,owner,'Left')
@@ -196,9 +198,10 @@ end
 -- empty public scene slot; release only the exact callback we still own.
 function Pages:RefreshEquipmentExit()
  local manager=self.api.SCENE_MANAGER
- local scene=manager and manager.GetScene and manager:GetScene('inventory')
  local view=self.session and self.session:GetView()
- local own=view and view.isEditor and view.page=='inventory' and view.component=='equipment' and view.state~='idle'
+ local page=view and view.page or 'inventory'
+ local scene=manager and manager.GetScene and manager:GetScene(page)
+ local own=view and view.isEditor and (view.component=='equipment' or view.component=='appearance') and view.state~='idle'
  local hook=self.equipmentExit
  if hook and (not own or hook.scene~=scene)then
   if hook.scene.hideSceneConfirmationCallback==hook.callback then hook.scene:SetHideSceneConfirmationCallback(nil)end
@@ -302,6 +305,26 @@ function Pages:GetSelectionIcons(page)
      if not visible(native)then return nil end
      return {domain='equipment',key=slot,eligible=true,visible=true}
     end}
+   end
+  end
+ elseif page=='collectionsBook' and KW.AppearanceAdapter then
+  local book=a.COLLECTIONS_BOOK
+  local supported={};for _,entry in ipairs(KW.AppearanceAdapter.Categories(a))do supported[entry.category]=true end
+  local function selection(node)
+   if not visible(node.control)then return end
+   local data=node.data
+   if not data or not data.GetCollectibleCategoryTypesInCategory then return end
+   local category
+   for kind in pairs(data:GetCollectibleCategoryTypesInCategory())do
+    if category or not supported[kind]then return end
+    category=kind
+   end
+   if category then return {domain='appearance',key=category,eligible=true,visible=true}end
+  end
+  for _,node in pairs(book and book.categoryNodeLookupData or {})do
+   if selection(node)then
+    local status=node.control.statusIcon or node.control:GetNamedChild('StatusIcon')
+    if status then result[#result+1]={parent=node.control,icon=status,placement='before',resolveKey=function()return selection(node)end}end
    end
   end
  elseif page=='skills'then

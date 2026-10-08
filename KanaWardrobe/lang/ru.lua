@@ -128,7 +128,7 @@ if GetCVar and GetCVar("language.2")=="ru" then
  S.RECOVER_restore="Вернуть исходную экипировку"
  S.RECOVER_relinquishUnsent="Освободить неотправленный запрос; оставить штатные правки"
  S.RECOVERY_ACCEPT_HELP="Принять текущий фактический билд и завершить операцию? Если ответ сервера потерян, исход запроса останется неизвестным. Старый запрос повторно не отправляется."
- S.QUICK_SAVE_HELP="Сохранить фактическую экипировку, навыки, обе обычные панели и характеристики в общую быструю ячейку. Незавершённые правки не включаются."
+ S.QUICK_SAVE_HELP="Сохранить фактическую экипировку, навыки, обе обычные панели, характеристики и внешний вид в общую быструю ячейку. Незавершённые правки не включаются."
  S.QUICK_LOAD_HELP="Применить все включённые части общего быстрого снимка."
  local problems={
   invalidEditorPage="Для редактирования этой части откройте экипировку, навыки или характеристики персонажа.",
@@ -229,3 +229,28 @@ KanaWardrobe.Strings.PROBLEMS.skillWerewolfOnly="На панель вервол�
 KanaWardrobe.Strings.OP_MOVE_FRONT="«%s» переместится в ячейку %d на первой панели."
 KanaWardrobe.Strings.OP_MOVE_BACK="«%s» переместится в ячейку %d на второй панели."
 KanaWardrobe.Strings.OP_MOVE_WEREWOLF="«%s» переместится в ячейку %d на панели вервольфа."
+
+if GetCVar and GetCVar('language.2')=='ru'then
+ local S=KanaWardrobe.Strings
+ S.APPEARANCE='Внешний вид';S.CLEAR_appearance='Удалить внешний вид';S.OP_appearance='Выставить внешний вид';S.MISMATCH_appearance='Внешний вид'
+ S.OP_APPEARANCE_COOLDOWN='Перезарядка внешнего вида: осталось %d с.'
+ S.OP_APPEARANCE_RETRY='Внешний вид перезаряжается. Повтор через %d с.'
+ S.OP_APPEARANCE_COOLDOWN_UNKNOWN='Ожидание перезарядки внешнего вида.'
+ S.PROBLEMS.appearanceCooldownTimeout='Перезарядка внешнего вида не завершилась. Повторите этот шаг.'
+ S.EMPTY_LIST='Создайте пресет на этой странице.';S.OUTCOME_quickSaved='Текущий билд сохранён в быструю ячейку.'
+ S.APPEARANCE_MISMATCH='%s: должно быть «%s», сейчас «%s». Повторите этот шаг.'
+ S.APPEARANCE_SAVE_HELP='Сохранить отмеченные категории и вернуть прежний внешний вид.'
+ S.APPEARANCE_CANCEL_HELP='Отменить изменения пресета и вернуть прежний внешний вид.'
+ S.APPEARANCE_CLOSE_HELP='Сохраните или отмените изменения пресета с возвратом прежнего внешнего вида либо продолжите редактирование.'
+ S.OUTCOME_appearanceSaved='Пресет сохранён. Прежний внешний вид возвращён.'
+ S.OUTCOME_appearanceCancelled='Редактирование отменено. Прежний внешний вид возвращён.'
+ for key,value in pairs({COSTUME={'Костюм','Без костюма'},HAT={'Головной убор','Без головного убора'},HAIR={'Причёска','Без смены причёски'},
+  FACIAL_HAIR_HORNS={'Растительность на лице и рога','Без смены растительности на лице и рогов'},FACIAL_ACCESSORY={'Аксессуар на лице','Без аксессуара на лице'},
+  PIERCING_JEWELRY={'Украшения','Без украшений'},HEAD_MARKING={'Отметины на лице','Без отметин на лице'},BODY_MARKING={'Нательные отметины','Без нательных отметин'},
+  SKIN={'Облик','Без облика'},POLYMORPH={'Превращение','Без превращения'},PERSONALITY={'Характер','Без характера'}})do
+  S['APPEARANCE_'..key]=value[1];S['APPEARANCE_NONE_'..key]=value[2]
+ end
+ for key,value in pairs({appearanceUnavailable='Не удалось прочитать текущий внешний вид.',appearanceCategoryUnavailable='Эта категория внешнего вида недоступна.',
+  appearanceWrongCategory='Сохранённый предмет относится к другой категории.',appearanceLocked='Сохранённый предмет ещё не открыт в коллекции.',
+  appearanceBlocked='ESO сейчас не позволяет применить этот предмет.',appearanceUnconfirmed='ESO не применила изменение внешнего вида.'})do S.PROBLEMS[key]=value end
+end

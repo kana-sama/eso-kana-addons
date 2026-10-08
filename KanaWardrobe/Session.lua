@@ -138,6 +138,8 @@ function Instance:GetSelected(domain,key)
     if type(selection)~="table" then return false end
     if domain=="equipment" then
         return j.component=="equipment" and Slots.IsSupported(key) and selection.equipment and selection.equipment[key]==true or false
+    elseif domain=="appearance" then
+        return j.component=="appearance" and selection.appearance and selection.appearance[key]==true or false
     elseif domain=="skills" then
         return j.component=="abilities" and type(key)=="string" and selection.skills and selection.skills[key]==true or false
     elseif domain=="front" or domain=="back" or domain=="werewolf" then
@@ -665,7 +667,7 @@ function B:SyncDraft()
 end
 function B:DiscardOwned()
  local j=self.journal
- if j.component=='equipment'then return true end
+ if j.component=='equipment' or j.component=='appearance'then return true end
  local adapter=self.services[j.component=='abilities' and 'skills' or 'attributes']
  local owner=adapter:GetNativeOwnership()
  if owner and owner.phase=='editor' and owner.token~=j.ownerToken then return nil,KW.Problem('recoveryChanged')end

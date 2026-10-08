@@ -19,6 +19,7 @@ local function readable(value,depth)
 end
 function W.StepTitle(step)
  local title=text(step.kind)
+ if step.kind=='appearance'then title=title..' · '..plain(step.details and step.details.categoryName)end
  if step.kind=='equipBatch'then title=title..' · '..tostring(#(step.details and step.details.items or {}))end
  if step.kind=='bar'then title=title..' · '..text(step.details and step.details.bar or 'front')end
  if (step.kind=='equip' or step.kind=='unequip')and step.details then
@@ -37,6 +38,7 @@ function W.StepBody(step)
    lines[#lines+1]=KW.Dialogs.SlotName(item.slot)..' — '..plain(name or '')
   end
  elseif step.kind=='equip' or step.kind=='unequip'then lines[#lines+1]=KW.Dialogs.SlotName(d.slot)
+ elseif step.kind=='appearance'then lines[#lines+1]=plain(d.beforeName)..'  →  '..plain(d.targetName)
  elseif step.kind=='attributes'then lines[#lines+1]=readable(d.before)..'  →  '..readable(d.target)
  elseif d.changes then
   for i,change in ipairs(d.changes)do
@@ -65,6 +67,11 @@ function W.StepBody(step)
   elseif notice.beforeName and notice.targetName and notice.beforeName~=notice.targetName then
    lines[#lines+1]=string.format(text('MORPH_'..bar),beforeName,plain(notice.targetName))
   else lines[#lines+1]=string.format(text('MORPH_UNKNOWN_'..bar),beforeName)end
+ end
+ if step.status=='running' and step.pending and step.pending.phase=='cooldown' then
+  local seconds=math.ceil((step.pending.remainingMs or 0)/1000)
+  local key=step.pending.countdownKind=='retry' and 'APPEARANCE_RETRY' or 'APPEARANCE_COOLDOWN'
+  lines[#lines+1]=seconds>0 and string.format(text(key),seconds) or text('APPEARANCE_COOLDOWN_UNKNOWN')
  end
  local p=step.problem
  if p then

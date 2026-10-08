@@ -1,6 +1,7 @@
 local KW=KanaWardrobe
 local O={};KW.OperationSession=O
 local M={}
+local function live(component)return component=='equipment' or component=='appearance'end
 local function domain(component)return component=='abilities' and 'skills' or 'attributes'end
 local function add(steps,kind,data)
  data=data or {};data.kind=kind;data.id=kind..':'..(#steps+1);steps[#steps+1]=data
@@ -75,7 +76,7 @@ function M:OnNativePageState(page,state)
  if state=='showing'then self.activePage=page;self:Notify()end
  -- Native ConfirmHide owns navigation. The operation window remains independent;
  -- leaving a page cannot cancel a sent request or start restoration implicitly.
- if state=='hiding' and self:IsEditorActive() and self.journal.page==page and self.journal.component~='equipment'then
+ if state=='hiding' and self:IsEditorActive() and self.journal.page==page and not live(self.journal.component)then
   local j=self.journal;local adapter=self.services[domain(j.component)]
   local api=adapter.api;local native=j.component=='abilities' and api.SKILLS_AND_ACTION_BAR_MANAGER or api.STATS
   local mode=j.component=='abilities' and native:GetSkillPointAllocationMode() or native:GetAttributePointAllocationMode()
@@ -98,6 +99,7 @@ function M:SyncDraft()
  local j=self.journal;if not j or not self.draft then return nil,KW.Problem('invalidState')end
  local value,problem
  if j.component=='equipment'then value=self.inventory:Capture('equipment').worn
+ elseif j.component=='appearance'then value,problem=self.services.appearance:Capture()
  else value,problem=self.services[domain(j.component)]:CaptureDraft()end
  if not value then return nil,problem or KW.Problem('nativeDraftUnavailable')end
  local ok;ok,problem=self.draft:Replace(value);if not ok then return nil,problem end
@@ -134,11 +136,11 @@ function M:PrepareEditor(intent,snapshot,catalogue)
   presetId=preset.id,revision=preset.revision,original=KW.Copy(intent.editorBaseline or KW.BuildModel.Normalize(snapshot)),originalPreset=KW.Copy(preset),
   selection=draft:GetSelection(),experiment=draft:GetBuild(),nativeExperiment=KW.Copy(raw.target[component]),missing=missing,saveCommitted=false}
  local result
- if component=='equipment'then result,problem=KW.OperationPlan.Build(snapshot,wanted,self.services,self.capabilities,catalogue)
+ if live(component)then result,problem=KW.OperationPlan.Build(snapshot,wanted,self.services,self.capabilities,catalogue)
  else result={steps={},target={},extras={},extraKey=''}end
  if not result then return nil,problem end
  result.context={editor=editor}
- if component~='equipment'then add(result.steps,'mountDraft')end
+ if not live(component)then add(result.steps,'mountDraft')end
  add(result.steps,'openEditor');return result
 end
 function M:CaptureEditorIntent(intent)
@@ -150,9 +152,9 @@ function M:CaptureEditorIntent(intent)
   end
   -- Reload destroys native draft controls, but the editor's last observed values
   -- remain the save goal. Do not replace them with the character's actual build.
-  local adapter=j.component~='equipment' and self.services[domain(j.component)]
+  local adapter=not live(j.component) and self.services[domain(j.component)]
   local owner=adapter and adapter:GetNativeOwnership()
-  if j.component=='equipment' or not self.editorReloaded or owner then
+  if live(j.component) or not self.editorReloaded or owner then
    local ok,problem=self:SyncDraft();if not ok then return nil,problem end
   end
   for slot,entry in pairs(j.missing or {})do
@@ -167,7 +169,7 @@ end
 function M:PrepareExit(intent,snapshot,catalogue)
  local j=intent.editor;local c=j.component;local steps={};local result={steps=steps,target={},context={editor=KW.Copy(j)}}
  local apply=intent.kind=='saveApply'
- local wanted=c=='equipment' and not apply and {equipment=j.original.equipment}
+ local wanted=live(c) and not apply and {[c]=j.original[c]}
   or apply and {[c]=j.nativeExperiment or j.experiment[c]} or nil
  if wanted then
   local plan,problem=KW.OperationPlan.Build(snapshot,wanted,self.services,self.capabilities,catalogue)
@@ -180,7 +182,7 @@ function M:PrepareExit(intent,snapshot,catalogue)
   if not candidate or not KW.BuildModel.HasParts(candidate)then return nil,problem or KW.Problem('invalidPreset')end
   candidate.name=name
   local patches={}
-  for _,part in ipairs({'equipment','abilities','attributes'})do
+  for _,part in ipairs({'equipment','abilities','attributes','appearance'})do
    patches[part]=candidate[part] and {op='replace',value=candidate[part]}or {op='remove'}
   end
   if not j.saveCommitted then
@@ -190,7 +192,7 @@ function M:PrepareExit(intent,snapshot,catalogue)
   end
   add(steps,'save',{patches=patches,name=name,candidate=candidate})
  end
- if c~='equipment'then add(steps,'closeDraft')end
+ if not live(c)then add(steps,'closeDraft')end
  for _,step in ipairs(result.following or {})do steps[#steps+1]=step end;result.following=nil
  add(steps,'finishEditor');return result
 end
@@ -267,7 +269,7 @@ function M:LocalStep(step,op,report,done)
   j.ownerToken=adapter:GetNativeOwnership().token;self:Persist();op.context.editor=KW.Copy(j)
   done({ownerToken=j.ownerToken})
  elseif step.kind=='openEditor'then
-  if j.component~='equipment'then
+  if not live(j.component)then
    local owner=self.services[domain(j.component)]:GetNativeOwnership()
    if not owner or owner.phase~='editor' or owner.token~=j.ownerToken then
     -- A completed mount is local UI state, so reload can invalidate it while
@@ -278,7 +280,7 @@ function M:LocalStep(step,op,report,done)
    end
   end
   local ok,err=self:HydrateEditor(j);if not ok then return failure(done,err)end
-  if j.component=='equipment'then self:SyncDraft()end
+  if live(j.component)then self:SyncDraft()end
   j.state='editing';self.editorReloaded=false;self:Notify();done({editing=true})
  elseif step.kind=='closeDraft'then
   local adapter=self.services[domain(j.component)];local owner=adapter:GetNativeOwnership()
@@ -293,7 +295,7 @@ function O.Attach(self)
  for name,fn in pairs(M)do self[name]=fn end
  local services=self.services
  local handlers=KW.OperationSteps.New(self.inventory,services.skills,services.attributes,services.events,services.clock,
-  {capture=services.capture,localStep=function(...)return self:LocalStep(...)end})
+  {capture=services.capture,appearance=services.appearance,localStep=function(...)return self:LocalStep(...)end})
  self.operationSteps=handlers
  self.journal=KW.Copy(self.saved.operationEditor)
  self.editorReloaded=self.journal~=nil
@@ -302,7 +304,7 @@ function O.Attach(self)
  end,function(op)
   services.clock:Schedule(1,function()
   local ok,err=pcall(self.emit,'SessionFinished',{outcome=op.intent.kind=='apply' and 'applied' or op.intent.kind=='saveApply' and 'applied'
-   or op.intent.kind=='save' and 'saved' or op.intent.kind=='cancel' and 'cancelled' or 'editorOpened',saved=op.intent.kind=='save' or op.intent.kind=='saveApply'})
+   or op.intent.kind=='save' and 'saved' or op.intent.kind=='cancel' and 'cancelled' or 'editorOpened',component=op.context and op.context.editor and op.context.editor.component,saved=op.intent.kind=='save' or op.intent.kind=='saveApply'})
   if not ok then self.saved.operationObserverError=tostring(err)end
   end)
  end,services.describeFailure)

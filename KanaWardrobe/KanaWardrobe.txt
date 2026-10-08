@@ -23,6 +23,7 @@ Protection.lua
 SkillState.lua
 SkillAdapter.lua
 AttributeAdapter.lua
+AppearanceAdapter.lua
 BuildPlanner.lua
 BuildRunner.lua
 BuildDraft.lua

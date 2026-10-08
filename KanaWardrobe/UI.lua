@@ -110,6 +110,7 @@ function Instance:Readiness()
  if api.IsBlockActive and api.IsBlockActive()then return KW.Problem("blocking")end
 end
 local function selectionCount(view)
+ if view.component=="appearance"then return count(view.selection and view.selection.appearance)end
  if view.component=="attributes"then return view.attributesEnabled and 1 or 0 end
  if view.component=="abilities"then
   local v=view.selection or {};return count(v.skills)+count(v.bars and v.bars.front)+count(v.bars and v.bars.back)+count(v.bars and v.bars.werewolf)
@@ -136,7 +137,7 @@ function Instance:Model(snapshot,actual,catalogue,captureProblem)
  elseif view.component and not projected then
   local preset=view.presetId and self.repo:Get(view.presetId)
   if preset then
-   for _,part in ipairs({"equipment","abilities","attributes"})do
+   for _,part in ipairs({"equipment","abilities","attributes","appearance"})do
     if part~=view.component and preset[part]~=nil then projected=true end
    end
   end
@@ -157,9 +158,9 @@ function Instance:Model(snapshot,actual,catalogue,captureProblem)
    if row.matches and preset.abilities and KW.SkillState then
     row.matches=KW.BuildModel.Matches(actual,{abilities=KW.SkillState.ExpandMasterySelection(preset.abilities,catalogue)})
    end
-   for _,part in ipairs({"equipment","abilities","attributes"})do
+   for _,part in ipairs({"equipment","abilities","attributes","appearance"})do
     if preset[part]~=nil and actual[part]==nil then
-     row.problem=captureProblem or KW.Problem(part=="abilities" and "skillsUnavailable"or part=="attributes"and"attributesUnavailable"or"invalidBuildSnapshot")
+     row.problem=captureProblem or KW.Problem(part=="abilities" and "skillsUnavailable"or part=="attributes"and"attributesUnavailable"or part=="appearance"and"appearanceUnavailable"or"invalidBuildSnapshot")
      row.canApply=false;break
     end
    end
@@ -218,7 +219,11 @@ function Instance:OnSessionFinished(result)
  else self.progressCompleting=nil end
  self.lastProblem=result.problem
  self.lastOutcome=result.outcome
- if result.problem then self:Problem(result.problem)else self:Message(text("OUTCOME_"..(result.outcome or "")))end
+ if result.problem then self:Problem(result.problem)else
+  local outcome=result.outcome or ''
+  if result.component=='appearance' and (outcome=='saved' or outcome=='cancelled')then outcome=outcome=='saved' and 'appearanceSaved' or 'appearanceCancelled'end
+  self:Message(text('OUTCOME_'..outcome))
+ end
  self:ScheduleRefresh()
 end
 function Instance:ScheduleRefresh()
@@ -345,7 +350,7 @@ function Instance:CloseEditor(scene)
     if decision.scene then decision.scene:RejectHideScene()end
    end
   end
-  decision.dialog=D.CloseEditor(function()finish('Save')end,function()finish('Cancel')end,continue)
+  decision.dialog=D.CloseEditor(function()finish('Save')end,function()finish('Cancel')end,continue,self.session:GetView().component=='appearance' and text('APPEARANCE_CLOSE_HELP'))
   return decision.dialog
  elseif scene then scene:RejectHideScene()
  elseif view.recovery then self:RecoveryMenu()
@@ -533,7 +538,7 @@ function Instance:Build()
  self.allButton=button(self.editor,"KanaWardrobeAll",text("ALL"),0,124,108,function()self:SelectAll(true)end)
  self.noneButton=button(self.editor,"KanaWardrobeNone",text("NONE"),114,124,110,function()self:SelectAll(false)end)
  self.clearGroupButtons={}
- for _,group in ipairs({'skills','bars','equipment','attributes'})do
+ for _,group in ipairs({'skills','bars','equipment','attributes','appearance'})do
   local b=button(self.editor,'KanaWardrobeClear'..group,text('CLEAR_'..group),0,0,224,function()self:Command('ClearPresetGroup',group)end)
   b.group=group;b:SetFont('ZoFontGame')
   b:SetHandler('OnMouseEnter',function()tooltip(b,text('CLEAR_GROUP_HELP'))end);b:SetHandler('OnMouseExit',clearTooltip)
@@ -572,7 +577,7 @@ function Instance:Build()
  ZO_CheckButton_SetToggleFunction(self.attributesCheck,function(_,checked)self:Command("SetAttributesEnabled",checked)end)
  self:BuildChecks()
  self.fragment=ZO_SimpleSceneFragment:New(self.root)
- for _,page in ipairs(self.pages and {"inventory","skills","stats"}or {"inventory"})do
+ for _,page in ipairs(self.pages and {"inventory","skills","stats","collectionsBook"}or {"inventory"})do
   local scene=SCENE_MANAGER:GetScene(page)
   if scene then
    scene:AddFragment(self.fragment)
@@ -762,7 +767,7 @@ function Instance:RefreshSelectionOverlays()
    if not current or current.page~=state.page or self.page~=state.page or not self.visible or not self.session:IsEditorActive()then return nil end
    local data=entry.resolveKey();if not data then return nil end
    local domain=data.domain
-   if not (current.component=="equipment" and domain=="equipment" or current.component=="abilities" and (domain=="skills"or domain=="bars"))then return nil end
+   if not (current.component=="appearance" and domain=="appearance" or current.component=="equipment" and domain=="equipment" or current.component=="abilities" and (domain=="skills"or domain=="bars"))then return nil end
    data.enabled=current.enabled;data.selected=self.session:GetSelected(domain,data.key)
    return data
   end
@@ -779,7 +784,7 @@ function Instance:RefreshSelectionOverlays()
     overlay.control:SetHandler("OnMouseExit",clearTooltip)
    end
   end
-  overlay:Bind(entry.icon,resolve)
+  overlay:Bind(entry.icon,resolve,entry.placement)
   local data=overlay:Refresh()
   if data and data.domain=="equipment"then self.checks[data.key]=overlay.control end
  end
@@ -788,7 +793,7 @@ end
 function Instance:RenderSelectionOverlays(shown,model)
  local view=model.view;local component=view.component or "equipment"
  local valid=shown and model.isEditor and not view.paused
-  and (component=="equipment" and self.page=="inventory" or component=="abilities" and self.page=="skills")
+  and (component=="appearance" and self.page=="collectionsBook" or component=="equipment" and self.page=="inventory" or component=="abilities" and self.page=="skills")
  if not valid or not self.overlayUpdate or not self.session.GetSelected or not self.session.IsEditorActive then self:ClearSelectionOverlays();return end
  if self.overlayState and (self.overlayState.page~=self.page or self.overlayState.component~=component)then self:ClearSelectionOverlays()end
  self.overlayState={page=self.page,component=component,enabled=view.state=="editing"}
@@ -803,6 +808,10 @@ function Instance:RenderSelectionOverlays(shown,model)
 end
 function Instance:SelectAll(selected)
  local view=self.session:GetView()
+ if view.component=="appearance"then
+  for category in pairs(view.draft and view.draft.appearance or {})do self.session:SetSelected('appearance',category,selected)end
+  return self:Refresh()
+ end
  if view.component=="attributes"then return self:Command("SetAttributesEnabled",selected)end
  if view.component=="abilities"then
   local a=view.draft and view.draft.abilities or {}
@@ -842,9 +851,9 @@ function Instance:Render(model)
   b:SetHidden(not model.isEditor or not self.session.ClearPresetGroup)
   b:SetEnabled(view.state=='editing' and not view.paused and (view.includedGroups or {})[b.group]==true)
  end
- self.saveButton:SetHandler("OnMouseEnter",function()tooltip(self.saveButton,model.canSave and text(view.component and "COMPONENT_SAVE_HELP"or"RETURN_NOTE") or model.saveReason)end)
+ self.saveButton:SetHandler("OnMouseEnter",function()tooltip(self.saveButton,model.canSave and text(view.component=="appearance" and "APPEARANCE_SAVE_HELP" or view.component and "COMPONENT_SAVE_HELP"or"RETURN_NOTE") or model.saveReason)end)
  self.saveButton:SetHandler("OnMouseExit",clearTooltip)
- self.cancelButton:SetHandler("OnMouseEnter",function()tooltip(self.cancelButton,model.canCancel and text(view.component and "COMPONENT_CANCEL_HELP"or"RETURN_NOTE") or model.reason)end)
+ self.cancelButton:SetHandler("OnMouseEnter",function()tooltip(self.cancelButton,model.canCancel and text(view.component=="appearance" and "APPEARANCE_CANCEL_HELP" or view.component and "COMPONENT_CANCEL_HELP"or"RETURN_NOTE") or model.reason)end)
  self.cancelButton:SetHandler("OnMouseExit",clearTooltip)
  self.saveAndApplyButton:SetHandler("OnMouseEnter",function()tooltip(self.saveAndApplyButton,model.canSaveAndApply and text("SAVE_AND_APPLY_HELP")or model.saveReason)end)
  self.saveAndApplyButton:SetHandler("OnMouseExit",clearTooltip)

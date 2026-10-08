@@ -15,11 +15,38 @@ local function skillName(catalogue,key,state)
  return record.name
 end
 P.SkillName=skillName
+-- Appearance shares a cooldown. Use the long, indivisible build segments as
+-- useful work between collectibles; never split gear dependencies or talents
+-- from their action-bar assignments. Preserve the collectible order as well.
+local function interleaveAppearance(steps,changes,ends)
+ if #changes==0 then return steps end
+ local last=#steps;local middle={}
+ for _,index in ipairs(ends)do if index>0 and index<last then middle[#middle+1]=index end end
+ local at={}
+ for i,change in ipairs(changes)do
+  local index=last
+  if i==1 then index=0
+  elseif i<#changes and #middle>0 then
+   local position=#changes==3 and math.ceil(#middle/2) or 1+math.floor((i-2)*(#middle-1)/(#changes-3)+.5)
+   index=middle[position]
+  end
+  at[index]=at[index] or {};at[index][#at[index]+1]=change
+ end
+ local result={}
+ for index=0,last do
+  if index>0 then result[#result+1]=steps[index]end
+  for _,change in ipairs(at[index] or {})do
+   local step=KW.Copy(change);step.kind='appearance';result[#result+1]=step
+  end
+ end
+ for index,step in ipairs(result)do step.id=step.kind..':'..index end
+ return result
+end
 function P.Build(snapshot,requested,services,capabilities,catalogue)
  local plan,problem=services.buildPlanner.Build(snapshot,requested,catalogue,capabilities)
  if not plan then return nil,problem end
  local result={steps={},target={},scope={},extras={},extraKey=plan.extraKey}
- local notices={}
+ local notices={};local segmentEnds={}
  for _,extra in ipairs(plan.extras)do
   if extra.type=='ability' and (extra.bar=='front' or extra.bar=='back' or extra.bar=='werewolf')then
    -- An omitted bar slot imposes no constraint on the selected talent change.
@@ -63,11 +90,13 @@ function P.Build(snapshot,requested,services,capabilities,catalogue)
    worn[step.equipSlot]=after
   end
   flush()
+  if #result.steps>0 then segmentEnds[#segmentEnds+1]=#result.steps end
  end
  if plan.attributeRequest then
   result.scope.attributes=true;result.target.attributes=KW.Copy(plan.attributeRequest.target)
   if not KW.BuildModel.Matches(snapshot,{attributes=plan.attributeRequest.target})then
    add('attributes',{target=KW.Copy(plan.attributeRequest.target),details={before=KW.Copy(snapshot.attributes),target=KW.Copy(plan.attributeRequest.target)}})
+   segmentEnds[#segmentEnds+1]=#result.steps
   end
  end
  if plan.skillRequest then
@@ -102,6 +131,10 @@ function P.Build(snapshot,requested,services,capabilities,catalogue)
    if (explicit or #request.skillChanges==0) and next(target)then add('bar',{bar=bar,target=target,details={bar=bar,changes=changes}})end
   end
   result.auxiliaryTarget=KW.Copy(request.auxiliaryTarget)
+ end
+ if plan.appearanceRequest then
+  result.scope.appearance=true;result.target.appearance=KW.Copy(plan.appearanceRequest.target)
+  result.steps=interleaveAppearance(result.steps,plan.appearanceRequest.changes,segmentEnds)
  end
  add('verify',{target=KW.Copy(result.target),auxiliaryTarget=result.auxiliaryTarget})
  return result

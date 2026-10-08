@@ -14,6 +14,8 @@ function D.Difference(row)
  end
  if row.domain=='attributes' and row.field then
   return format('VALUE',label(row.field),tostring(expected),actual~=nil and tostring(actual) or label('UNREADABLE'))
+ elseif row.domain=='appearance' then
+  return format('VALUE',name(row.name,text('APPEARANCE')),name(row.expectedName),name(row.actualName))
  elseif row.domain=='skills' and expected and expected.kind then
   local skill=name(row.name)
   if not actual then return format('MISSING',skill)end
@@ -45,6 +47,12 @@ function D.Problem(problem)
   lines[#lines+1]=text('MISMATCH_RETRY')
   return table.concat(lines,'\n')
  end
+ if problem.code=='appearanceUnconfirmed'then
+  message=string.format(text('APPEARANCE_MISMATCH'),D.Plain(details.categoryName),D.Plain(details.targetName),D.Plain(details.actualName))
+ elseif problem.code:match('^appearance') and details.name then
+  message=message..' '..D.Plain(details.categoryName)..': '..D.Plain(details.name)..'.'
+ end
+ if details.reasonText and details.reasonText~=''then message=message..' '..D.Plain(details.reasonText)end
  if problem.code=='requestTimeout' and details.items and #details.items>0 then
   local slots={}
   for _,item in ipairs(details.items)do slots[#slots+1]=D.SlotName(item.equipSlot)end
@@ -168,8 +176,8 @@ end
 function D.EditName(preset,onAccept)
  return show("NAME",text("NAME"),text("INVALID_NAME"),{{label=text("CANCEL")},{label=text("SAVE"),callback=onAccept}},nil,preset.name or "")
 end
-function D.CloseEditor(onSave,onCancel,onContinue)
- return show("CLOSE",text("CLOSE_EDITOR"),text("CLOSE_HELP"),{
+function D.CloseEditor(onSave,onCancel,onContinue,message)
+ return show("CLOSE",text("CLOSE_EDITOR"),message or text("CLOSE_HELP"),{
   {label=text("CONTINUE"),callback=onContinue},{label=text("SAVE"),callback=onSave},{label=text("CANCEL"),callback=onCancel}},onContinue)
 end
 function D.ConfirmRestoreAvailable(missing,onAccept)

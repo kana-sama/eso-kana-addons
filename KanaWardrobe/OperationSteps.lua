@@ -143,6 +143,80 @@ function I:Gear(step,op,report,done)
   end
  end,done)
 end
+function I:Appearance(step,op,report,done)
+ local adapter=self.services.appearance
+ if not adapter then done(nil,KW.Problem('appearanceUnavailable'));return end
+ local pending={domain='appearance',category=step.category,expected=step.target,refusals={}}
+ local api=adapter.api;local retryCount=0;local cooldownDeadline;local shownSeconds
+ local unsubscribe=self.events:Subscribe('AppearanceUseResult',function(payload)
+  -- This flag is used by ESO for the success sound, not to correlate errors
+  -- with requests. Filtering failures by it discards cooldown refusals.
+  if pending.sent then
+   pending.result=payload.result
+   pending.lastResponse={result=payload.result,isAttemptingActivation=payload.isAttemptingActivation,receivedAt=self.clock:NowMs()}
+   report(pending)
+  end
+ end)
+ local function finish(result,err)self.events:Unsubscribe(unsubscribe);done(result,err)end
+ local function showCountdown(now)
+  pending.remainingMs=math.max(0,pending.retryAt-now)
+  local seconds=math.ceil(pending.remainingMs/1000)
+  if seconds~=shownSeconds then shownSeconds=seconds;report(pending)end
+ end
+ local function cooldown(remaining)
+  local now=self.clock:NowMs();remaining=remaining or 0
+  cooldownDeadline=cooldownDeadline or now+(remaining>0 and remaining+5000 or 30000)
+  pending.phase='cooldown';pending.sent=false;pending.countdownKind=remaining>0 and 'cooldown' or 'retry'
+  -- A server refusal may have no local cooldown timer. Back off between
+  -- retries; this countdown is time to the next attempt, not a guessed cooldown.
+  local delay=remaining>0 and remaining or math.min(4000,1000*2^math.min(retryCount,2))
+  pending.retryAt=now+delay;pending.cooldownDeadline=cooldownDeadline;shownSeconds=nil;showCountdown(now)
+  if now>=cooldownDeadline then return nil,KW.Problem('appearanceCooldownTimeout',KW.Copy(pending))end
+ end
+ local function unconfirmed(actual)
+  report(pending)
+  local details=KW.Copy(step.details or {})
+  details.expected=step.target;details.actual=actual[step.category];details.result=pending.result
+  details.actualName=adapter:Describe(step.category,details.actual).name
+  if pending.result and api.GetString then details.reasonText=api.GetString('SI_COLLECTIBLEUSAGEBLOCKREASON',pending.result)end
+  return nil,KW.Problem('appearanceUnconfirmed',details)
+ end
+ local function confirm(actual)
+  pending.actual=actual[step.category]
+  if pending.actual==step.target then return {actual=actual}end
+  if api.COLLECTIBLE_USAGE_BLOCK_REASON_ON_COOLDOWN~=nil and pending.result==api.COLLECTIBLE_USAGE_BLOCK_REASON_ON_COOLDOWN then
+   pending.refusals[#pending.refusals+1]={result=pending.result,sentAt=pending.sentAt,response=KW.Copy(pending.lastResponse),useId=pending.useId}
+   local remaining=api.GetCollectibleCooldownAndDuration and api.GetCollectibleCooldownAndDuration(pending.useId) or 0
+   local result,problem=cooldown(remaining);retryCount=retryCount+1
+   return result,problem
+  end
+  if self.clock:NowMs()-pending.sentAt>=5000 then return unconfirmed(actual)end
+ end
+ self:Wait({'AppearanceChanged','AppearanceUseResult'},60000,function(expired)
+  local actual,err=adapter:Capture();if not actual then return nil,err end
+  pending.actual=actual[step.category]
+  -- Check again before every retry: UseCollectible is a toggle.
+  if pending.actual==step.target then return {actual=actual}end
+  if pending.sent then return confirm(actual)end
+  if op.pauseRequested then return {paused=true}end
+  if expired then return nil,KW.Problem('appearanceCooldownTimeout',KW.Copy(pending))end
+  local now=self.clock:NowMs()
+  if pending.retryAt and now<pending.retryAt then showCountdown(now);return end
+  local blocked=self:Readiness();if blocked then return nil,blocked end
+  pending.phase='waiting';pending.sent=true;pending.sentAt=now;pending.result=nil;pending.lastResponse=nil
+  pending.useId=step.target==0 and pending.actual or step.target
+  pending.remainingMs=nil;pending.countdownKind=nil;pending.retryAt=nil
+  local ok,problem=adapter:Request(step.category,step.target)
+  if not ok then
+   pending.sent=false
+   if problem.code=='appearanceCooldown'then return cooldown(problem.details and problem.details.remainingMs)end
+   report(pending);return nil,problem
+  end
+  report(pending)
+  actual,err=adapter:Capture();if not actual then return nil,err end
+  return confirm(actual)
+ end,finish)
+end
 function I:Result(domain,state)
  if domain=='skills'then return state.result end
  local result=self.attributeResult
@@ -270,6 +344,10 @@ function I:Verify(step,done)
     row.expectedName=KW.OperationPlan.SkillName(catalogue,row.expected and row.expected.skillKey,row.expected)
     row.actualName=KW.OperationPlan.SkillName(catalogue,row.actual and row.actual.skillKey,row.actual)
     if row.category and row.category==api.HOTBAR_CATEGORY_WEREWOLF then row.specialBar='werewolf'end
+   elseif row.domain=='appearance' and self.services.appearance then
+    local adapter=self.services.appearance
+    row.name=adapter:Describe(row.field,row.expected).categoryName
+    row.expectedName=adapter:Describe(row.field,row.expected).name;row.actualName=adapter:Describe(row.field,row.actual).name
    elseif row.domain=='equipment'then
     row.expectedName=itemName(row.expected);row.actualName=itemName(row.actual)
    end
@@ -285,6 +363,7 @@ function I:Run(step,op,report,done)
  if step.kind=='verify'then return self:Verify(step,done)end
  local blocked=self:Readiness();if blocked then done(nil,blocked);return end
  if step.kind=='equip' or step.kind=='unequip'then return self:Gear(step,op,report,done)end
+ if step.kind=='appearance'then return self:Appearance(step,op,report,done)end
  if step.kind=='equipBatch'then return self:GearBatch(step,op,report,done)end
  if step.kind=='attributes' or step.kind=='skills' or step.kind=='bar'then return self:Native(step,op,report,done)end
  done(nil,KW.Problem('invalidStep',{kind=step.kind}))

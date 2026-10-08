@@ -317,10 +317,49 @@ function Instance:TextColumns(entries,top,width,tooltips)
     end
     return bottom
 end
+function Instance:LayoutAppearance(entries,y,inner)
+    self.appearanceTiles=self.appearanceTiles or {}
+    if not entries or #entries==0 then return y end
+    self:Rule(y,inner);y=y+12
+    y=y+self:Label(KW.Text('APPEARANCE'),PAD,y,inner,'ZoFontGameBold')+6
+    local width,height,gap=math.min(175,inner),125,10
+    local columns=math.max(1,math.floor((inner+gap)/(width+gap)))
+    for index,entry in ipairs(entries)do
+        local card=self.appearanceTiles[index]
+        if not card then
+            card=WINDOW_MANAGER:CreateControlFromVirtual(self.name..'Appearance'..index,self.control,'KanaWardrobeAppearanceTile')
+            self.appearanceTiles[index]=card
+        end
+        card:ClearAnchors();card:SetDimensions(width,height)
+        card:SetAnchor(TOPLEFT,self.control,TOPLEFT,PAD+((index-1)%columns)*(width+gap),y+math.floor((index-1)/columns)*(height+gap))
+        card:SetHidden(false);card:SetMouseEnabled(true)
+        local icon,title,highlight=card:GetNamedChild('Icon'),card:GetNamedChild('Title'),card:GetNamedChild('Highlight')
+        icon:SetHidden(entry.id==0);if entry.icon then icon:SetTexture(entry.icon)end
+        title:SetText(entry.name);title:SetColor(.9,.88,.8,1)
+        -- Empty selections are still full cards, with the absence centered.
+        title:ClearAnchors()
+        title:SetAnchor(BOTTOMLEFT,card,BOTTOMLEFT,7,-2);title:SetAnchor(BOTTOMRIGHT,card,BOTTOMRIGHT,-7,-2)
+        title:SetHeight(entry.id==0 and height-4 or 54)
+        card:GetNamedChild('Status'):SetHidden(true);highlight:SetAlpha(0)
+        card:SetHandler('OnMouseEnter',function()
+            self:HideSkillTooltip();if self.tooltips then self.tooltips:Hide()end
+            highlight:SetAlpha(.7)
+            if entry.id>0 and ItemTooltip then
+                InitializeTooltip(ItemTooltip,card,TOPLEFT,5,0,TOPRIGHT)
+                self.skillTooltip=ItemTooltip;self.skillOwner=card
+                ItemTooltip:SetCollectible(entry.id,true,false,true,GAMEPLAY_ACTOR_CATEGORY_PLAYER)
+            end
+        end)
+        card:SetHandler('OnMouseExit',function()highlight:SetAlpha(0);self:HideSkillTooltip()end)
+        card:SetHandler('OnMouseWheel',function(_,delta)self:HideSkillTooltip();ZO_Scroll_OnMouseWheel(self.scroll,delta)end)
+    end
+    return y+math.ceil(#entries/columns)*(height+gap)
+end
 function Instance:Layout(data,width,language)
     self:HideSkillTooltip()
     if self.tooltips then self.tooltips:Hide()end
     self.counts={};self.data=data
+    for _,card in ipairs(self.appearanceTiles or {})do card:SetHidden(true)end
     for _,c in ipairs(self.controls)do c.control:SetHidden(true)end
     self.control:SetHidden(false);self.control:ClearAnchors()
     self.control:SetAnchor(TOPLEFT,self.parent,TOPLEFT,0,0)
@@ -505,6 +544,8 @@ function Instance:Layout(data,width,language)
         end
         y=self:TextColumns(paragraphs,y,inner,tooltips)
     end
+    self.sections.appearanceTop=y
+    y=self:LayoutAppearance(data.description and data.description.appearance,y,inner)
     self.control:SetHeight(y+4)
     return y+4
 end

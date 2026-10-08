@@ -93,8 +93,9 @@ function KW.Core.Initialize(api)
     if KW.SkillAdapter and KW.AttributeAdapter and KW.BuildPlanner and KW.BuildRunner and KW.BuildDraft then
         runtime.skills=KW.SkillAdapter.New(api,events,runtime.clock)
         runtime.attributes=KW.AttributeAdapter.New(api,events)
-        runtime.buildPlanner=KW.BuildPlanner.New({skills=runtime.skills,attributes=runtime.attributes})
-        runtime.actualRevisions={equipment=0,abilities=0,attributes=0}
+        runtime.appearance=KW.AppearanceAdapter and KW.AppearanceAdapter.New(api)
+        runtime.buildPlanner=KW.BuildPlanner.New({skills=runtime.skills,attributes=runtime.attributes,appearance=runtime.appearance})
+        runtime.actualRevisions={equipment=0,abilities=0,attributes=0,appearance=0}
         local function capture(scope)
             -- nil is a deliberate full QuickSave; components and plans read
             -- only their domains. Skills additionally depend on worn gear.
@@ -118,6 +119,11 @@ function KW.Core.Initialize(api)
                 if attributes then snapshot.attributes=attributes;snapshot.budgets.attributes=budget
                 elseif scope=='attributes' then return nil,nil,budget end
             end
+            if includes('appearance') and runtime.appearance then
+                local value,problem=runtime.appearance:Capture()
+                if value then snapshot.appearance=value
+                elseif scope=='appearance' or type(scope)=='table' and scope.appearance then return nil,nil,problem end
+            end
             return snapshot,catalogue
         end
         -- The list is a presentation consumer, never a preflight consumer.
@@ -134,10 +140,12 @@ function KW.Core.Initialize(api)
             local view=runtime.session and runtime.session:GetView() or {}
             local needSkills=view.component=='abilities'
             local needAttributes=view.component=='attributes'
+            local needAppearance=view.component=='appearance'
             if not view.isEditor then
                 for _,preset in ipairs(runtime.repo:List())do
                     needSkills=needSkills or preset.abilities~=nil
                     needAttributes=needAttributes or preset.attributes~=nil
+                    needAppearance=needAppearance or preset.appearance~=nil
                 end
             end
             if needSkills and (not display.catalogue or display.skillRevision~=revisions.abilities)then
@@ -149,16 +157,20 @@ function KW.Core.Initialize(api)
                 display.attributes,display.attributeProblem=runtime.attributes:Capture()
                 display.attributesRead=true;display.attributeRevision=revisions.attributes
             end
+            if needAppearance and runtime.appearance and (not display.appearance or display.appearanceRevision~=revisions.appearance)then
+                display.appearance=runtime.appearance:Capture();display.appearanceRevision=revisions.appearance
+            end
             local eq=display.equipment
             local snapshot={equipment=eq.worn,equipmentState=eq}
             local catalogue=needSkills and display.catalogue or nil
             if catalogue and catalogue.available then snapshot.abilities=catalogue.abilities end
             if needAttributes then snapshot.attributes=display.attributes end
+            if needAppearance then snapshot.appearance=display.appearance end
             return snapshot,catalogue
         end
         runtime.captureDisplay=captureDisplay
         local function checkDrafts(scope)
-            if scope=="equipment" or type(scope)=="table" and scope.equipment and not scope.abilities and not scope.attributes then return true end
+            if scope=="equipment" or scope=="appearance" or type(scope)=="table" and (scope.equipment or scope.appearance) and not scope.abilities and not scope.attributes then return true end
             for _,adapter in ipairs({runtime.skills,runtime.attributes})do
                 local state=adapter:GetSubmissionState()
                 if state.phase=="entry" or state.phase=="dispatching" or state.phase=="waiting" or state.phase=="unknown" then return nil,KW.Problem("buildSubmissionUnresolved") end
@@ -183,7 +195,7 @@ function KW.Core.Initialize(api)
         end
         buildServices={capture=capture,buildPlanner=runtime.buildPlanner,buildRunner=runtime.buildRunner,
             operations=KW.OperationSession~=nil,clock=runtime.clock,events=events,
-            skills=runtime.skills,attributes=runtime.attributes,checkDrafts=checkDrafts,
+            skills=runtime.skills,attributes=runtime.attributes,appearance=runtime.appearance,checkDrafts=checkDrafts,
             describeFailure=function(problem,op,step)
                 if runtime.buildProbe then
                     runtime.buildProbe:RecordSkillBlock(problem,op.intent.kind,
@@ -193,7 +205,7 @@ function KW.Core.Initialize(api)
             end,
             requestPage=function(page)
                 local manager=api.SCENE_MANAGER
-                local names={inventory='inventory',skills='skills',stats='stats'}
+                local names={inventory='inventory',skills='skills',stats='stats',collectionsBook='collectionsBook'}
                 if not names[page] or not manager or type(manager.Show)~='function' then return nil,KW.Problem('buildCapabilityUnavailable')end
                 manager:Show(names[page]);return true -- requested; native Continue may keep the old scene
             end}
@@ -203,7 +215,7 @@ function KW.Core.Initialize(api)
     -- Ordinary accepted transitions run before the scene refreshes fragments.
     -- This leaves native ConfirmHide and OnHidden entirely in native ownership.
     if buildServices and api.SCENE_MANAGER and type(api.SCENE_MANAGER.GetScene)=='function' then
-        for _,page in ipairs({'inventory','skills','stats'})do
+        for _,page in ipairs({'inventory','skills','stats','collectionsBook'})do
             local scene=api.SCENE_MANAGER:GetScene(page)
             if scene and type(scene.RegisterCallback)=='function'then
                 scene:RegisterCallback('StateChange',function(_,state)
@@ -300,6 +312,16 @@ function KW.Core.Initialize(api)
             register(name,function()invalidate("abilities")end)
         end
         register("EVENT_ATTRIBUTE_UPGRADE_UPDATED",function()invalidate("attributes")end)
+        local function appearanceChanged()
+            invalidate('appearance');emit('AppearanceChanged',{})
+            local s=runtime.session
+            if s:IsEditorActive() and s.journal.component=='appearance'then s:SyncDraft();s:Notify()end
+        end
+        register('EVENT_COLLECTIBLE_UPDATED',appearanceChanged)
+        register('EVENT_COLLECTION_UPDATED',appearanceChanged)
+        register('EVENT_COLLECTIBLE_USE_RESULT',function(_,result,isAttemptingActivation)
+            emit('AppearanceUseResult',{result=result,isAttemptingActivation=isAttemptingActivation});appearanceChanged()
+        end)
         events:Subscribe('NativeSkillRespecResult',function()invalidate('abilities')end)
         events:Subscribe('NativeAttributeRespecResult',function()invalidate('attributes')end)
     end
@@ -308,7 +330,7 @@ function KW.Core.Initialize(api)
         "EVENT_CLOSE_BANK"})do register(name,refresh)end
     register("EVENT_PLAYER_ACTIVATED",function()
         -- Native managers can be replaced on activation; never reuse handles.
-        if invalidateActual then invalidateActual('abilities');invalidateActual('attributes')end
+        if invalidateActual then invalidateActual('abilities');invalidateActual('attributes');invalidateActual('appearance')end
         refresh()
         runtime.session:OnPlayerActivated()
         if runtime.buildProbe and runtime.repo.character.buildProbeJournal.journal then

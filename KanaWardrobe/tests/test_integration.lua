@@ -213,6 +213,17 @@ local function setup(f)
         a.SCENE_MANAGER=sceneManager
         a.StartSkillRespecFromUI=function()native.entryRequests=(native.entryRequests or 0)+1;sceneManager:Show('skills')end
     end
+    if f.withAppearance then
+        a.COLLECTIBLE_CATEGORY_TYPE_COSTUME=1;a.COLLECTIBLE_CATEGORY_TYPE_HAT=2
+        f.appearance={[1]=101,[2]=0};f.appearanceReads=0
+        a.GetActiveCollectibleByType=function(category)f.appearanceReads=f.appearanceReads+1;return f.appearance[category]end
+        a.GetCollectibleCategoryType=function(id)return id<200 and 1 or 2 end
+        a.GetCollectibleName=function(id)return 'Collectible '..id end
+        a.IsCollectibleUnlocked=function()return true end
+        a.UseCollectible=function(id)local c=a.GetCollectibleCategoryType(id);f.appearance[c]=f.appearance[c]==id and 0 or id;f:Event('EVENT_COLLECTIBLE_UPDATED',id)end
+        a.EVENT_COLLECTIBLE_UPDATED='COLLECTIBLE_UPDATED';a.EVENT_COLLECTION_UPDATED='COLLECTION_UPDATED'
+        a.EVENT_COLLECTIBLE_USE_RESULT='COLLECTIBLE_USE_RESULT'
+    end
     f.r=k.Core.Initialize(a)
     if f.native then f.native.events=f.r.events end
     assert(f.r.session and f.r.filters and f.r.ui,"Core must assemble all runtime consumers")
@@ -923,4 +934,62 @@ tests.operation_native_exit_awaits_gear_restoration=operationTest(function(f)
  assert(f.a.SCENE_MANAGER.page=='skills' and f.a.bags[BAG_WORN][EQUIP_SLOT_RING1].uid=='old')
  f.k.Dialogs.CloseEditor=dialog
 end)
+function tests.appearance_core_events_refresh_editor_and_cached_matching_without_reading_other_domains()
+ local f={modern=true,nativeModern=true,stepwise=true,withAppearance=true}
+ local ok,err=xpcall(function()
+  setup(f)
+  local p=assert(f.r.repo:PatchComponents(nil,{appearance={op='replace',value={[1]=102,[2]=0}}},'Appearance'))
+  f.r.skills.Catalogue=function()error('appearance scanned talents')end
+  f.r.attributes.Capture=function()error('appearance captured attributes')end
+  local s=f.r.captureDisplay();assert(s.appearance[1]==101)
+  local reads=f.appearanceReads
+  f.r.captureDisplay();f.r.captureDisplay();assert(f.appearanceReads==reads,'unchanged display recaptured collectibles')
+  assert(f.r.session:BeginEdit(p.id,false,'collectionsBook'));f.clock:Advance(50)
+  assert(f.r.session:IsEditorActive() and f.appearance[1]==102)
+  f.appearance[1]=103;f:Event('EVENT_COLLECTIBLE_UPDATED',103)
+  assert(f.r.session:GetView().draft.appearance[1]==103)
+  assert(f.r.session:Save());f.clock:Advance(50)
+  local op=f.r.session.operations:GetView();assert(not op,op and op.steps[op.index].problem.code)
+  assert(f.appearance[1]==101 and f.r.repo:Get(p.id).appearance[1]==103)
+  assert(f.r.captureDisplay().appearance[1]==101)
+ end,debug.traceback)
+ if f.Cleanup then f:Cleanup()end;assert(ok,err)
+end
+function tests.appearance_native_cooldown_error_reaches_visible_timer_regardless_of_activation_flag()
+ for _,target in ipairs({0,102})do
+  local f={modern=true,nativeModern=true,stepwise=true,withAppearance=true}
+  local ok,err=xpcall(function()
+   setup(f);f.appearance[2]=201
+   local a=f.a;local untilTime=0;local requests={};local use=a.UseCollectible
+   a.COLLECTIBLE_USAGE_BLOCK_REASON_NOT_BLOCKED=0;a.COLLECTIBLE_USAGE_BLOCK_REASON_ON_COOLDOWN=9
+   a.GetCollectibleCooldownAndDuration=function()return 0,0 end
+   a.GetCollectibleBlockReason=function()return 0 end
+   a.UseCollectible=function(id)
+    requests[#requests+1]={id=id,time=f.clock.now}
+    if f.clock.now<untilTime then
+     -- Failure flags must not be treated as a request ID. ESO's native
+     -- error handler uses the result code alone; only success uses this flag.
+     f.clock:Schedule(100,function()f:Event('EVENT_COLLECTIBLE_USE_RESULT',9,target==0)end)
+    else untilTime=f.clock.now+1800;use(id)end
+   end
+   local p=assert(f.r.repo:PatchComponents(nil,{appearance={op='replace',value={[1]=target,[2]=target==0 and 0 or 202}}},'Appearance'))
+   assert(f.r.session:Apply(p.id));f.clock:Advance(300)
+   local op=f.r.session.operations:GetView();local step=op.steps[op.index]
+   assert(op.status=='running' and step.pending.phase=='cooldown','native cooldown error was lost before reaching the timer')
+   local body=f.r.operationWindow.rows[op.index].body:GetText()
+   assert(body:find('retry in 1 s',1,true),'actual operation window must show the retry countdown')
+   local saved=f.r.repo.character.operation.steps[op.index].pending
+   assert(saved.lastResponse.result==9 and saved.lastResponse.isAttemptingActivation==(target==0),'raw native response must survive in the journal')
+   f.clock:Advance(1000)
+   op=f.r.session.operations:GetView()
+   assert(f.r.operationWindow.rows[op.index].body:GetText():find('retry in 2 s',1,true))
+   f.clock:Advance(1000)
+   assert(f.r.operationWindow.rows[op.index].body:GetText():find('retry in 1 s',1,true),'rendered countdown must decrease')
+   f.clock:Advance(2000)
+   assert(not f.r.session.operations:GetView() and f.appearance[1]==target and f.appearance[2]==(target==0 and 0 or 202))
+   assert(#requests==4,'one successful first change, two cooldown refusals, then successful second change')
+  end,debug.traceback)
+  if f.Cleanup then f:Cleanup()end;assert(ok,err)
+ end
+end
 return tests

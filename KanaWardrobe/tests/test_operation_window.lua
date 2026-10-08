@@ -15,6 +15,16 @@ local function create(fn)
  end)
 end
 return {
+ appearance_wait_displays_remaining_cooldown_in_current_step=function()create(function(f,w,x)
+  x.view.status='running';x.view.steps[2]={kind='appearance',status='running',details={beforeName='Old',targetName='New'},pending={phase='cooldown',remainingMs=2300}}
+  w:Refresh(x.view)
+  assert(w.rows[2].body:GetText():find('3 s',1,true) and w.rows[2].body:GetText():find('cooldown',1,true))
+  x.view.status='paused';x.view.steps[2].status='pending';w:Refresh(x.view)
+  assert(not w.rows[2].body:GetText():find('3 s',1,true),'paused timer must not display a stale countdown')
+  x.view.status='running';x.view.steps[2].status='running'
+  x.view.steps[2].pending={phase='waiting',sent=true};w:Refresh(x.view)
+  assert(not w.rows[2].body:GetText():find('cooldown',1,true))
+ end)end,
  native_button_api_allows_complete_window_layout=function()create(function(f,w,x)
   assert(w.report.GetText==nil,'fixture must not invent a ButtonControl getter')
   assert(w.report:GetLabelControl():GetText()=='Copy report')

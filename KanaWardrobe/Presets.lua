@@ -57,7 +57,7 @@ end
 local function runtime(preset)
     if not preset then return nil end
     local result=KW.Copy(preset)
-    result.slots=result.equipment or {}
+    result.slots=result.equipment
     return result
 end
 function Repo:Get(id) return runtime(id==Presets.QUICK_ID and self.character.quickPreset or self.character.presets[id]) end
@@ -89,13 +89,13 @@ function Repo:NewDraft()
 end
 function Repo:SaveQuick(input)
     if type(input)~="table" then return nil,KW.Problem("invalidPreset") end
-    local legacy=input.equipment==nil and input.abilities==nil and input.attributes==nil and input.slots==nil
+    local legacy=input.equipment==nil and input.abilities==nil and input.attributes==nil and input.appearance==nil and input.slots==nil
     local build,problem=KW.BuildModel.Normalize(legacy and {slots=input} or input)
     if not build then return nil,problem end
     local old=self.character.quickPreset
     if (legacy or input.slots~=nil) and old then
         build.abilities=KW.Copy(old.abilities)
-        build.attributes=KW.Copy(old.attributes)
+        build.attributes=KW.Copy(old.attributes);build.appearance=KW.Copy(old.appearance)
     end
     if not KW.BuildModel.HasParts(build) then return nil,KW.Problem("invalidPreset") end
     build.id=Presets.QUICK_ID;build.name=KW.Text("QUICK_PRESET");build.revision=(old and old.revision or 0)+1
@@ -116,7 +116,7 @@ function Repo:Save(preset, expectedRevision)
     local stored,buildProblem=KW.BuildModel.Normalize(preset)
     if not stored then return nil,buildProblem end
     if preset.slots~=nil and old then
-        stored.abilities=KW.Copy(old.abilities);stored.attributes=KW.Copy(old.attributes)
+        stored.abilities=KW.Copy(old.abilities);stored.attributes=KW.Copy(old.attributes);stored.appearance=KW.Copy(old.appearance)
     end
     if not KW.BuildModel.HasParts(stored) then return nil,KW.Problem("invalidPreset") end
     stored.id=preset.id;stored.name=name;stored.revision=expectedRevision+1
@@ -128,7 +128,7 @@ function Repo:Save(preset, expectedRevision)
 end
 -- The private commit barrier runs after durable assignment and before public observers.
 function Repo:PatchComponent(id,component,patch,name,expectedRevision,onCommitted)
-    if component~="equipment" and component~="abilities" and component~="attributes" then return nil,KW.Problem("invalidComponent") end
+    if component~="equipment" and component~="abilities" and component~="attributes" and component~="appearance" then return nil,KW.Problem("invalidComponent") end
     return self:PatchComponents(id,{[component]=patch},name,expectedRevision,onCommitted)
 end
 function Repo:PatchComponents(id,patches,name,expectedRevision,onCommitted)
@@ -138,7 +138,7 @@ function Repo:PatchComponents(id,patches,name,expectedRevision,onCommitted)
     if id==nil and expectedRevision~=nil or old and expectedRevision~=old.revision then return nil,KW.Problem("revisionConflict") end
     local candidate=old and KW.Copy(old) or {}
     for component,patch in pairs(patches)do
-        if component~="equipment" and component~="abilities" and component~="attributes" then return nil,KW.Problem("invalidComponent") end
+        if component~="equipment" and component~="abilities" and component~="attributes" and component~="appearance" then return nil,KW.Problem("invalidComponent") end
         if type(patch)~="table" or (patch.op~="replace" and patch.op~="remove") then return nil,KW.Problem("invalidComponentPatch") end
         if patch.op=="remove" then candidate[component]=nil
         else
