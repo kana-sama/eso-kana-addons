@@ -88,13 +88,14 @@ WORLD_MAP_INFO = { modeBar = { lastName = SI_MAP_INFO_MODE_LOCATIONS,
     Add = function(_, name, fragments, data)
     tabs[#tabs + 1] = { name = name, fragments = fragments, data = data }
 end }, SelectTab = function(self, name) self.modeBar.lastName = name end }
-local canTravel, done, travelled, highSeasActive = false, {}, nil, true
+local canTravel, done, permanent, travelled, highSeasActive = false, {}, {}, nil, true
 KanaSeasonOneTravel = {
     InitializeTracking = function() end,
     CanTravel = function() return canTravel end,
     Resolve = function(key) return key ~= "bilsa" and key or nil end,
     Travel = function(key) travelled = key end,
     IsDone = function(key) return done[key] == true end,
+    IsPermanentDone = function(key) return permanent[key] == true end,
     SetDone = function(key, checked) done[key] = checked end,
     IsHighSeasActive = function() return highSeasActive end,
 }
@@ -175,6 +176,11 @@ controls[prefix .. "arabelleRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIG
 assert(#menu == 1 and menu[1].label:find("Снять", 1, true), "Completed entry offers a clear action")
 menu[1].callback()
 assert(not done.arabelle, "The context menu must also clear a mark")
+permanent.arabelle, done.arabelle = true, true
+ClearMenu()
+controls[prefix .. "arabelleRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
+assert(#menu == 0, "A permanent 20/20 check must not offer a daily clear action")
+permanent.arabelle, done.arabelle = false, false
 controls[prefix .. "highseasRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
 assert(#menu == 1 and menu[1].label:find("Отметить", 1, true))
 menu[1].callback()

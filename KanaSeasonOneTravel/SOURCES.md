@@ -1,6 +1,15 @@
 # Season One travel and daily tracking
 
-## Data sources (checked 2026-10-05)
+## Data sources (checked 2026-10-08)
+
+- Bethesda Support confirms 20 Favors per client, tracked separately for each
+  character: https://help.bethesda.net/app/answers/detail/a_id/75308/
+- ESO UI API 101051 exposes each Lore Library mail list and its unlocked count:
+  `GetNumMailLists`, `GetMailListName`, `GetNumUnlockedMailsInMailList`, plus
+  `EVENT_MAIL_LISTS_INITIALIZED` and `EVENT_MAIL_LISTS_UPDATED`:
+  https://github.com/esoui/esoui/blob/live/ESOUIDocumentation.txt
+  The native Lore Library displays these counts under Correspondence:
+  https://github.com/esoui/esoui/blob/live/esoui/ingame/lorelibrary/keyboard/lorelibrary_keyboard.lua
 
 - Official Update 50 patch notes: new Thieves Den in Daggerfall:
   https://forums.elderscrollsonline.com/en/discussion/693682
@@ -43,7 +52,7 @@
 
 ## Tracking limits and live acceptance
 
-Version 1.3.0 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
+Version 1.3.1 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
 That supplies the same name/location anchors, font, and 60-unit row spacing
 as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels.
 A standalone check icon appears to the left of the name for entries completed
@@ -61,6 +70,15 @@ hour and the game API does not expose a reliable current-event flag.
 Completion is stored by character ID and server. Completion marks can be corrected
 manually, including completions before installation. There is no retrospective
 completion timestamp in the quest-history API.
+
+For each Freerunner client, an unlocked Correspondence count of 20 or more
+promotes the character's mark to permanent. This catches Favors completed before
+installation, provided the game's mail lists have initialized. The addon rescans
+on mail-list initialization, updates, and player activation. Daily reset and
+right-click correction cannot clear a confirmed 20/20 mark. Mail-list titles are
+matched by the client's name in English or Russian; live testing is needed to
+confirm the localized list titles and the exact moment the twentieth letter is
+added.
 
 Favor checks follow actual quest removal with `isCompleted=true`, using the
 cached starting zone rather than the player's current location. Abandonment and
@@ -101,3 +119,5 @@ Lua tests use mocked ESO callbacks. In-game validation is still required for:
 6. Checks expire at the next server daily reset.
 7. The High Seas row disappears after the event, and its daily check appears
    after turning in the quest on both English and Russian clients.
+8. A character with 20/20 Correspondence for one client keeps that client's
+   check after daily reset and reload; an alternate character does not inherit it.

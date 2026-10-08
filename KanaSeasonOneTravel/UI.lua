@@ -19,6 +19,7 @@ local labels = {
         },
         mark = "Mark completed today", clear = "Clear today's checkmark",
         edit = "Right-click to change today's checkmark.",
+        permanent = "All 20 favors completed on this character.",
         travel = "Travel to the wayshrine near this activity.",
         shrine = "Open the map at a wayshrine to travel.",
         unknown = "The destination wayshrine is undiscovered or unavailable.",
@@ -37,6 +38,7 @@ local labels = {
         },
         mark = "Отметить за сегодня", clear = "Снять сегодняшнюю отметку",
         edit = "Правая кнопка: изменить сегодняшнюю отметку.",
+        permanent = "Все 20 просьб выполнены этим персонажем.",
         travel = "Переместиться к святилищу рядом с этим пунктом.",
         shrine = "Для перемещения открой карту через святилище.",
         unknown = "Святилище назначения не открыто или недоступно.",
@@ -87,6 +89,7 @@ local function MakeLabel(name, parent, text, x, y, width, height, font)
 end
 
 local function ShowCompletionMenu(control, key)
+    if addon.IsPermanentDone(key) then return end
     ClearMenu()
     AddMenuItem(addon.IsDone(key) and locale.clear or locale.mark,
         function() addon.SetDone(key, not addon.IsDone(key)) end)
@@ -118,7 +121,8 @@ local function Initialize()
                 if row.name.enabled then ZO_SelectableLabel_OnMouseEnter(row.name) end
                 local travelHint = not row.available and locale.unknown
                     or (addon.CanTravel() and locale.travel or locale.shrine)
-                Tooltip(control, travelHint .. (daily[key] and "\n" .. locale.edit or ""))
+                local completionHint = daily[key] and (addon.IsPermanentDone(key) and locale.permanent or locale.edit)
+                Tooltip(control, travelHint .. (completionHint and "\n" .. completionHint or ""))
             end)
             control:SetHandler("OnMouseExit", function()
                 ZO_SelectableLabel_OnMouseExit(row.name)

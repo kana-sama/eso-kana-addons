@@ -4,6 +4,7 @@ local zone, x, y, z = 381, 10000, 10000, 10000
 local target, targetType = "Reward Chest", 1
 local participating, step = 98, 35
 local journal = {}
+local mailLists = {}
 local handlers, updates = {}, {}
 EVENT_MANAGER = {
     RegisterForEvent = function(_, _, event, fn) handlers[event] = fn end,
@@ -12,7 +13,8 @@ EVENT_MANAGER = {
 }
 local events = { "PLAYER_ACTIVATED", "PLAYER_DEACTIVATED", "QUEST_ADDED", "QUEST_REMOVED",
     "WORLD_EVENT_PARTICIPATION_BEGIN", "WORLD_EVENT_STEP_CHANGED", "WORLD_EVENT_DEACTIVATED",
-    "WORLD_EVENT_ACTIVATED", "WORLD_EVENT_STEP_PROGRESS_CHANGED", "LOOT_UPDATED", "LOOT_RECEIVED", "LOOT_CLOSED" }
+    "WORLD_EVENT_ACTIVATED", "WORLD_EVENT_STEP_PROGRESS_CHANGED", "LOOT_UPDATED", "LOOT_RECEIVED", "LOOT_CLOSED",
+    "MAIL_LISTS_INITIALIZED", "MAIL_LISTS_UPDATED" }
 for _, event in ipairs(events) do _G["EVENT_" .. event] = event end
 QUEST_TYPE_FAVOR, MAX_JOURNAL_QUESTS = 20, 25
 TIMED_ACTIVITY_TYPE_DAILY = 1
@@ -35,6 +37,9 @@ function GetJournalQuestStartingZone(i) return journal[i].origin end
 function GetQuestType(id)
     for _, q in pairs(journal) do if q.id == id then return q.kind end end
 end
+function GetNumMailLists() return #mailLists end
+function GetMailListName(index) return mailLists[index].name end
+function GetNumUnlockedMailsInMailList(index) return mailLists[index].count, mailLists[index].maximum end
 local saved = { completed = {}, favors = {} }
 ZO_SavedVars = { NewCharacterIdSettings = function() return saved end }
 dofile("../Core.lua")
@@ -197,4 +202,39 @@ fire("LOOT_RECEIVED", "player", "Shard", 1, 0, 0, true, false, "", 225219, false
 assert(not addon.IsDone("vampire"), "The reward item without final encounter context must not mark completion")
 fire("PLAYER_DEACTIVATED")
 assert(not next(updates), "Stop participation sampling on loading screens")
+
+-- Mail-list counts are per character and include favors completed before this
+-- addon was installed. A completed 20-favor chain must outlive daily resets.
+mailLists = {
+    { name = "Battlereeve Urcelmo", count = 20, maximum = 20 },
+    { name = "Holgunn One-Eye", count = 19, maximum = 20 },
+    { name = "Lady Arabelle Davaux", count = 0, maximum = 20 },
+}
+saved = { completed = {}, favors = {} }
+addon.InitializeTracking()
+assert(addon.IsDone("urcelmo") and addon.IsPermanentDone("urcelmo"),
+    "Existing 20/20 favors must immediately show a permanent check")
+assert(not addon.IsDone("holgunn") and not addon.IsPermanentDone("holgunn"),
+    "19/20 favors must not be permanent")
+addon.SetDone("holgunn", true)
+now = now + 86400
+assert(not addon.IsDone("holgunn"), "A 19/20 daily check still expires")
+addon.SetDone("urcelmo", false)
+assert(addon.IsDone("urcelmo"), "Clearing today's mark and daily reset cannot erase 20/20")
+mailLists[2].count = 20
+fire("MAIL_LISTS_UPDATED")
+assert(addon.IsPermanentDone("holgunn"), "The twentieth letter promotes the mark")
+addon.InitializeTracking()
+assert(addon.IsDone("holgunn"), "The permanent mark survives reload")
+mailLists = {}
+addon.InitializeTracking()
+assert(addon.IsPermanentDone("holgunn"), "Saved 20/20 survives delayed mail-list initialization")
+mailLists = { { name = "Леди Арабелла Дево", count = 20, maximum = 20 } }
+fire("MAIL_LISTS_INITIALIZED")
+assert(addon.IsPermanentDone("arabelle"), "Match a localized character mail list")
+saved = { completed = {}, favors = {} }
+mailLists = { { name = "Холгун Одноглазый", count = 3, maximum = 20 } }
+addon.InitializeTracking()
+assert(not addon.IsPermanentDone("urcelmo") and not addon.IsPermanentDone("holgunn")
+    and not addon.IsPermanentDone("arabelle"), "Another character starts with its own progress")
 print("KanaSeasonOneTravel: daily completion checks passed")

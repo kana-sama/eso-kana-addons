@@ -2,6 +2,11 @@ local addon = KanaSeasonOneTravel
 local saved, lootKey
 local scanName = "KanaSeasonOneTravelParticipation"
 local favorZones = { [381] = "urcelmo", [41] = "holgunn", [3] = "arabelle" }
+local favorMailNames = {
+    urcelmo = { "urcelmo", "урсельмо", "Урсельмо" },
+    holgunn = { "holgunn", "холгун", "Холгун" },
+    arabelle = { "arabelle", "арабелл", "Арабелл" },
+}
 -- English client name and the current Russian localization of the daily quest.
 local highSeasDailyNames = { ["Bounty of the Abecean Sea"] = true,
     ["Дары Абесинского моря"] = true }
@@ -44,7 +49,31 @@ local function NextReset()
     return math.floor((now - offset) / 86400) * 86400 + offset + 86400
 end
 
+local function RefreshPermanentFavors()
+    local changed = false
+    for index = 1, GetNumMailLists() do
+        local name = zo_strlower(GetMailListName(index) or "")
+        local count = GetNumUnlockedMailsInMailList(index)
+        if count and count >= 20 then
+            for key, aliases in pairs(favorMailNames) do
+                for _, alias in ipairs(aliases) do
+                    if name:find(alias, 1, true) and not saved.permanent[key] then
+                        saved.permanent[key] = true
+                        changed = true
+                    end
+                end
+            end
+        end
+    end
+    if changed then Refresh() end
+end
+
+function addon.IsPermanentDone(key)
+    return saved.permanent[key] == true
+end
+
 function addon.IsDone(key)
+    if addon.IsPermanentDone(key) then return true end
     local expiry = saved.completed[key]
     return type(expiry) == "number" and expiry > GetTimeStamp()
 end
@@ -197,7 +226,8 @@ end
 
 function addon.InitializeTracking()
     saved = ZO_SavedVars:NewCharacterIdSettings("KanaSeasonOneTravelSaved", 1, nil,
-        { completed = {}, favors = {}, diagnostics = {}, rewardChestNames = {} }, GetWorldName())
+        { completed = {}, permanent = {}, favors = {}, diagnostics = {}, rewardChestNames = {} }, GetWorldName())
+    saved.permanent = saved.permanent or {}
     saved.rewardChestNames = saved.rewardChestNames or {}
     saved.diagnostics = saved.diagnostics or {}
     lootKey = nil
@@ -206,6 +236,8 @@ function addon.InitializeTracking()
     end
     Register(EVENT_QUEST_ADDED, function(_, index) RememberFavor(index) end)
     Register(EVENT_QUEST_REMOVED, QuestRemoved)
+    Register(EVENT_MAIL_LISTS_INITIALIZED, RefreshPermanentFavors)
+    Register(EVENT_MAIL_LISTS_UPDATED, RefreshPermanentFavors)
     Register(EVENT_WORLD_EVENT_PARTICIPATION_BEGIN, function(event, instance, step)
         Trace("participation-begin", string.format("instance=%s step=%s", tostring(instance), tostring(step)))
         Participation(event, instance, step)
@@ -227,6 +259,7 @@ function addon.InitializeTracking()
     end)
     Register(EVENT_PLAYER_ACTIVATED, function()
         ScanJournal()
+        RefreshPermanentFavors()
         local context = saved.encounter
         if context and (context.expires <= GetTimeStamp() or not NearEncounter(context)) then
             saved.encounter = nil
@@ -251,4 +284,5 @@ function addon.InitializeTracking()
         end
     end
     ScanJournal()
+    RefreshPermanentFavors()
 end
