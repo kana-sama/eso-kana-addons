@@ -14,7 +14,7 @@ EVENT_MANAGER = {
 local events = { "PLAYER_ACTIVATED", "PLAYER_DEACTIVATED", "QUEST_ADDED", "QUEST_REMOVED",
     "WORLD_EVENT_PARTICIPATION_BEGIN", "WORLD_EVENT_STEP_CHANGED", "WORLD_EVENT_DEACTIVATED",
     "WORLD_EVENT_ACTIVATED", "WORLD_EVENT_STEP_PROGRESS_CHANGED", "LOOT_UPDATED", "LOOT_RECEIVED", "LOOT_CLOSED",
-    "MAIL_LISTS_INITIALIZED", "MAIL_LISTS_UPDATED" }
+    "MAIL_LISTS_INITIALIZED", "MAIL_LISTS_UPDATED", "ACHIEVEMENT_AWARDED", "ACHIEVEMENTS_UPDATED" }
 for _, event in ipairs(events) do _G["EVENT_" .. event] = event end
 QUEST_TYPE_FAVOR, MAX_JOURNAL_QUESTS = 20, 25
 TIMED_ACTIVITY_TYPE_DAILY = 1
@@ -40,6 +40,15 @@ end
 function GetNumMailLists() return #mailLists end
 function GetMailListName(index) return mailLists[index].name end
 function GetNumUnlockedMailsInMailList(index) return mailLists[index].count, mailLists[index].maximum end
+local achievementsComplete = {}
+function GetNumAchievementCategories() return 1 end
+function GetAchievementCategoryInfo() return "Recent Seasons", 0, 2 end
+function GetAchievementId(_, _, index) return index == 1 and 5001 or 5002 end
+function GetAchievementRewardCollectible(id) return id == 5002, id == 5002 and 900 or 0 end
+function GetCollectibleName(id) return id == 900 and "древний диреннский квазигриф" or "" end
+function GetAchievementInfo(id) return "Achievement", "", id == 5002 and 50 or 15 end
+function GetAchievementNumCriteria(id) return id == 5002 and 4 or 5 end
+function IsAchievementComplete(id) return achievementsComplete[id] == true end
 local saved = { completed = {}, favors = {} }
 ZO_SavedVars = { NewCharacterIdSettings = function() return saved end }
 dofile("../Core.lua")
@@ -49,6 +58,21 @@ dofile("../Tracking.lua")
 local addon = KanaSeasonOneTravel
 addon.InitializeTracking()
 local function fire(event, ...) handlers[event](event, ...) end
+
+-- The Vault check tracks the final secret-seal/barrier achievement, not the
+-- achievement for merely clearing every branch.
+achievementsComplete[5001] = true
+assert(not addon.IsDone("nowhere"), "Completing the branches must not mark the Vault")
+addon.SetDone("nowhere", true)
+assert(not addon.IsDone("nowhere"), "The final achievement cannot be marked manually")
+local achievementRefreshes = 0
+addon.Refresh = function() achievementRefreshes = achievementRefreshes + 1 end
+achievementsComplete[5002] = true
+fire("ACHIEVEMENT_AWARDED", "Heir to the Sage's Legacy", 50, 5002)
+assert(addon.IsDone("nowhere") and achievementRefreshes > 0,
+    "The final secrets achievement immediately shows the permanent check")
+addon.InitializeTracking()
+assert(addon.IsDone("nowhere"), "The earned achievement is still recognized after reload")
 local function loot(self)
     fire("LOOT_UPDATED")
     fire("LOOT_RECEIVED", "player", "item", 1, 0, 0, self, false, "", 123, false)

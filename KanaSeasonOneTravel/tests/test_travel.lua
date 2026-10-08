@@ -95,6 +95,7 @@ nodes = {
     { known = true, name = "Anvil Wayshrine", type = 1, zone = 55 },
 }
 assert(core.Resolve("thieves") == 1, "New Thieves Guild route reaches Daggerfall")
+assert(core.Resolve("nowhere") == 1, "Nowhere Vault entrance in the Thieves Den reaches Daggerfall")
 assert(core.Resolve("highseas") == 2, "High Seas route reaches Anvil on the Gold Coast")
 core.Travel("thieves")
 core.Travel("highseas")
@@ -104,6 +105,7 @@ nodes[1].name = "Дорожное святилище Даггерфолла"
 nodes[2].name = "Дорожное святилище Анвила"
 assert(core.Resolve("thieves") == 1 and core.Resolve("highseas") == 2,
     "New routes resolve in the Russian client")
+assert(core.Resolve("nowhere") == 1, "Vault route resolves in the Russian client")
 nodes[2].known = false
 assert(core.Resolve("highseas") == nil, "Undiscovered Anvil wayshrine stays unavailable")
 nodes[2].known = true

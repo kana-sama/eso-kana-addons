@@ -10,6 +10,37 @@ local favorMailNames = {
 -- English client name and the current Russian localization of the daily quest.
 local highSeasDailyNames = { ["Bounty of the Abecean Sea"] = true,
     ["Дары Абесинского моря"] = true }
+local vaultAchievementId
+
+-- The final secret achievement grants a Quasigriff and has four criteria and
+-- 50 points. Identify that combination across localized achievement names;
+-- Legend of the Nowhere Vault is the different room-completion achievement.
+local function FindVaultAchievement()
+    if vaultAchievementId then return end
+    for category = 1, GetNumAchievementCategories() do
+        local _, subcategoryCount, achievementCount = GetAchievementCategoryInfo(category)
+        for subcategory = 0, subcategoryCount do
+            local count = subcategory == 0 and achievementCount
+                or select(2, GetAchievementSubCategoryInfo(category, subcategory))
+            for index = 1, count do
+                local id = GetAchievementId(category, subcategory, index)
+                if id then
+                    local hasReward, collectibleId = GetAchievementRewardCollectible(id)
+                    if hasReward and collectibleId and collectibleId > 0 then
+                        local name = zo_strlower(GetCollectibleName(collectibleId) or "")
+                        local _, _, points = GetAchievementInfo(id)
+                        if points == 50 and GetAchievementNumCriteria(id) == 4
+                            and (name:find("quasigriff", 1, true)
+                                or name:find("квазигриф", 1, true)) then
+                            vaultAchievementId = id
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
 
 -- Observed U50 parent instances and final participation steps; see SOURCES.md.
 -- Deactivation alone is not completion: the player must subsequently take loot.
@@ -73,13 +104,16 @@ function addon.IsPermanentDone(key)
 end
 
 function addon.IsDone(key)
+    if key == "nowhere" then
+        return vaultAchievementId ~= nil and IsAchievementComplete(vaultAchievementId)
+    end
     if addon.IsPermanentDone(key) then return true end
     local expiry = saved.completed[key]
     return type(expiry) == "number" and expiry > GetTimeStamp()
 end
 
 function addon.SetDone(key, complete)
-    if not addon.destinations[key] then return end
+    if key == "nowhere" or not addon.destinations[key] then return end
     saved.completed[key] = complete and NextReset() or nil
     Refresh()
 end
@@ -231,6 +265,7 @@ function addon.InitializeTracking()
     saved.rewardChestNames = saved.rewardChestNames or {}
     saved.diagnostics = saved.diagnostics or {}
     lootKey = nil
+    FindVaultAchievement()
     local function Register(event, callback)
         EVENT_MANAGER:RegisterForEvent("KanaSeasonOneTravelTracking", event, callback)
     end
@@ -238,6 +273,14 @@ function addon.InitializeTracking()
     Register(EVENT_QUEST_REMOVED, QuestRemoved)
     Register(EVENT_MAIL_LISTS_INITIALIZED, RefreshPermanentFavors)
     Register(EVENT_MAIL_LISTS_UPDATED, RefreshPermanentFavors)
+    Register(EVENT_ACHIEVEMENTS_UPDATED, function()
+        FindVaultAchievement()
+        Refresh()
+    end)
+    Register(EVENT_ACHIEVEMENT_AWARDED, function(_, _, _, id)
+        if not vaultAchievementId then FindVaultAchievement() end
+        if id == vaultAchievementId then Refresh() end
+    end)
     Register(EVENT_WORLD_EVENT_PARTICIPATION_BEGIN, function(event, instance, step)
         Trace("participation-begin", string.format("instance=%s step=%s", tostring(instance), tostring(step)))
         Participation(event, instance, step)

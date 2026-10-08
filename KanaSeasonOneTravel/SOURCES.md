@@ -14,6 +14,15 @@
 - Official Update 50 patch notes: new Thieves Den in Daggerfall:
   https://forums.elderscrollsonline.com/en/discussion/693682
   The map row travels to the Daggerfall wayshrine, not through the Den entrance.
+- Official Update 51 PTS notes tie the Ancient Direnni Quasigriff to
+  "Heir to the Sage's Legacy":
+  https://forums.elderscrollsonline.com/en-gb/discussion/697154/pts-patch-notes-v12-1-0
+  ESO-Hub lists its three secret wing seals and final barrier criterion, in
+  contrast to "Legend of the Nowhere Vault" for clearing rooms and stashes:
+  https://eso-hub.com/en/achievements/heir-to-the-sages-legacy
+  https://eso-hub.com/en/achievements/legend-of-the-nowhere-vault
+  The Vault entrance is in Daggerfall's Thieves Den; the tab travels to the
+  Daggerfall wayshrine, not directly into the Vault.
 - Official High Seas event dates (September 30–October 14, 2026):
   https://www.elderscrollsonline.com/en-gb/events/2923
 - Official community manager: the event starts on the Gold Coast shore by Anvil;
@@ -52,9 +61,10 @@
 
 ## Tracking limits and live acceptance
 
-Version 1.3.1 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
+Version 1.4.0 uses ESO's `ZO_WorldMapHouseRow` template for the nine map entries.
 That supplies the same name/location anchors, font, and 60-unit row spacing
-as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels.
+as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels
+in a native `ZO_ScrollContainer` so the ninth row remains reachable.
 A standalone check icon appears to the left of the name for entries completed
 today. Left-click travels when the map was opened at a wayshrine; right-click
 opens the native menu to correct the mark. Actual rendering and interaction
@@ -66,6 +76,13 @@ correct a missed check manually. The permanent Thieves Guild row has no check.
 The High Seas row is shown only between the announced dates; the code assumes
 10:00 EDT (14:00 UTC) for event start/end because the official dates omit an
 hour and the game API does not expose a reliable current-event flag.
+
+The Nowhere Vault row has a permanent account achievement check. It scans the
+client's achievement catalog for the 50-point, four-criterion achievement
+awarding a Quasigriff, then reads `IsAchievementComplete`; "Legend of the
+Nowhere Vault" cannot set it. The achievement's numeric ID and Russian reward
+name were not available in published API data, so live `/reloadui` verification
+on a Russian client is needed. The row has no manual completion override.
 
 Completion is stored by character ID and server. Completion marks can be corrected
 manually, including completions before installation. There is no retrospective
@@ -111,7 +128,8 @@ reconstructed: 1.1.0 had no diagnostic log. Live confirmation is still needed.
 Lua tests use mocked ESO callbacks. In-game validation is still required for:
 
 1. `/reloadui`, map opened at a wayshrine, right-side trophy tab "Season 1".
-2. All three groups fit; the eight discovered wayshrines can be selected.
+2. All three groups scroll without changing native row spacing; the nine
+   discovered wayshrines can be selected.
 3. Ordinary map allows viewing/correcting checks, but no paid recall.
 4. Final chest name and auto-loot event order on the current client; verify
    each encounter, and verify intermediate chests do not set the check.
@@ -121,3 +139,6 @@ Lua tests use mocked ESO callbacks. In-game validation is still required for:
    after turning in the quest on both English and Russian clients.
 8. A character with 20/20 Correspondence for one client keeps that client's
    check after daily reset and reload; an alternate character does not inherit it.
+9. The Nowhere Vault check appears only after "Heir to the Sage's Legacy", both
+   immediately when awarded and after `/reloadui`; "Legend of the Nowhere Vault"
+   alone leaves it clear.

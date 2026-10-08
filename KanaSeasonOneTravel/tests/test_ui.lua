@@ -3,6 +3,7 @@ local controls, events, updates = {}, {}, {}
 local Control = {}
 Control.__index = Control
 function Control:SetDimensions(w, h) self.width, self.height = w, h end
+function Control:SetHeight(h) self.height = h end
 function Control:SetAnchor(...) self.anchor = { ... } end
 function Control:SetFont(font) self.font = font end
 function Control:SetText(text) self.text = text end
@@ -31,6 +32,9 @@ function WINDOW_MANAGER:CreateControlFromVirtual(name, parent, template)
     local control = self:CreateControl(name, parent)
     control.template = template
     if template == "ZO_WorldMapInfoContent" then control.hidden = true end
+    if template == "ZO_ScrollContainer" then
+        self:CreateControl(name .. "ScrollChild", control, CT_CONTROL)
+    end
     if template == "ZO_WorldMapHouseRow" then
         local nameLabel = self:CreateControl(name .. "Name", control, CT_LABEL)
         nameLabel:SetAnchor(TOPLEFT, control, TOPLEFT, 20, 0)
@@ -60,7 +64,7 @@ function ZO_SelectableLabel_OnMouseEnter(label) label.hover = true end
 function ZO_SelectableLabel_OnMouseExit(label) label.hover = false end
 function zo_callLater(fn) fn() end
 GuiRoot = {}
-CT_LABEL, CT_CONTROL, TOPLEFT, RIGHT, LEFT, CT_BUTTON, TOPRIGHT, CT_TEXTURE, BOTTOMLEFT = 1, 2, 3, 4, 5, 6, 7, 8, 9
+CT_LABEL, CT_CONTROL, TOPLEFT, RIGHT, LEFT, CT_BUTTON, TOPRIGHT, CT_TEXTURE, BOTTOMLEFT, BOTTOMRIGHT = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 MOUSE_BUTTON_INDEX_LEFT, MOUSE_BUTTON_INDEX_RIGHT = 1, 2
 TRISTATE_CHECK_BUTTON_CHECKED = 1
 MODIFY_TEXT_TYPE_UPPERCASE = 2
@@ -114,8 +118,12 @@ for name, control in pairs(controls) do
     assert(control.template ~= "ZO_ReadOnlyCheckBox", "Completion icon must have no checkbox frame")
     if name:find("Row$") and control.template == "ZO_WorldMapHouseRow" then nativeRows = nativeRows + 1 end
 end
-assert(count == 7 and nativeRows == 8, "Daily items have checks and all entries use native house rows")
+assert(count == 8 and nativeRows == 9, "Daily items and the Vault have checks and all entries use native house rows")
 assert(not controls[prefix .. "thievesCheck"], "The permanent Thieves Guild has no daily check")
+assert(controls[prefix .. "nowhereCheck"], "The Vault has an achievement check")
+assert(controls[prefix .. "Scroll"].template == "ZO_ScrollContainer"
+    and controls[prefix .. "nowhereRow"].parent == controls[prefix .. "ScrollScrollChild"],
+    "The ninth row stays reachable through native scrolling")
 local farmCheck = controls[prefix .. "farmCheck"]
 local farmName = controls[prefix .. "farmRowName"]
 assert(controls[prefix .. "farmRow"].mouseEnabled and not farmName.mouseEnabled,
@@ -188,6 +196,12 @@ assert(done.highseas, "High Seas allows manual completion correction")
 ClearMenu()
 controls[prefix .. "thievesRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
 assert(#menu == 0 and done.highseas, "The Thieves Guild cannot change completion")
+ClearMenu()
+controls[prefix .. "nowhereRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
+assert(#menu == 0, "The Vault achievement cannot be changed manually")
+done.nowhere = true
+addon.Refresh()
+assert(not controls[prefix .. "nowhereCheck"].hidden, "The earned Vault achievement shows a check")
 controls[prefix .. "arabelleRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
 menu[1].callback()
 addon.fragment.onState(nil, SCENE_FRAGMENT_SHOWING)
@@ -201,8 +215,9 @@ highSeasActive = false
 updates[prefix .. "DailyReset"]()
 assert(controls[prefix .. "highseasRow"].hidden and not controls[prefix .. "highseasRowName"].enabled,
     "Hide and disable High Seas when the event ends with the tab open")
-assert(controls[prefix .. "highseasRow"].anchor[5] + controls[prefix .. "highseasRow"].height < 595,
-    "All rows and categories must fit in the native map panel")
+assert(controls[prefix .. "ScrollScrollChild"].height >=
+    controls[prefix .. "nowhereRow"].anchor[5] + controls[prefix .. "nowhereRow"].height,
+    "The scrollable content contains the entire final row")
 addon.fragment.onState(nil, SCENE_FRAGMENT_HIDDEN)
 assert(not updates[prefix .. "DailyReset"], "Stop UI updates when tab hidden")
 -- The native fast-travel handler always forces Locations before this addon's

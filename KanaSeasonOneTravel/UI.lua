@@ -1,7 +1,7 @@
 local addon = KanaSeasonOneTravel
 local addonName = "KanaSeasonOneTravel"
 local groups = { { "farm", "bilsa", "vampire" }, { "urcelmo", "holgunn", "arabelle" },
-    { "thieves", "highseas" } }
+    { "thieves", "nowhere", "highseas" } }
 local daily = { farm = true, bilsa = true, vampire = true,
     urcelmo = true, holgunn = true, arabelle = true, highseas = true }
 local labels = {
@@ -10,16 +10,17 @@ local labels = {
         names = {
             farm = "Farm Aflame", bilsa = "Bilsa's Delivery", vampire = "Vampire Hunt",
             urcelmo = "Battlereeve Urcelmo", holgunn = "Holgunn One-Eye", arabelle = "Lady Arabelle Davaux",
-            thieves = "New Thieves Guild", highseas = "High Seas of Tamriel",
+            thieves = "New Thieves Guild", nowhere = "The Nowhere Vault", highseas = "High Seas of Tamriel",
         },
         locations = {
             farm = "Auridon", bilsa = "Stonefalls", vampire = "Glenumbra",
             urcelmo = "Skywatch", holgunn = "Ebonheart", arabelle = "Aldcroft",
-            thieves = "Daggerfall", highseas = "Anvil",
+            thieves = "Daggerfall", nowhere = "Daggerfall", highseas = "Anvil",
         },
         mark = "Mark completed today", clear = "Clear today's checkmark",
         edit = "Right-click to change today's checkmark.",
         permanent = "All 20 favors completed on this character.",
+        vault = "Checkmark: Heir to the Sage's Legacy achievement.",
         travel = "Travel to the wayshrine near this activity.",
         shrine = "Open the map at a wayshrine to travel.",
         unknown = "The destination wayshrine is undiscovered or unavailable.",
@@ -29,22 +30,23 @@ local labels = {
         names = {
             farm = "Пожар на ферме", bilsa = "Доставка Бильсы", vampire = "Охота на вампира",
             urcelmo = "Урсельмо", holgunn = "Холгун", arabelle = "Арабелла",
-            thieves = "Новая Гильдия воров", highseas = "Бескрайние моря Тамриэля",
+            thieves = "Новая Гильдия воров", nowhere = "Хранилище Ненайти", highseas = "Бескрайние моря Тамриэля",
         },
         locations = {
             farm = "Ауридон", bilsa = "Стоунфолз", vampire = "Гленумбра",
             urcelmo = "Скайвотч", holgunn = "Эбонхарт", arabelle = "Альдкрофт",
-            thieves = "Даггерфолл", highseas = "Анвиль",
+            thieves = "Даггерфолл", nowhere = "Даггерфолл", highseas = "Анвиль",
         },
         mark = "Отметить за сегодня", clear = "Снять сегодняшнюю отметку",
         edit = "Правая кнопка: изменить сегодняшнюю отметку.",
         permanent = "Все 20 просьб выполнены этим персонажем.",
+        vault = "Галочка: финальное достижение за все секреты Хранилища Ненайти.",
         travel = "Переместиться к святилищу рядом с этим пунктом.",
         shrine = "Для перемещения открой карту через святилище.",
         unknown = "Святилище назначения не открыто или недоступно.",
     },
 }
-local panel, fragment, locale
+local panel, fragment, locale, scrollChild, contentHeight
 local rows = {}
 local reopenSeasonTab, shrineMapOpen = false, false
 
@@ -58,6 +60,7 @@ local function RefreshChecks()
         row.button:SetHidden(not active)
         row.name:SetEnabled(active and row.available)
         row.location:SetColor(((active and row.available) and ZO_SELECTED_TEXT or ZO_DISABLED_TEXT):UnpackRGBA())
+        scrollChild:SetHeight(active and contentHeight or contentHeight - 60)
     end
 end
 
@@ -103,25 +106,30 @@ local function Initialize()
     panel = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. "Panel", GuiRoot, "ZO_WorldMapInfoContent")
     fragment = ZO_FadeSceneFragment:New(panel)
     addon.fragment = fragment
+    local scroll = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. "Scroll", panel, "ZO_ScrollContainer")
+    scroll:SetAnchor(TOPLEFT, panel, TOPLEFT, 0, 0)
+    scroll:SetAnchor(BOTTOMRIGHT, panel, BOTTOMRIGHT, 0, 0)
+    scrollChild = scroll:GetNamedChild("ScrollChild")
 
     local y = 0
     for groupIndex, group in ipairs(groups) do
-        local header = MakeLabel("Heading" .. groupIndex, panel, locale.groups[groupIndex],
+        local header = MakeLabel("Heading" .. groupIndex, scrollChild, locale.groups[groupIndex],
             20, y, 290, 32, "ZoFontHeader2")
         header:SetColor(ZO_SELECTED_TEXT:UnpackRGBA())
         header:SetModifyTextType(MODIFY_TEXT_TYPE_UPPERCASE)
         y = y + 32
         for _, key in ipairs(group) do
             local row = {}
-            local control = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. key .. "Row", panel, "ZO_WorldMapHouseRow")
+            local control = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. key .. "Row", scrollChild, "ZO_WorldMapHouseRow")
             control:SetDimensions(310, 60)
-            control:SetAnchor(TOPLEFT, panel, TOPLEFT, 20, y)
+            control:SetAnchor(TOPLEFT, scrollChild, TOPLEFT, 20, y)
             control:SetMouseEnabled(true)
             control:SetHandler("OnMouseEnter", function()
                 if row.name.enabled then ZO_SelectableLabel_OnMouseEnter(row.name) end
                 local travelHint = not row.available and locale.unknown
                     or (addon.CanTravel() and locale.travel or locale.shrine)
-                local completionHint = daily[key] and (addon.IsPermanentDone(key) and locale.permanent or locale.edit)
+                local completionHint = key == "nowhere" and locale.vault
+                    or (daily[key] and (addon.IsPermanentDone(key) and locale.permanent or locale.edit))
                 Tooltip(control, travelHint .. (completionHint and "\n" .. completionHint or ""))
             end)
             control:SetHandler("OnMouseExit", function()
@@ -143,7 +151,7 @@ local function Initialize()
             location:SetText(locale.locations[key])
             location:SetMouseEnabled(false)
             local check
-            if daily[key] then
+            if daily[key] or key == "nowhere" then
                 check = WINDOW_MANAGER:CreateControl(addonName .. key .. "Check", control, CT_TEXTURE)
                 check:SetDimensions(20, 20)
                 check:SetAnchor(TOPLEFT, control, TOPLEFT, -2, 0)
@@ -156,6 +164,8 @@ local function Initialize()
             y = y + 60
         end
     end
+    contentHeight = y
+    scrollChild:SetHeight(contentHeight)
 
     WORLD_MAP_INFO.modeBar:Add(SI_KANA_SEASON_ONE_TAB, { fragment }, {
         normal = "EsoUI/Art/Journal/journal_tabIcon_achievements_up.dds",
