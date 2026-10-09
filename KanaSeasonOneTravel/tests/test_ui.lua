@@ -31,7 +31,10 @@ end
 function WINDOW_MANAGER:CreateControlFromVirtual(name, parent, template)
     local control = self:CreateControl(name, parent)
     control.template = template
-    if template == "ZO_WorldMapInfoContent" then control.hidden = true end
+    if template == "ZO_WorldMapInfoContent" then
+        control.hidden = true
+        control.height = 420 -- Simulate a shorter map panel.
+    end
     if template == "ZO_ScrollContainer" then
         self:CreateControl(name .. "ScrollChild", control, CT_CONTROL)
     end
@@ -121,8 +124,11 @@ end
 assert(count == 8 and nativeRows == 8, "The Vault replaces the duplicate Thieves Guild row")
 assert(not controls[prefix .. "thievesRow"], "Do not show a second Daggerfall destination")
 assert(controls[prefix .. "nowhereCheck"], "The Vault has an achievement check")
-assert(controls[prefix .. "nowhereRow"].parent == controls[prefix .. "Panel"],
-    "Eight native rows fit directly in the map panel")
+assert(controls[prefix .. "Scroll"].template == "ZO_ScrollContainer"
+    and controls[prefix .. "nowhereRow"].parent == controls[prefix .. "ScrollScrollChild"],
+    "Keep the eight rows in the native scroll container")
+assert(controls[prefix .. "ScrollScrollChild"].height > controls[prefix .. "Panel"].height,
+    "A shorter map panel can scroll to the last row")
 local farmCheck = controls[prefix .. "farmCheck"]
 local farmName = controls[prefix .. "farmRowName"]
 assert(controls[prefix .. "farmRow"].mouseEnabled and not farmName.mouseEnabled,
@@ -211,8 +217,9 @@ highSeasActive = false
 updates[prefix .. "DailyReset"]()
 assert(controls[prefix .. "highseasRow"].hidden and not controls[prefix .. "highseasRowName"].enabled,
     "Hide and disable High Seas when the event ends with the tab open")
-assert(controls[prefix .. "highseasRow"].anchor[5] + controls[prefix .. "highseasRow"].height < 595,
-    "All eight rows fit in the native map panel")
+assert(controls[prefix .. "ScrollScrollChild"].height ==
+    controls[prefix .. "nowhereRow"].anchor[5] + controls[prefix .. "nowhereRow"].height,
+    "Hidden High Seas leaves the Vault as the final scrollable row")
 addon.fragment.onState(nil, SCENE_FRAGMENT_HIDDEN)
 assert(not updates[prefix .. "DailyReset"], "Stop UI updates when tab hidden")
 -- The native fast-travel handler always forces Locations before this addon's

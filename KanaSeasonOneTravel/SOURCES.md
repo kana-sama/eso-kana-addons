@@ -60,9 +60,10 @@
 
 ## Tracking limits and live acceptance
 
-Version 1.4.1 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
+Version 1.4.2 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
 That supplies the same name/location anchors, font, and 60-unit row spacing
-as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels.
+as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels
+inside a native `ZO_ScrollContainer`, so shorter map panels can reach every row.
 A standalone check icon appears to the left of the name for completed entries.
 Left-click travels when the map was opened at a wayshrine; right-click
 opens the native menu to correct the mark. Actual rendering and interaction
@@ -126,8 +127,8 @@ reconstructed: 1.1.0 had no diagnostic log. Live confirmation is still needed.
 Lua tests use mocked ESO callbacks. In-game validation is still required for:
 
 1. `/reloadui`, map opened at a wayshrine, right-side trophy tab "Season 1".
-2. All three groups fit without changing native row spacing; the eight
-   discovered wayshrines can be selected.
+2. All three groups retain native row spacing; the eight discovered wayshrines
+   can be selected, including when the map panel is shorter and must scroll.
 3. Ordinary map allows viewing/correcting checks, but no paid recall.
 4. Final chest name and auto-loot event order on the current client; verify
    each encounter, and verify intermediate chests do not set the check.

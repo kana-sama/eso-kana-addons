@@ -46,7 +46,7 @@ local labels = {
         unknown = "Святилище назначения не открыто или недоступно.",
     },
 }
-local panel, fragment, locale
+local panel, fragment, locale, scrollChild, contentHeight
 local rows = {}
 local reopenSeasonTab, shrineMapOpen = false, false
 
@@ -60,6 +60,7 @@ local function RefreshChecks()
         row.button:SetHidden(not active)
         row.name:SetEnabled(active and row.available)
         row.location:SetColor(((active and row.available) and ZO_SELECTED_TEXT or ZO_DISABLED_TEXT):UnpackRGBA())
+        scrollChild:SetHeight(active and contentHeight or contentHeight - 60)
     end
 end
 
@@ -105,18 +106,23 @@ local function Initialize()
     panel = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. "Panel", GuiRoot, "ZO_WorldMapInfoContent")
     fragment = ZO_FadeSceneFragment:New(panel)
     addon.fragment = fragment
+    local scroll = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. "Scroll", panel, "ZO_ScrollContainer")
+    scroll:SetAnchor(TOPLEFT, panel, TOPLEFT, 0, 0)
+    scroll:SetAnchor(BOTTOMRIGHT, panel, BOTTOMRIGHT, 0, 0)
+    scrollChild = scroll:GetNamedChild("ScrollChild")
+
     local y = 0
     for groupIndex, group in ipairs(groups) do
-        local header = MakeLabel("Heading" .. groupIndex, panel, locale.groups[groupIndex],
+        local header = MakeLabel("Heading" .. groupIndex, scrollChild, locale.groups[groupIndex],
             20, y, 290, 32, "ZoFontHeader2")
         header:SetColor(ZO_SELECTED_TEXT:UnpackRGBA())
         header:SetModifyTextType(MODIFY_TEXT_TYPE_UPPERCASE)
         y = y + 32
         for _, key in ipairs(group) do
             local row = {}
-            local control = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. key .. "Row", panel, "ZO_WorldMapHouseRow")
+            local control = WINDOW_MANAGER:CreateControlFromVirtual(addonName .. key .. "Row", scrollChild, "ZO_WorldMapHouseRow")
             control:SetDimensions(310, 60)
-            control:SetAnchor(TOPLEFT, panel, TOPLEFT, 20, y)
+            control:SetAnchor(TOPLEFT, scrollChild, TOPLEFT, 20, y)
             control:SetMouseEnabled(true)
             control:SetHandler("OnMouseEnter", function()
                 if row.name.enabled then ZO_SelectableLabel_OnMouseEnter(row.name) end
@@ -158,6 +164,9 @@ local function Initialize()
             y = y + 60
         end
     end
+    contentHeight = y
+    scrollChild:SetHeight(contentHeight)
+
     WORLD_MAP_INFO.modeBar:Add(SI_KANA_SEASON_ONE_TAB, { fragment }, {
         normal = "EsoUI/Art/Journal/journal_tabIcon_achievements_up.dds",
         pressed = "EsoUI/Art/Journal/journal_tabIcon_achievements_down.dds",
