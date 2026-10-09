@@ -1,4 +1,5 @@
 local Fake = dofile(ROOT .. "/tests/support/fake_eso.lua")
+local unpack=unpack or table.unpack
 local function setup()
     local KW = Fake.Load()
     local f=io.open(ROOT .. "/SetModel.lua", "r")
@@ -94,6 +95,16 @@ local function previewEnvironment(callback)
             local _,length=plain:gsub("[^\128-\191]","")
             return length*8
         end
+        function c:GetTextDimensions()
+            local width,height=0,0
+            for paragraph in ((self.text or '')..'\n'):gmatch('(.-)\n')do
+                local _,length=paragraph:gsub('[^\128-\191]','')
+                local natural=length*8
+                width=math.max(width,self.width>0 and math.min(self.width,natural) or natural)
+                height=height+(self.width>0 and math.max(1,math.ceil(natural/self.width)) or 1)*20
+            end
+            return width,height
+        end
         function c:GetRight() return self:GetLeft()+self:GetWidth() end
         function c:GetBottom() return self:GetTop()+self:GetHeight() end
         function c:GetLeft()
@@ -118,6 +129,7 @@ local function previewEnvironment(callback)
         function c:SetDrawLevel(value) self.level=value end
         for _,key in ipairs({"SetVertexColors","SetColor","SetCenterColor","SetEdgeColor","SetEdgeTexture",
             "SetResizeToFitDescendents","SetDrawTier","SetVerticalScroll","SetClampedToScreen"}) do c[key]=function() end end
+        function c:SetColor(...)self.color={...}end
         if kind==CT_CONTROL then c.SetColor=nil end
         return c
     end
@@ -130,7 +142,15 @@ local function previewEnvironment(callback)
         CreateControl=function(_,name,parent,kind) return control(name,parent,kind) end,
         CreateControlFromVirtual=function(_,name,parent,template)
             local c=control(name,parent)
-            if template=="ZO_ScrollContainer" then
+            if template=='TooltipTopLevel' then c.topLevel=true
+            elseif template=='ZO_BaseTooltip' then
+                c.constraints={100,0,800,0};c.lines={}
+                function c:GetOwner()return self.owner end
+                function c:GetDimensionConstraints()return unpack(self.constraints)end
+                function c:SetDimensionConstraints(...)self.constraints={...}end
+                function c:GetResizeToFitPadding()return 24,24 end
+                function c:AddControl(body)self.body=body end
+            elseif template=="ZO_ScrollContainer" then
                 local scroll=c:GetNamedChild("Scroll")
                 scroll:SetAnchor(TOPLEFT,c,TOPLEFT,0,0)
                 scroll:SetAnchor(BOTTOMRIGHT,c,BOTTOMRIGHT,-ZO_SCROLL_BAR_WIDTH,0)
@@ -560,6 +580,82 @@ return {
             assert(preview.control:IsHidden() and not preview.visible,'delayed UI Show reopened real native Close')
         end)
     end,
+    source_breakdown_owns_tooltip_and_fits_bold_columns_without_changing_shared_tooltips=function()
+        local KW=setup()
+        previewEnvironment(function(root,_,control,install)
+            local info=control('InformationTooltip',root);info.width=350
+            info.constraints={100,0,800,0}
+            function info:GetDimensionConstraints()return unpack(self.constraints)end
+            function info:SetDimensionConstraints(...)self.constraints={...}end
+            function info:GetResizeToFitPadding()return 24,24 end
+            function info:GetOwner()return self.owner end
+            function info:AddControl(body)self.body=body end
+            install('InformationTooltip',info)
+            install('InitializeTooltip',function(t,owner)
+                if t.handlers.OnCleared then t.handlers.OnCleared(t)end
+                t.owner=owner;t.hidden=false
+            end)
+            install('ClearTooltipImmediately',function(t)
+                if t.handlers.OnCleared then t.handlers.OnCleared(t)end
+                t.owner=nil;t.hidden=true
+            end)
+            install('ZO_PostHookHandler',function(c,event,fn)c:SetHandler(event,fn)end)
+            dofile(ROOT..'/PreviewTooltips.lua')
+            local v=KW.PreviewTooltips.New();local owner=control('Row',root)
+            v:EnsureBody()
+            assert(v.breakdownTooltip and v.body.parent==v.breakdownTooltip,
+                'breakdowns must own a private native tooltip, not the shared InformationTooltip')
+            local own=v.breakdownTooltip
+            for _,factor in ipairs({.75,1,2})do
+                own:SetScale(factor)
+                for _,rows in ipairs({{{name='Long item name',value='+12'},{name='Ring',value='[ +142 | +61 ]'}},{{name='Hat',value='+1'}}})do
+                    v:Show(owner,{kind='breakdown',rows=rows})
+                    local names,values=0,0
+                    for i,row in ipairs(rows)do
+                        local name,value=v.labels[i*2-1],v.labels[i*2]
+                        assert(name.font=='ZoFontHeader' and value.font=='ZoFontHeader','both columns must use native bold typography')
+                        assert(name.color[1]==201/255 and name.color[2]==195/255 and name.color[3]==164/255,'item labels must be yellow')
+                        assert(value.color[1]==1 and value.color[2]==1 and value.color[3]==1,'effect values must be white')
+                        assert(value.align==TEXT_ALIGN_RIGHT and math.abs(value:GetRight()-v.child:GetRight())<.1)
+                        assert(math.abs(value:GetRight()-v.body:GetRight())<.1,
+                            'short tooltips must not reserve blank scrollbar space after values')
+                        assert(math.abs(own:GetRight()-value:GetRight()-12*factor)<.1,
+                            'only the native tooltip border padding may follow the value column')
+                        names=math.max(names,math.ceil(name:GetTextWidth())+2)
+                        values=math.max(values,math.ceil(value:GetTextWidth())+2)
+                    end
+                    local inner=v.child:GetWidth()/v.child:GetScale()
+                    assert(math.abs(inner-names-values-16)<.1,'table width must be exactly both measured columns plus their gap')
+                    assert(own.width==v.body.width+24 and own.height==v.body.height+24,
+                        'native tooltip must fit the measured table and native padding')
+                    assert(info.width==350 and info.constraints[1]==100 and info.constraints[3]==800 and not info.body,
+                        'shared system tooltip dimensions and content must remain untouched')
+                end
+            end
+            v:Hide();assert(own:IsHidden() and v.body:IsHidden())
+            v:Show(owner,{kind='breakdown',rows={{name='Hat',value='+1'}}})
+            own.handlers.OnCleared(own)
+            assert(info.width==350 and not info.handlers.OnCleared and v.body:IsHidden(),
+                'the addon must never attach sizing or content cleanup hooks to the shared tooltip')
+            own:SetScale(1)
+            -- A native visible label can retain an old allocated height after
+            -- pool reuse. Row placement must measure text independently of it.
+            for _,label in ipairs(v.labels)do label.GetHeight=function()return 500 end end
+            v:Show(owner,{kind='breakdown',rows={{name='Hat',value='+1'},{name='Ring',value='+2'}}})
+            assert(v.labels[3].anchors[1].y==26 and v.body.height==46,
+                'stale visible label heights must not introduce random vertical gaps')
+            root.width=260;root.height=220
+            local rows={}
+            for i=1,8 do rows[i]={name='A very long item name that must wrap in a small window',value='+12345'}end
+            v:Show(owner,{kind='breakdown',rows=rows})
+            assert(own.width<=root.width and v.child:GetHeight()>v.body:GetHeight(),'small windows must retain a bounded scrolling tooltip')
+            assert(v.body.handlers.OnMouseWheel and v.labels[1]:GetRight()+16<=v.labels[2]:GetLeft()+.1)
+            assert(not v.scroll:GetNamedChild('ScrollBar'):IsHidden(),'overflow must retain its scrollbar')
+            v:Show(owner,{kind='breakdown',rows={{name='Hat',value='+1'}}})
+            assert(v.scroll:GetNamedChild('ScrollBar'):IsHidden())
+            assert(math.abs(v.labels[2]:GetRight()-v.body:GetRight())<.1,'pooled tooltips must release the old scrollbar reserve')
+        end)
+    end,
     source_tooltips_use_native_items_and_clear_on_relayout_hide_and_pool_reuse=function()
         local KW=setup();dofile(ROOT.."/EffectModel.lua")
         previewEnvironment(function(root,_,control,install)
@@ -604,6 +700,8 @@ return {
             special.handlers.OnMouseEnter()
             assert(item.calls[#item.calls]=="Real item")
             metric.handlers.OnMouseEnter()
+            assert(not info.body,'a wardrobe hover must not insert controls into shared system tooltips')
+            info=v.tooltips.breakdownTooltip
             assert(item:IsHidden() and info.body and not info:IsHidden())
             local function assertTooltipBody()
                 -- Native AddControl registers a cell; it does not anchor the
@@ -621,7 +719,7 @@ return {
                 for _,label in ipairs(body.labels)do
                     if not label:IsHidden()then
                         assert(label.anchors[1].relative==body.child)
-                        assert(label.width<=info.body.width-ZO_SCROLL_BAR_WIDTH-12,
+                        assert(label.width<=body.child:GetWidth()/body.child:GetScale(),
                             "numeric columns must remain within the tooltip content width")
                         if label.align==TEXT_ALIGN_RIGHT then
                             assert(label.anchors[1].point==TOPRIGHT and label.anchors[1].x==0,
