@@ -29,10 +29,6 @@ local destinations = {
         zoneId = 3,
         names = { "Aldcroft", "Альдкрофт" },
     },
-    thieves = {
-        zoneId = 3, -- Glenumbra: Daggerfall Thieves Den
-        names = { "Daggerfall", "Даггерфолла", "Даггерфолл" },
-    },
     nowhere = {
         zoneId = 3, -- The Nowhere Vault entrance is in Daggerfall's Thieves Den.
         names = { "Daggerfall", "Даггерфолла", "Даггерфолл" },

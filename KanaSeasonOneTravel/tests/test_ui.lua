@@ -118,12 +118,11 @@ for name, control in pairs(controls) do
     assert(control.template ~= "ZO_ReadOnlyCheckBox", "Completion icon must have no checkbox frame")
     if name:find("Row$") and control.template == "ZO_WorldMapHouseRow" then nativeRows = nativeRows + 1 end
 end
-assert(count == 8 and nativeRows == 9, "Daily items and the Vault have checks and all entries use native house rows")
-assert(not controls[prefix .. "thievesCheck"], "The permanent Thieves Guild has no daily check")
+assert(count == 8 and nativeRows == 8, "The Vault replaces the duplicate Thieves Guild row")
+assert(not controls[prefix .. "thievesRow"], "Do not show a second Daggerfall destination")
 assert(controls[prefix .. "nowhereCheck"], "The Vault has an achievement check")
-assert(controls[prefix .. "Scroll"].template == "ZO_ScrollContainer"
-    and controls[prefix .. "nowhereRow"].parent == controls[prefix .. "ScrollScrollChild"],
-    "The ninth row stays reachable through native scrolling")
+assert(controls[prefix .. "nowhereRow"].parent == controls[prefix .. "Panel"],
+    "Eight native rows fit directly in the map panel")
 local farmCheck = controls[prefix .. "farmCheck"]
 local farmName = controls[prefix .. "farmRowName"]
 assert(controls[prefix .. "farmRow"].mouseEnabled and not farmName.mouseEnabled,
@@ -194,9 +193,6 @@ assert(#menu == 1 and menu[1].label:find("Отметить", 1, true))
 menu[1].callback()
 assert(done.highseas, "High Seas allows manual completion correction")
 ClearMenu()
-controls[prefix .. "thievesRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
-assert(#menu == 0 and done.highseas, "The Thieves Guild cannot change completion")
-ClearMenu()
 controls[prefix .. "nowhereRow"].handlers.OnMouseUp(nil, MOUSE_BUTTON_INDEX_RIGHT, true)
 assert(#menu == 0, "The Vault achievement cannot be changed manually")
 done.nowhere = true
@@ -215,9 +211,8 @@ highSeasActive = false
 updates[prefix .. "DailyReset"]()
 assert(controls[prefix .. "highseasRow"].hidden and not controls[prefix .. "highseasRowName"].enabled,
     "Hide and disable High Seas when the event ends with the tab open")
-assert(controls[prefix .. "ScrollScrollChild"].height >=
-    controls[prefix .. "nowhereRow"].anchor[5] + controls[prefix .. "nowhereRow"].height,
-    "The scrollable content contains the entire final row")
+assert(controls[prefix .. "highseasRow"].anchor[5] + controls[prefix .. "highseasRow"].height < 595,
+    "All eight rows fit in the native map panel")
 addon.fragment.onState(nil, SCENE_FRAGMENT_HIDDEN)
 assert(not updates[prefix .. "DailyReset"], "Stop UI updates when tab hidden")
 -- The native fast-travel handler always forces Locations before this addon's

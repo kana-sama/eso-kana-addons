@@ -13,7 +13,6 @@
 
 - Official Update 50 patch notes: new Thieves Den in Daggerfall:
   https://forums.elderscrollsonline.com/en/discussion/693682
-  The map row travels to the Daggerfall wayshrine, not through the Den entrance.
 - Official Update 51 PTS notes tie the Ancient Direnni Quasigriff to
   "Heir to the Sage's Legacy":
   https://forums.elderscrollsonline.com/en-gb/discussion/697154/pts-patch-notes-v12-1-0
@@ -61,18 +60,17 @@
 
 ## Tracking limits and live acceptance
 
-Version 1.4.0 uses ESO's `ZO_WorldMapHouseRow` template for the nine map entries.
+Version 1.4.1 uses ESO's `ZO_WorldMapHouseRow` template for the eight map entries.
 That supplies the same name/location anchors, font, and 60-unit row spacing
-as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels
-in a native `ZO_ScrollContainer` so the ninth row remains reachable.
-A standalone check icon appears to the left of the name for entries completed
-today. Left-click travels when the map was opened at a wayshrine; right-click
+as the Houses tab. The Season One tab has three `ZoFontHeader2` category labels.
+A standalone check icon appears to the left of the name for completed entries.
+Left-click travels when the map was opened at a wayshrine; right-click
 opens the native menu to correct the mark. Actual rendering and interaction
 still require an ESO `/reloadui` review.
 
 The High Seas row has a daily check for turning in "Bounty of the Abecean Sea"
 (or "Дары Абесинского моря"). The introduction does not count. Right-click can
-correct a missed check manually. The permanent Thieves Guild row has no check.
+correct a missed check manually.
 The High Seas row is shown only between the announced dates; the code assumes
 10:00 EDT (14:00 UTC) for event start/end because the official dates omit an
 hour and the game API does not expose a reliable current-event flag.
@@ -128,7 +126,7 @@ reconstructed: 1.1.0 had no diagnostic log. Live confirmation is still needed.
 Lua tests use mocked ESO callbacks. In-game validation is still required for:
 
 1. `/reloadui`, map opened at a wayshrine, right-side trophy tab "Season 1".
-2. All three groups scroll without changing native row spacing; the nine
+2. All three groups fit without changing native row spacing; the eight
    discovered wayshrines can be selected.
 3. Ordinary map allows viewing/correcting checks, but no paid recall.
 4. Final chest name and auto-loot event order on the current client; verify
