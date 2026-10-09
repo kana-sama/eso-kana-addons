@@ -35,7 +35,9 @@ function W.StepBody(step)
   for _,item in ipairs(d.items or {})do
    local name=item.link
    if name and name~='' and GetItemLinkName then name=GetItemLinkName(name)end
-   lines[#lines+1]=KW.Dialogs.SlotName(item.slot)..' — '..plain(name or '')
+   local slots=KW.Dialogs.SlotName(item.slot)
+   if item.sourceSlot~=nil then slots=KW.Dialogs.SlotName(item.sourceSlot)..' → '..slots end
+   lines[#lines+1]=text(item.kind or 'equip')..' · '..slots..' — '..plain(name or '')
   end
  elseif step.kind=='equip' or step.kind=='unequip'then lines[#lines+1]=KW.Dialogs.SlotName(d.slot)
  elseif step.kind=='appearance'then lines[#lines+1]=plain(d.beforeName)..'  →  '..plain(d.targetName)

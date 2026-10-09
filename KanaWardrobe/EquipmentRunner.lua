@@ -16,7 +16,7 @@ local function isWeapon(slot)
 end
 function Instance:Diagnostics(op)
     local api=self.inventory.api
-    local out={wieldAttempt=KW.Copy(op.wieldAttempt),slots={}}
+    local out={wieldAttempt=KW.Copy(op.wieldAttempt),nativeErrors=KW.Copy(op.nativeErrors),slots={}}
     for _,name in ipairs({'ArePlayerWeaponsSheathed','IsPlayerInWerewolfForm','GetActiveWeaponPairInfo','GetInteractionType'}) do
         if type(api[name])=='function' then local ok,v=pcall(api[name]);if ok then out[name]=v end end
     end
@@ -83,7 +83,9 @@ function Instance:Compatible(op,state)
     local active=op.active
     if not active then return KW.Slots.Equal(state.worn,op.expected) end
     local touched={}
-    for _,step in ipairs(active.batch) do touched[step.equipSlot]=true end
+    for _,step in ipairs(active.batch) do
+        for slot in pairs(step.effects or {[step.equipSlot]=true}) do touched[slot]=true end
+    end
     for _,slot in ipairs(KW.Slots.Order) do
         local actual=state.worn[slot]
         if touched[slot] then
@@ -93,19 +95,33 @@ function Instance:Compatible(op,state)
     end
     return true
 end
+local function effectsMatch(step,worn)
+    if step.effects then
+        for slot,value in pairs(step.effects) do if not same(value,worn[slot]) then return false end end
+        return true
+    end
+    local actual=worn[step.equipSlot]
+    return step.kind=="equip" and actual.kind=="item" and actual.uid==step.uid
+        or step.kind=="unequip" and actual.kind=="empty"
+end
 local function memberReleased(self,active,step,state)
+    if step.kind=="equip" and not step.source then return false end
+    if step.source then
+        local source=self.inventory:ReadSlot(step.source.bagId,step.source.slotIndex)
+        if source and source.uid==step.uid then return false end
+    end
     if step.kind=="unequip" then
         local location=state.byUid[step.uid]
-        if not location or location.bagId~=self.inventory.api.BAG_BACKPACK then return false end
-    else
-        if step.source then
-            local source=self.inventory:ReadSlot(step.source.bagId,step.source.slotIndex)
-            if source and source.uid==step.uid then return false end
-        end
-        local displaced=active.before[step.equipSlot]
-        if displaced.kind=="item" and displaced.uid~=step.uid then
-            local location=state.byUid[displaced.uid]
-            if not location or location.bagId~=self.inventory.api.BAG_BACKPACK then return false end
+        return location and location.bagId==self.inventory.api.BAG_BACKPACK
+            and (step.bagSlot==nil or location.slotIndex==step.bagSlot) or false
+    end
+    local before=step.beforeEffects or {[step.equipSlot]=active.before[step.equipSlot]}
+    for _,old in pairs(before) do
+        if old.kind=="item" and old.uid~=step.uid then
+            local location=state.byUid[old.uid];local destination
+            for slot,value in pairs(active.expected) do if value.kind=="item" and value.uid==old.uid then destination=slot;break end end
+            if not location or destination and (location.bagId~=self.inventory.api.BAG_WORN or location.slotIndex~=destination)
+                or not destination and location.bagId~=self.inventory.api.BAG_BACKPACK then return false end
         end
     end
     return true
@@ -145,12 +161,21 @@ end
 local function timeoutProblem(self,op,state)
     local items={}
     for _,step in ipairs(op.active.batch) do
-        if not same(state.worn[step.equipSlot],op.expected[step.equipSlot]) or not memberReleased(self,op.active,step,state) then
+        local missing=false
+        for slot,expected in pairs(step.effects or {[step.equipSlot]=op.expected[step.equipSlot]}) do
+            if not same(state.worn[slot],expected) then
+                missing=true
+                items[#items+1]={equipSlot=slot,uid=step.uid,kind=expected.kind=="empty" and "unequip" or "equip",link=step.link,
+                    expected=KW.Copy(expected),actual=KW.Copy(state.worn[slot]),source=KW.Copy(state.byUid[step.uid])}
+            end
+        end
+        if not missing and not memberReleased(self,op.active,step,state) then
             items[#items+1]={equipSlot=step.equipSlot,uid=step.uid,kind=step.kind,link=step.link,
-                actual=KW.Copy(state.worn[step.equipSlot]),source=KW.Copy(state.byUid[step.uid])}
+                expected=KW.Copy(op.expected[step.equipSlot]),actual=KW.Copy(state.worn[step.equipSlot]),source=KW.Copy(state.byUid[step.uid]),releasePending=true}
         end
     end
-    return KW.Problem('requestTimeout',{items=items})
+    local last=op.nativeErrors and op.nativeErrors[#op.nativeErrors]
+    return KW.Problem('requestTimeout',{items=items,nativeErrors=KW.Copy(op.nativeErrors),reasonText=last and last.text})
 end
 function Runner.IsPendingConfirmed(inventory,pending,state)
     return pending and pending.batch and pending.expected and pending.before
@@ -161,17 +186,35 @@ end
 -- Older plans without batch IDs retain the conservative single-request path.
 function Instance:CanAppend(op,step,state)
     if not op.active then return true end
-    -- Also fence older/cached plans: the implicit bag destination of an
-    -- unequip request is not reserved against another outstanding move.
-    if step.kind=='unequip' then return false end
     if not step.batchId or step.batchId~=op.active.batchId then return false end
     local reserved=step.spaceCost or 0
+    -- ESO forbids reading RequestMoveItem itself from addon code. Only the
+    -- public secure dispatcher may look it up, using its string name.
+    local explicitMoves=type(self.inventory.api.GetBagSize)=="function"
+        and type(self.inventory.api.CallSecureProtected)=="function"
+    if step.kind=="unequip" and not explicitMoves then return false end
     for _,member in ipairs(op.active.batch) do
-        if member.kind=='unequip' then return false end
-        if member.equipSlot==step.equipSlot then return false end
-        reserved=reserved+(member.spaceCost or 0)
+        if member.kind=="unequip" and not explicitMoves then return false end
+        for slot in pairs(member.effects or {[member.equipSlot]=true}) do
+            if (step.effects or {[step.equipSlot]=true})[slot] then return false end
+        end
+        if not effectsMatch(member,state.worn) or not memberReleased(self,op.active,member,state) then
+            reserved=reserved+(member.spaceCost or 0)
+        end
     end
-    return reserved<=math.min(op.active.freeSlots,state.freeSlots)
+    return reserved<=state.freeSlots
+end
+function Instance:ReserveRemoval(op,step)
+    if step.kind~="unequip" or type(self.inventory.api.GetBagSize)~="function"
+        or type(self.inventory.api.CallSecureProtected)~="function" then return true end
+    local reserved={}
+    for _,member in ipairs(op.active and op.active.batch or {}) do if member.bagSlot~=nil then reserved[member.bagSlot]=true end end
+    for slot=0,self.inventory.api.GetBagSize(self.inventory.api.BAG_BACKPACK)-1 do
+        if not reserved[slot] and not self.inventory:ReadSlot(self.inventory.api.BAG_BACKPACK,slot) then
+            step.bagSlot=slot;return true
+        end
+    end
+    return false
 end
 function Instance:Check(op)
     if self.operation~=op then return end
@@ -192,7 +235,7 @@ function Instance:Check(op)
             if self:AssistWeapon(op,state) then return end
             local completed=op.confirmedIndex or 0
             for _,member in ipairs(op.active.batch) do
-                if same(state.worn[member.equipSlot],op.expected[member.equipSlot])
+                if effectsMatch(member,state.worn)
                     and memberReleased(self,op.active,member,state) then completed=completed+1 end
             end
             if completed>(op.completed or 0) then
@@ -211,9 +254,7 @@ function Instance:Check(op)
             return
         end
         if not self:CanAppend(op,step,state) then return end
-        local actual=state.worn[step.equipSlot]
-        local done=step.kind=="equip" and actual.kind=="item" and actual.uid==step.uid
-            or step.kind=="unequip" and actual.kind=="empty"
+        local done=effectsMatch(step,state.worn)
         if done then
             if op.active then return end
             op.confirmedIndex=op.index
@@ -228,14 +269,17 @@ function Instance:Check(op)
             -- permitted. The actual slot/source acknowledgement below decides
             -- whether the move completed, never a sheathing animation flag.
             local previous=op.active
+            if not self:ReserveRemoval(op,step) then self:Finish(op,"failed",KW.Problem("bagFull"),state);return end
             local pending=previous and KW.Copy(previous) or KW.Copy(step)
             pending.before=pending.before or KW.Copy(state.worn)
             pending.expected=KW.Copy(op.expected)
-            pending.expected[step.equipSlot]=step.kind=="equip" and {kind="item",uid=step.uid,link=""} or {kind="empty"}
+            for slot,value in pairs(step.effects or {[step.equipSlot]=step.kind=="equip" and {kind="item",uid=step.uid,link=""} or {kind="empty"}}) do
+                pending.expected[slot]=KW.Copy(value)
+            end
             pending.batch=pending.batch or {}
             pending.batch[#pending.batch+1]=KW.Copy(step)
             local member=pending.batch[#pending.batch]
-            member.source=step.kind=="equip" and self.inventory:Resolve(step.uid,true,false) or nil
+            member.source=self.inventory:Resolve(step.uid,true,false)
             if #pending.batch==1 then pending.source=KW.Copy(member.source) end
             op.pending=pending
             state=self:Progress(op,"requesting",state)
@@ -248,11 +292,20 @@ function Instance:Check(op)
             pending.freeSlots=pending.freeSlots or state.freeSlots
             -- An observer may have moved the same UID in the backpack. Keep
             -- the actual request's source for acknowledgement, too.
-            member.source=step.kind=="equip" and self.inventory:Resolve(step.uid,true,false) or nil
+            member.source=self.inventory:Resolve(step.uid,true,false)
             if #pending.batch==1 then pending.source=KW.Copy(member.source) end
             op.requestAt=self.clock:NowMs()
             op.active=pending; op.expected=KW.Copy(pending.expected); op.issuing=true
-            local ok,accepted,failure=pcall(self.inventory.Request,self.inventory,step)
+            local request=KW.Copy(step)
+            -- Only bypass the transient offhand check when the verified main
+            -- replacement has actually been dispatched in this same batch.
+            request.orderedAfter=nil
+            if step.orderedAfter then
+                for _,prior in ipairs(previous and previous.batch or {}) do
+                    if prior.kind=="equip" and prior.equipSlot==step.orderedAfter then request.orderedAfter=step.orderedAfter end
+                end
+            end
+            local ok,accepted,failure=pcall(self.inventory.Request,self.inventory,request)
             op.issuing=false
             if not ok then
                 self:Finish(op,"uncertain",KW.Problem("requestError",{error=tostring(accepted),uid=step.uid,equipSlot=step.equipSlot}),self.inventory:Capture(false)); return
@@ -286,12 +339,23 @@ function Instance:Start(plan,onProgress,onDone)
         return nil,KW.Problem("stalePlan")
     end
     self.generation=self.generation+1
-    local op={id=self.generation,plan=KW.Copy(plan),index=1,expected=KW.Copy(state.worn),timers={},listeners={},onProgress=onProgress,onDone=onDone}
+    local op={id=self.generation,plan=KW.Copy(plan),index=1,expected=KW.Copy(state.worn),timers={},listeners={},nativeErrors={},onProgress=onProgress,onDone=onDone}
     self.operation=op
     if KW.Slots.Equal(state.worn,plan.target) then self:Finish(op,"success",nil,state); return op.id end
     for _,name in ipairs({"InventoryChanged","PlayerStateChanged"}) do
         op.listeners[#op.listeners+1]=self.events:Subscribe(name,function() self:QueueCheck(op) end)
     end
+    op.listeners[#op.listeners+1]=self.events:Subscribe("NativeEquipmentError",function(payload)
+        if self.operation~=op or not op.active then return end
+        local record=KW.Copy(payload);record.at=self.clock:NowMs()
+        if type(record.text)=="string" and #record.text>1500 then
+            local last=1500
+            while record.text:byte(last+1)>=128 and record.text:byte(last+1)<192 do last=last-1 end
+            record.text=record.text:sub(1,last)
+        end
+        op.nativeErrors[#op.nativeErrors+1]=record
+        if #op.nativeErrors>20 then table.remove(op.nativeErrors,1)end
+    end)
     local function poll()
         self:Check(op)
         if self.operation==op then self:Later(op,100,poll) end

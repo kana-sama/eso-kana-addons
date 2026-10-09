@@ -57,6 +57,7 @@ function D.Problem(problem)
   local slots={}
   for _,item in ipairs(details.items)do slots[#slots+1]=D.SlotName(item.equipSlot)end
   message=string.format(text('EQUIPMENT_TIMEOUT_SLOTS'),table.concat(slots,', '))
+  if details.reasonText and details.reasonText~=''then message=message..' '..D.Plain(details.reasonText)end
  end
  if problem.code=='nativeRespecRefused' and type(details.result)=='number' and type(GetString)=='function'then
   local ok,native=pcall(GetString,'SI_RESPECRESULT',details.result)

@@ -159,7 +159,7 @@ return {
    abilities={skills={['10:active:51']={kind='active',purchased=true,morph=2}},bars={front={[1]={kind='skill',skillKey='10:active:51',expectedMorph=2}}}}}))
   local kinds={};local seen={}
   for _,s in ipairs(p.steps)do kinds[#kinds+1]=s.kind;assert(not seen[s.id],'duplicate step id');seen[s.id]=true end
-  assert(table.concat(kinds,',')=='appearance,unequip,equip,unequip,equip,appearance,attributes,appearance,skills,bar,appearance,verify',table.concat(kinds,','))
+  assert(table.concat(kinds,',')=='appearance,equipBatch,equip,appearance,attributes,appearance,skills,bar,appearance,verify',table.concat(kinds,','))
   assert(#f.appearanceCalls==0,'planning changed appearance')
  end,
  appearance_two_changes_use_start_and_end_and_omit_unchanged_categories=function()

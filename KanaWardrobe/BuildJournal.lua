@@ -61,7 +61,7 @@ local function selection(value,component)
 end
 local function pending(value,phase)
  if value==nil then return end
- local out=pick(value,{'phase','token','sent','sentAt','result','original','target','auxiliaryOriginal','auxiliaryTarget','problem','resolved','relinquished','cancelledGeneration','entryContext','kind','equipSlot','uid','before','expected','source','batch','outgoing'})
+ local out=pick(value,{'phase','token','sent','sentAt','result','original','target','auxiliaryOriginal','auxiliaryTarget','problem','resolved','relinquished','cancelledGeneration','entryContext','kind','equipSlot','uid','before','expected','source','batch','outgoing','effects','beforeEffects','bagSlot','orderedAfter'})
  assert(out.sent==nil or type(out.sent)=='boolean','invalid sent flag')
  assert(out.token==nil or type(out.token)=='number' and out.token>=1 and out.token%1==0,'invalid token')
  assert(out.result==nil or type(out.result)=='number' and out.result%1==0,'invalid native result')

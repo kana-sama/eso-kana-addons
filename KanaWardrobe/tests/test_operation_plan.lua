@@ -22,19 +22,15 @@ return {
   assert(#p.steps==2 and p.steps[1].kind=='equipBatch' and #p.steps[1].items==2)
   assert(p.steps[1].before[EQUIP_SLOT_RING1].uid=='old1' and p.steps[1].target[EQUIP_SLOT_RING2].uid=='b')
  end,
- relocating_item_and_mythic_are_released_before_their_batch=function()
+ direct_transfer_accompanies_mythic_release_before_incoming_mythic=function()
   local f=create();local moving=f:AddItem('moving',EQUIP_SLOT_RING1,true)
   f:AddItem('mythicOld',EQUIP_SLOT_HEAD,true,EQUIP_TYPE_HEAD);f.api.descriptions.mythicOld.quality=99
   local mythic=f:AddItem('mythicNew',3,false,EQUIP_TYPE_NECK);f.api.descriptions.mythicNew.quality=99
   local p=assert(f:Plan({equipment={[EQUIP_SLOT_RING2]=moving,[EQUIP_SLOT_NECK]=mythic}}))
-  local released={}
-  for _,step in ipairs(p.steps)do
-   if step.kind=='unequip'then released[step.uid]=true end
-   for _,item in ipairs(step.items or (step.kind=='equip' and {step}or {}))do
-    if item.uid=='moving'then assert(released.moving)end
-    if item.uid=='mythicNew'then assert(released.mythicOld)end
-   end
-  end
+  assert(#p.steps==3 and p.steps[1].kind=='equipBatch' and #p.steps[1].items==2)
+  assert(p.steps[1].target[EQUIP_SLOT_HEAD].kind=='empty')
+  assert(p.steps[1].target[EQUIP_SLOT_RING1].kind=='empty' and p.steps[1].target[EQUIP_SLOT_RING2].uid=='moving')
+  assert(p.steps[2].kind=='equip' and p.steps[2].uid=='mythicNew')
  end,
  unselected_bar_morph_is_named_information_not_consent=function()
   local f=create();f.skillObjects[1].spec.morph=2
@@ -66,9 +62,9 @@ return {
   local f=create();f.skills.Catalogue=function()error('gear-only scanned skills')end
   local ref=f:AddItem('new',2);assert(f:Plan({equipment={[EQUIP_SLOT_RING1]=ref}}))
  end,
- relocation_and_mythic_have_explicit_dependencies=function()
+ direct_relocation_has_no_removal_but_cross_slot_mythic_keeps_dependency=function()
   local f=create();local ref=f:AddItem('ring',EQUIP_SLOT_RING1,true)
-  local p=assert(f:Plan({equipment={[EQUIP_SLOT_RING2]=ref}}));assert(p.steps[1].kind=='unequip' and p.steps[2].kind=='equip')
+  local p=assert(f:Plan({equipment={[EQUIP_SLOT_RING2]=ref}}));assert(p.steps[1].kind=='equipBatch' and #p.steps[1].items==1 and p.steps[2].kind=='verify')
   f=create();f:AddItem('old',EQUIP_SLOT_RING1,true);ref=f:AddItem('new',2)
   f.api.descriptions.old.quality=99;f.api.descriptions.new.quality=99
   p=assert(f:Plan({equipment={[EQUIP_SLOT_RING2]=ref}}));assert(p.steps[1].kind=='unequip' and p.steps[2].kind=='equip')

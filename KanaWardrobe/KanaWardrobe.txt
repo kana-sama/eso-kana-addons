@@ -17,8 +17,11 @@ Slots.lua
 BuildModel.lua
 Presets.lua
 Inventory.lua
+GearProbe.lua
 EquipmentPlan.lua
 EquipmentRunner.lua
+GearProbeCases.lua
+GearProbeSuite.lua
 Protection.lua
 SkillState.lua
 SkillAdapter.lua

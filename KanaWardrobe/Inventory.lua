@@ -171,14 +171,22 @@ function Instance:Request(step)
             return false,KW.Problem("bindingConfirmationRequired",{uid=step.uid})
         end
         local equipable,reason=api.IsEquipable(location.bagId,location.slotIndex)
-        if not equipable then return false,KW.Problem("notEquipable",{uid=step.uid,reason=reason}) end
+        if not equipable and not step.orderedAfter then return false,KW.Problem("notEquipable",{uid=step.uid,reason=reason}) end
         api.RequestEquipItem(location.bagId,location.slotIndex,api.BAG_WORN,step.equipSlot)
         return true
     elseif step.kind=="unequip" then
         local current=self:ReadSlot(api.BAG_WORN,step.equipSlot)
         if not current or current.uid~=step.uid then return false,KW.Problem("sourceChanged",{uid=step.uid}) end
         if api.GetNumBagFreeSlots(api.BAG_BACKPACK)<1 then return false,KW.Problem("bagFull") end
-        api.RequestUnequipItem(api.BAG_WORN,step.equipSlot)
+        if step.bagSlot~=nil then
+            if type(step.bagSlot)~="number" or step.bagSlot<0 or step.bagSlot%1~=0
+                or type(api.GetBagSize)~="function" or step.bagSlot>=api.GetBagSize(api.BAG_BACKPACK)
+                or self:ReadSlot(api.BAG_BACKPACK,step.bagSlot) then return false,KW.Problem("bagFull") end
+            if type(api.CallSecureProtected)=="function" then
+                local accepted=api.CallSecureProtected("RequestMoveItem",api.BAG_WORN,step.equipSlot,api.BAG_BACKPACK,step.bagSlot,1)
+                if accepted==false then return false,KW.Problem("requestRejected",{uid=step.uid}) end
+            else return false,KW.Problem("invalidStep") end
+        else api.RequestUnequipItem(api.BAG_WORN,step.equipSlot) end
         return true
     end
     return false,KW.Problem("invalidStep")

@@ -160,7 +160,7 @@ do
  local labels={TITLE='Preset operation',PAUSE='Pause',CONTINUE='Continue',RESTART='Start over',REPORT='Copy report',CONFIRM='Confirm',
   HINT='Close hides this window. Pause waits for the current action to finish.',FAILED_HINT='Fix the cause, then continue this step or calculate a new plan.',PAUSED_HINT='No actions will run until you press Continue.',
   running='In progress',pausing='Pausing after this action',paused='Paused',failed='Stopped at an error',
-  diff='Calculate changes and check requirements',equip='Equip',equipBatch='Equip items',unequip='Remove',attributes='Set attributes',skills='Set talents',bar='Set action bar',front='Front',back='Back',
+  diff='Calculate changes and check requirements',equip='Equip',equipBatch='Change equipment',unequip='Remove',attributes='Set attributes',skills='Set talents',bar='Set action bar',front='Front',back='Back',
   verify='Verify actual result',save='Save preset',mountDraft='Prepare local draft',closeDraft='Close local draft',openEditor='Open editor',finishEditor='Finish editing',
   EMPTY='Empty',ITEM_ID='Item ID',MORE='… and %d more changes (full report available)',ATTEMPT='Attempt %d',REOPEN='Operation steps',
   SKILL='Skill',SKILL_MORPH='Change morph: “%s” → “%s”.',SKILL_MORPH_UNKNOWN='Change the morph of “%s”.',

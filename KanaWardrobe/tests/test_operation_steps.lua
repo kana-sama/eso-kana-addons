@@ -134,7 +134,8 @@ return {
  end,
  timeout_keeps_facts_and_does_not_auto_retry=function()
   local f=create();local ref=f:AddItem('ring',3);local step=assert(f:Plan({equipment={[EQUIP_SLOT_RING1]=ref}})).steps[1]
-  f:Run(step);f:Advance(6001);assert(f.problem.code=='operationUnconfirmed' and step.pending.source.uid=='ring')
+  f:Run(step);f:Advance(6001);assert(f.problem.code=='requestTimeout' and step.pending.source.uid=='ring')
+  assert(#f.problem.details.items==1 and f.problem.details.items[1].uid=='ring')
   f:Advance(10000);assert(#f.api.requests==1)
   f:AckGear();f:Run(step);assert(f.out and #f.api.requests==1)
  end,

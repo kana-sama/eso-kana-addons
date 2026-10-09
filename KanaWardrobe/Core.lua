@@ -263,6 +263,28 @@ function KW.Core.Initialize(api)
         end)
         runtime.buildProbe.IsSessionIdle = function()return runtime.session:GetView().state == "idle" end
     end
+    if KW.GearProbe then
+        runtime.repo.character.gearProbeJournal=runtime.repo.character.gearProbeJournal or {}
+        local storage=runtime.repo.character.gearProbeJournal
+        runtime.gearProbe=KW.GearProbe.New(api,storage,runtime.clock,runtime.inventory,function(text)
+            KW.ProbeReport.Show(text,function(err)storage.reportDisplayError=tostring(err)end)
+        end,function()return runtime.session:GetView().state=='idle' and not runtime.runner:IsBusy() end)
+    end
+    if KW.GearProbeSuite then
+        runtime.repo.character.gearProbeJournal=runtime.repo.character.gearProbeJournal or {}
+        local storage=runtime.repo.character.gearProbeJournal
+        runtime.gearSuite=KW.GearProbeSuite.New({api=api,saved=storage,clock=runtime.clock,inventory=runtime.inventory,events=events,
+            report=function(text)KW.ProbeReport.Show(text,function(err)storage.suiteReportError=tostring(err):sub(1,1500)end)end,
+            canRun=function()
+                return runtime.session:GetView().state=='idle' and not runtime.runner:IsBusy()
+                    and not (runtime.gearProbe and runtime.gearProbe.active)
+                    and not (storage.run and not storage.run.restored)
+            end,
+            onActiveChanged=function()emit('SessionChanged')end})
+        if runtime.session.operations then
+            runtime.session.operations.externalBusy=function()return runtime.gearSuite.active==true end
+        end
+    end
     KW.runtime = runtime
     local function report(problem)
         runtime.ui:Problem(problem)
@@ -283,6 +305,17 @@ function KW.Core.Initialize(api)
     end
     local function register(name,callback)
         if api[name] then api.EVENT_MANAGER:RegisterForEvent(KW.name..name,api[name],callback) end
+    end
+    for _,name in ipairs({'EVENT_UI_ERROR','EVENT_INVENTORY_EQUIP_MYTHIC_FAILED','EVENT_INVENTORY_IS_FULL'})do
+        local eventName=name
+        register(eventName,function(_,code,detail)
+            local text=detail and tostring(detail) or ''
+            if eventName=='EVENT_UI_ERROR' and api.GetString then
+                local ok,value=pcall(api.GetString,code);if ok then text=value end
+            end
+            emit('NativeEquipmentError',{event=eventName,code=code,detail=detail,text=text})
+            if runtime.gearSuite and runtime.gearSuite.active then runtime.gearSuite:NativeError(eventName,code,text)end
+        end)
     end
     register("EVENT_START_SKILL_RESPEC",function(_,allocationMode,paymentType)
         emit("NativeSkillRespecStarted",{allocationMode=allocationMode,paymentType=paymentType})
@@ -377,9 +410,13 @@ function KW.Core.Initialize(api)
         elseif (command or ""):match("^%s*probe%s+") then
             local action = command:match("^%s*probe%s+(%S+)%s*$")
             local ok, problem
-            if runtime.buildProbe then ok, problem = runtime.buildProbe:Run(action) end
+            if runtime.gearSuite and (action=='gearsuite' or action=='gearsuitereport' or action=='gearsuiterestore' or action=='gearsuitestop')then
+                ok,problem=runtime.gearSuite:Run(action)
+            elseif runtime.gearProbe and (action=='gearbatch' or action=='gearrestore' or action=='gearreport')then
+                ok,problem=runtime.gearProbe:Run(action)
+            elseif runtime.buildProbe then ok, problem = runtime.buildProbe:Run(action) end
             if not ok and api.d then api.d("KanaWardrobe probe: "..tostring(problem and problem.details.reason or "helper unavailable")) end
-        elseif api.d then api.d("/kw operation | /kw operation report | /kw status | /kw perf | /kw capabilities | /kw probe attributes|skills|restore|status|batch|reset") end
+        elseif api.d then api.d("/kw operation | /kw operation report | /kw status | /kw perf | /kw capabilities | /kw probe attributes|skills|restore|status|batch|reset|gearbatch|gearrestore|gearreport|gearsuite|gearsuitereport|gearsuiterestore|gearsuitestop") end
     end
     if KW.PerformanceProbe then KW.PerformanceProbe.Attach(runtime)end
     runtime.ui:ScheduleRefresh()

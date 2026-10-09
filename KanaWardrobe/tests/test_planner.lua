@@ -30,10 +30,21 @@ local function replay(kw,s,p,caps)
             assert(worn[step.equipSlot]==step.uid); assert(free>=1,"unequip overflow")
             bag[step.uid]=true; worn[step.equipSlot]=nil; free=free-1
         else
-            assert(bag[step.uid],"source must pass through backpack")
+            local from
+            for slot,id in pairs(worn)do if id==step.uid then from=slot end end
             local old=worn[step.equipSlot]
-            if old then assert(free>=((caps and caps.fullBagEquipSwap) and 0 or 1),"unverified full bag swap"); bag[old]=true else free=free+1 end
-            bag[step.uid]=nil; worn[step.equipSlot]=step.uid
+            if from then worn[from]=old
+            else
+                assert(bag[step.uid],"source item unavailable")
+                if old then assert(free>=((caps and caps.fullBagEquipSwap)and 0 or 1),"unverified full bag swap");bag[old]=true else free=free+1 end
+                bag[step.uid]=nil
+            end
+            worn[step.equipSlot]=step.uid
+            if s.byUid[step.uid].metadata.twoHanded then
+                for _,bar in ipairs({kw.Slots.Front,kw.Slots.Back})do if step.equipSlot==bar.main and worn[bar.off]then
+                    assert(free>=1);bag[worn[bar.off]]=true;worn[bar.off]=nil;free=free-1
+                end end
+            end
         end
         local myths=0
         for _,uid in pairs(worn) do if s.byUid[uid].metadata.mythic then myths=myths+1 end end
@@ -45,7 +56,7 @@ local function replay(kw,s,p,caps)
     for slot,v in pairs(p.target) do assert(worn[slot]==(v.kind=="item" and v.uid or nil),"wrong final slot "..slot) end
 end
 local tests={}
-function tests.batch_members_remain_safe_when_the_server_completes_them_in_a_different_order()
+function tests.independent_batches_allow_reordering_and_weapon_pairs_preserve_native_send_order()
     for _,free in ipairs({1,3,20}) do
         local k,s=setup(free)
         add(s,'myth-head',EQUIP_SLOT_HEAD,EQUIP_TYPE_HEAD,{mythic=true})
@@ -72,9 +83,10 @@ function tests.batch_members_remain_safe_when_the_server_completes_them_in_a_dif
         end
         for shift=0,#p.steps do
             local reordered=k.Copy(p);reordered.steps={}
-            for _,group in ipairs(groups) do
-                for i=#group,1,-1 do
-                    table.insert(reordered.steps,group[(i+shift-1)%#group+1])
+            for _,group in ipairs(groups)do
+                local ordered=false;for _,step in ipairs(group)do if step.orderedAfter then ordered=true end end
+                for i=1,#group do
+                    table.insert(reordered.steps,group[ordered and i or ((#group-i+shift)%#group+1)])
                 end
             end
             replay(k,s,reordered)
@@ -121,10 +133,10 @@ function tests.mythic_extra_removed_before_new_and_two_explicit_rejected()
     assert(p.steps[1].kind=="unequip" and p.steps[1].uid=="myth-head"); replay(k,s,p)
     assert(k.EquipmentPlan.Build(s,{[EQUIP_SLOT_HEAD]=a,[EQUIP_SLOT_RING1]=b},"apply",{})==nil)
 end
-function tests.rings_cycle_conservative_capacity_and_verified_optimization()
+function tests.ring_exchange_uses_one_direct_request_without_backpack_capacity()
     local k,s=setup(2); local a=add(s,"a",EQUIP_SLOT_RING1,EQUIP_TYPE_RING); local b=add(s,"b",EQUIP_SLOT_RING2,EQUIP_TYPE_RING)
-    local intent={[EQUIP_SLOT_RING1]=b,[EQUIP_SLOT_RING2]=a}; local p=build(k,s,intent); assert(p.requiredFree==2); replay(k,s,p)
-    s.freeSlots=1; local q=build(k,s,intent,{fullBagEquipSwap=true}); assert(q.requiredFree==1); replay(k,s,q,{fullBagEquipSwap=true})
+    local intent={[EQUIP_SLOT_RING1]=b,[EQUIP_SLOT_RING2]=a}; local p=build(k,s,intent); assert(p.requiredFree==0 and #p.steps==1); replay(k,s,p)
+    s.freeSlots=0; local q=build(k,s,intent,{fullBagEquipSwap=true}); assert(q.requiredFree==0 and #q.steps==1); replay(k,s,q,{fullBagEquipSwap=true})
 end
 function tests.cross_bar_four_weapon_cycle_both_directions()
     for _,reverse in ipairs({false,true}) do

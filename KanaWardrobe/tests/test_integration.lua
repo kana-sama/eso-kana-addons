@@ -132,8 +132,7 @@ local function setup(f)
     function f:Add(uid,bag,slot,equip)local v={uid=uid,link="link:"..uid};a.bags[bag][slot]=v;a.descriptions[v.link]={equipType=equip or EQUIP_TYPE_RING};return {kind="item",uid=uid,link=v.link}end
     function f:Preset(slots,name)local p=self.r.repo:NewDraft();p.slots=slots;p.name=name or "Partial";return assert(self.r.repo:Save(p,0))end
     function f:ApplyRequest(index)
-        local q=assert(a.requests[index]);if q[1]=="equip"then local v=a.bags[q[2]][q[3]];a.bags[q[2]][q[3]]=a.bags[BAG_WORN][q[5]];a.bags[BAG_WORN][q[5]]=v
-        else a.bags[BAG_BACKPACK][900+index]=a.bags[BAG_WORN][q[3]];a.bags[BAG_WORN][q[3]]=nil;a.free=a.free-1 end
+        dofile(ROOT..'/tests/support/gear_ack.lua')(a,a.requests[index],index)
         self:Event("EVENT_INVENTORY_SINGLE_SLOT_UPDATE")
     end
     function f:Drain()local count=0;repeat count=count+1;assert(count<100);if self.applied<#a.requests then self.applied=self.applied+1;self:ApplyRequest(self.applied)end;clock:Advance(2)until self.applied==#a.requests end
@@ -381,13 +380,13 @@ test("integration_missing_external_swap_and_late_recovery",function(f)
     assert(f.r.session:GetView().state=="recovery" and f.r.repo.character.journal~=nil)
     assert(f.r.session:Recover("keepCurrent"));assert(f.r.repo.character.journal==nil)
 end)
-test("integration_timeout_late_event_does_not_resume_old_chain",function(f)
+test("integration_late_direct_transfer_completes_without_resending",function(f)
     local ring=f:Add("ring",BAG_WORN,EQUIP_SLOT_RING1);local p=f:Preset({[EQUIP_SLOT_RING2]=ring})
     assert(f.r.session:Apply(p.id));assert(f.r.session:Confirm(f.r.session:GetView().confirmation.plan.extraKey));f.clock:Advance(6000)
     assert(f.r.session:GetView().state=="recovery" and #f.a.requests==1 and f.r.repo.character.journal.pending.uid=="ring")
     f:ApplyRequest(1);f.applied=1;f.clock:Advance(10);assert(#f.a.requests==1)
-    assert(f.r.session:Recover("restore"));f:Drain()
-    assert(f.r.inventory:Capture().worn[EQUIP_SLOT_RING1].uid=="ring" and f.r.repo.character.journal==nil)
+    assert(f.r.session:GetView().state=="idle" and f.r.repo.character.journal==nil)
+    assert(f.r.inventory:Capture().worn[EQUIP_SLOT_RING2].uid=="ring" and #f.a.requests==1)
 end)
 test("integration_reload_after_commit_never_repeats_save",function(f)
     f:Add("old",BAG_WORN,EQUIP_SLOT_RING1);local original=f.r.inventory:Capture().worn;assert(f.r.session:BeginNew())
@@ -600,15 +599,15 @@ tests.late_batch_confirmation_releases_apply_only_after_all_items_arrive=modernT
     assert(f.r.session:GetView().state=='idle' and #f.a.requests==2)
     assert(f.a.bags[BAG_WORN][EQUIP_SLOT_RING1].uid==b.uid)
 end)
-tests.late_first_stage_confirmation_resumes_remaining_gear_without_reload=modernTest(function(f)
+tests.late_pair_confirmation_reconciles_both_sent_requests_without_reload=modernTest(function(f)
     f:Add('greatsword',BAG_WORN,EQUIP_SLOT_MAIN_HAND,EQUIP_TYPE_TWO_HAND)
     local a=f:Add('sword',BAG_BACKPACK,7,EQUIP_TYPE_ONE_HAND)
     local b=f:Add('dagger',BAG_BACKPACK,8,EQUIP_TYPE_ONE_HAND)
     local preset=f:Preset({[EQUIP_SLOT_MAIN_HAND]=a,[EQUIP_SLOT_OFF_HAND]=b})
-    assert(f.r.session:Apply(preset.id));assert(#f.a.requests==1)
+    assert(f.r.session:Apply(preset.id));assert(#f.a.requests==2)
     f.clock:Advance(5001);assert(f.r.session:GetView().state=='recovery')
     f:ApplyRequest(1);f.applied=1;f.clock:Advance(2)
-    assert(#f.a.requests==2 and f.a.requests[2][5]==EQUIP_SLOT_OFF_HAND)
+    assert(f.r.session:GetView().state=='recovery' and #f.a.requests==2 and f.a.requests[2][5]==EQUIP_SLOT_OFF_HAND)
     f:Drain();assert(f.r.session:GetView().state=='idle' and not f.r.repo.character.journal)
     assert(f.a.bags[BAG_WORN][EQUIP_SLOT_MAIN_HAND].uid==a.uid and f.a.bags[BAG_WORN][EQUIP_SLOT_OFF_HAND].uid==b.uid)
 end)
@@ -991,5 +990,62 @@ function tests.appearance_native_cooldown_error_reaches_visible_timer_regardless
   end,debug.traceback)
   if f.Cleanup then f:Cleanup()end;assert(ok,err)
  end
+end
+test('gear_batch_slash_command_runs_installed_probe_and_persists_automatic_report',function(f)
+ local a=f.a;local reports={}
+ f.k.ProbeReport.Show=function(text)reports[#reports+1]=text end
+ f:Add('shoulders',BAG_WORN,EQUIP_SLOT_SHOULDERS,EQUIP_TYPE_SHOULDERS)
+ f:Add('chest',BAG_WORN,EQUIP_SLOT_CHEST,EQUIP_TYPE_CHEST)
+ a.GetBagSize=function()return 4 end
+ a.CallSecureProtected=function(name,bag,slot,destBag,destSlot,count)
+  assert(name=='RequestMoveItem' and count==1)
+  a.requests[#a.requests+1]={'move',bag,slot,destBag,destSlot}
+  assert(not a.bags[destBag][destSlot]);a.bags[destBag][destSlot]=a.bags[bag][slot];a.bags[bag][slot]=nil
+  return true
+ end
+ a.RequestEquipItem=function(bag,slot,destBag,destSlot)
+  a.requests[#a.requests+1]={'equip',bag,slot,destBag,destSlot}
+  a.bags[destBag][destSlot]=a.bags[bag][slot];a.bags[bag][slot]=nil
+ end
+ a.SLASH_COMMANDS['/kw']('probe gearbatch')
+ assert(#a.requests==2,'chat command must start the two-request experiment')
+ f.clock:Advance(500)
+ assert(#reports==1 and reports[1]:find('removalVerified=true',1,true))
+ assert(f.r.repo.character.gearProbeJournal.run.restored)
+ assert(a.bags[BAG_WORN][EQUIP_SLOT_CHEST].uid=='chest')
+ a.SLASH_COMMANDS['/kw']('probe gearreport')
+ assert(#reports==2 and #a.requests==4,'report command must not repeat the experiment')
+end)
+function tests.gear_suite_command_records_native_errors_and_excludes_parallel_preset_execution()
+ local f={modern=true,nativeModern=true,stepwise=true}
+ local ok,err=xpcall(function()
+  setup(f);local a=f.a;local reports={}
+  f.k.ProbeReport.Show=function(text)reports[#reports+1]=text end
+  f:Add('head',BAG_WORN,EQUIP_SLOT_HEAD,EQUIP_TYPE_HEAD)
+  f:Add('chest',BAG_WORN,EQUIP_SLOT_CHEST,EQUIP_TYPE_CHEST)
+  a.GetBagSize=function()return 10 end
+  a.CallSecureProtected=function(name,bag,slot,destBag,destSlot,count)
+   assert(name=='RequestMoveItem' and count==1)
+   a.requests[#a.requests+1]={'move',bag,slot,destBag,destSlot}
+   f.clock:Schedule(100,function()a.bags[destBag][destSlot]=a.bags[bag][slot];a.bags[bag][slot]=nil end)
+   return true
+  end
+  a.RequestEquipItem=function(bag,slot,destBag,destSlot)
+   a.requests[#a.requests+1]={'equip',bag,slot,destBag,destSlot}
+   f.clock:Schedule(100,function()a.bags[destBag][destSlot]=a.bags[bag][slot];a.bags[bag][slot]=nil end)
+  end
+  -- Native event exists before initialization, just as in the actual client.
+  a.EVENT_UI_ERROR='UI_ERROR';f:Reload()
+  local preset=f:Preset({[EQUIP_SLOT_HEAD]={kind='empty'}},'Do not apply during probe')
+  a.SLASH_COMMANDS['/kw']('probe gearsuite');f.clock:Advance(125)
+  assert(f.r.gearSuite and f.r.gearSuite.active,'suite command was not connected')
+  local applied=f.r.session:Apply(preset.id);assert(not applied,'preset must not race the experiment')
+  f:Event('EVENT_UI_ERROR',1234)
+  f.clock:Advance(60000)
+  assert(not f.r.gearSuite.active and f.r.repo.character.gearProbeJournal.suite.matchesOriginal)
+  assert(#reports==1 and reports[1]:find('EVENT_UI_ERROR',1,true))
+  assert(not f.r.session.operations:IsBusy(),'diagnostic lock must be released at completion')
+ end,debug.traceback)
+ if f.Cleanup then f:Cleanup()end;assert(ok,err)
 end
 return tests

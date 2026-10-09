@@ -43,101 +43,146 @@ local function serializeExtras(extras)
     return table.concat(parts, "|")
 end
 
--- Simulate only one-slot requests. No equip request is allowed to implicitly
--- clear another slot: weapon/mythic blockers must already have been removed.
--- Sources in worn always pass through the backpack. A direct replacement
--- needs one spare cell unless fullBagEquipSwap was explicitly verified.
+-- API 101051 client probes verified direct replacements, mixed batches,
+-- ring swaps, empty weapon transfers, and main-before-offhand pairs. A batch
+-- is a verified group of effects, not an all-or-nothing server transaction.
 local function simulate(state, target, initialFree, capabilities, makeBatches)
     local worn, bag, wanted, steps = {}, {}, {}, {}
-    for _, slot in ipairs(Slots.Order) do worn[slot] = uid(state.worn[slot]); wanted[slot] = uid(target[slot]) end
-    for id, location in pairs(state.byUid) do if location.bagId == BAG_BACKPACK then bag[id] = true end end
-    local free = initialFree
-    local function ready(id, slot, view)
-        view = view or worn
-        local m = metadata(state, id)
-        if m.mythic then
-            for _, existing in pairs(view) do
-                if existing ~= id and metadata(state, existing).mythic then return false end
+    for _, slot in ipairs(Slots.Order) do worn[slot]=uid(state.worn[slot]); wanted[slot]=uid(target[slot]) end
+    for id, location in pairs(state.byUid) do if location.bagId==BAG_BACKPACK then bag[id]=true end end
+    local free, batch, batchId = initialFree, nil, 0
+    local function ref(id) return id and {kind="item",uid=id,link=state.byUid[id].link or ""} or {kind="empty"} end
+    local function source(id,view)
+        for slot, existing in pairs(view or worn) do if existing==id then return slot end end
+    end
+    local function ready(id,slot,view)
+        view=view or worn; local m=metadata(state,id)
+        for existingSlot,existing in pairs(view) do
+            local old=metadata(state,existing)
+            if existing~=id then
+                -- Same-slot mythic replacement was verified separately.
+                if m.mythic and old.mythic and existingSlot~=slot then return false end
+                if sameUnique(m,old) then return false end
             end
         end
-        if m.uniqueEquipped then
-            for _, existing in pairs(view) do
-                if existing ~= id and sameUnique(m, metadata(state, existing)) then return false end
-            end
-        end
-        for _, bar in ipairs({Slots.Front, Slots.Back}) do
-            if slot == bar.main and isTwoHanded(m) and view[bar.off] then return false end
-            if slot == bar.off and isTwoHanded(metadata(state, view[bar.main])) then return false end
+        for _,bar in ipairs({Slots.Front,Slots.Back}) do
+            if slot==bar.off and isTwoHanded(metadata(state,view[bar.main])) then return false end
         end
         return true
     end
-    local batch, batchId = nil, 0
-    local function append(step)
+    local function append(step,cost,implicit)
+        step.effects={}; step.beforeEffects={}
+        local from=step.kind=="equip" and source(step.uid) or nil
+        local old=worn[step.equipSlot]
+        step.effects[step.equipSlot]=ref(step.kind=="equip" and step.uid or nil)
+        if from then step.effects[from]=ref(old); step.sourceSlot=from end
+        if implicit then step.effects[implicit]=ref(nil);step.implicitClear=implicit end
+        for slot in pairs(step.effects) do step.beforeEffects[slot]=ref(worn[slot]) end
         if makeBatches then
-            -- Every request must be valid in the state BEFORE the batch, even
-            -- if the server acknowledges its siblings in a different order.
-            -- Do not spend space or reuse items released by a pending move.
-            local cost = step.kind == "unequip" and 1 or
-                (worn[step.equipSlot] and capabilities.fullBagEquipSwap ~= true and 1 or 0)
-            -- RequestUnequipItem chooses a free bag cell internally. Until its
-            -- acknowledgement, another removal may choose that very same cell.
-            local fits = batch and step.kind ~= 'unequip' and not batch.removal
-                and not batch.touched[step.equipSlot] and batch.free >= cost
-            if fits and step.kind == "equip" then
-                fits = batch.bag[step.uid] and ready(step.uid, step.equipSlot, batch.worn)
+            local fits=batch and batch.free>=cost
+            if fits then
+                for slot in pairs(step.effects) do if batch.touched[slot] then fits=false end end
+                if step.kind=="equip" then
+                    fits=fits and (from and batch.worn[from]==step.uid or not from and batch.bag[step.uid])
+                    if fits and not ready(step.uid,step.equipSlot,batch.worn) then
+                        -- The live probe confirmed this ordered pair in one send turn.
+                        local main
+                        for _,bar in ipairs({Slots.Front,Slots.Back}) do if step.equipSlot==bar.off then main=bar.main end end
+                        if main and batch.mainReplacement[main]==worn[main] then step.orderedAfter=main
+                        else fits=false end
+                    end
+                end
+                -- An implicit offhand removal chooses its own cell. Do not race
+                -- it with other removals that reserve physical backpack cells.
+                if implicit and (batch.removal or batch.implicit) or step.kind=="unequip" and batch.implicit then fits=false end
             end
             if not fits then
-                batchId = batchId + 1
-                batch = {worn=KW.Copy(worn), bag=KW.Copy(bag), free=free, touched={}}
+                batchId=batchId+1
+                batch={worn=KW.Copy(worn),bag=KW.Copy(bag),free=free,touched={},mainReplacement={}}
+                step.orderedAfter=nil
             end
-            step.batchId = batchId; step.spaceCost = cost
-            batch.free = batch.free - cost
-            batch.touched[step.equipSlot] = true
-            batch.bag[step.uid] = nil
-            batch.removal = step.kind == 'unequip'
+            step.batchId=batchId;step.spaceCost=cost
+            batch.free=batch.free-cost
+            for slot in pairs(step.effects) do batch.touched[slot]=true end
+            batch.bag[step.uid]=nil
+            if step.kind=="unequip" then batch.removal=true end
+            if implicit then batch.implicit=true end
+            for _,bar in ipairs({Slots.Front,Slots.Back}) do
+                if step.equipSlot==bar.main and step.kind=="equip" and not isTwoHanded(metadata(state,step.uid)) then
+                    batch.mainReplacement[bar.main]=step.uid
+                end
+            end
         end
-        steps[#steps+1] = step
+        steps[#steps+1]=step
+        if step.kind=="unequip" then bag[step.uid]=true;free=free-1
+        elseif from then
+            -- Occupied ring destinations exchange with the source; empty worn
+            -- destinations simply release the source without using the bag.
+        else
+            bag[step.uid]=nil
+            if old then bag[old]=true else free=free+1 end
+        end
+        if implicit and worn[implicit] then bag[worn[implicit]]=true;free=free-1 end
+        for slot,value in pairs(step.effects) do worn[slot]=uid(value) end
     end
-    for _ = 1, 100 do
-        local complete = true
-        for _, slot in ipairs(Slots.Order) do if worn[slot] ~= wanted[slot] then complete = false; break end end
+    for _=1,100 do
+        local complete=true
+        for _,slot in ipairs(Slots.Order) do if worn[slot]~=wanted[slot] then complete=false;break end end
         if complete then return steps end
-        local moved = false
-        -- An equip into an empty slot creates space. Exhaust these before
-        -- replacements or removals, so a full backpack can still make progress.
-        for _, emptyOnly in ipairs({true, false}) do
-            for _, slot in ipairs(Slots.Order) do
-                local id, old = wanted[slot], worn[slot]
-                local buffer = capabilities.fullBagEquipSwap == true and 0 or 1
-                if id and id ~= old and bag[id] and (not emptyOnly or not old)
-                    and (not old or free >= buffer) and ready(id, slot) then
-                    append({kind="equip", uid=id, equipSlot=slot})
-                    bag[id] = nil
-                    if old then bag[old] = true else free = free + 1 end
-                    worn[slot] = id; moved = true; break
+        local moved=false
+        for _,emptyOnly in ipairs({true,false}) do
+            for _,slot in ipairs(Slots.Order) do
+                local id,old=wanted[slot],worn[slot]
+                if id and id~=old and bag[id] and (not emptyOnly or not old) and ready(id,slot) then
+                    local implicit
+                    for _,bar in ipairs({Slots.Front,Slots.Back}) do
+                        if slot==bar.main and isTwoHanded(metadata(state,id)) and worn[bar.off] then implicit=bar.off end
+                    end
+                    local cost=(old and capabilities.fullBagEquipSwap~=true and 1 or 0)+(implicit and 1 or 0)
+                    if free>=cost then append({kind="equip",uid=id,equipSlot=slot},cost,implicit);moved=true;break end
                 end
             end
             if moved then break end
         end
-        if not moved and free >= 1 then
-            -- Prefer an item needed elsewhere: this breaks cycles and avoids
-            -- filling the temporary cell with unrelated explicit removals.
-            for _, neededOnly in ipairs({true, false}) do
-                for _, slot in ipairs(Slots.Order) do
-                    local id = worn[slot]
-                    local needed = false
-                    if id then for _, finalId in pairs(wanted) do if id == finalId then needed = true; break end end end
-                    if id and id ~= wanted[slot] and (not neededOnly or needed) then
-                        append({kind="unequip", uid=id, equipSlot=slot})
-                        worn[slot] = nil; bag[id] = true; free = free - 1; moved = true; break
+        if not moved then
+            for _,slot in ipairs(Slots.Order) do
+                local id,old=wanted[slot],worn[slot];local from=id and source(id)
+                local ring=slot==EQUIP_SLOT_RING1 or slot==EQUIP_SLOT_RING2
+                -- Only empty destinations and complete ring exchanges were
+                -- tested directly; other occupied relocations retain a barrier.
+                if from and from~=slot and (not old or ring and old==wanted[from]) and ready(id,slot) then
+                    local implicit
+                    for _,bar in ipairs({Slots.Front,Slots.Back}) do
+                        if slot==bar.main and isTwoHanded(metadata(state,id)) and worn[bar.off] then implicit=bar.off end
+                    end
+                    if free>=(implicit and 1 or 0) then append({kind="equip",uid=id,equipSlot=slot},implicit and 1 or 0,implicit);moved=true;break end
+                end
+            end
+        end
+        if not moved and free>=1 then
+            local blockers={}
+            for _,dest in ipairs(Slots.Order) do
+                local id=wanted[dest]
+                if id and id~=worn[dest] then
+                    local m=metadata(state,id);local from=source(id)
+                    if from and from~=dest then blockers[from]=true end
+                    for slot,existing in pairs(worn) do
+                        local old=metadata(state,existing)
+                        if existing~=id and (m.mythic and old.mythic and slot~=dest or sameUnique(m,old)) then blockers[slot]=true end
+                    end
+                    for _,bar in ipairs({Slots.Front,Slots.Back}) do
+                        if dest==bar.off and isTwoHanded(metadata(state,worn[bar.main])) then blockers[bar.main]=true end
                     end
                 end
-                if moved then break end
+            end
+            for _,slot in ipairs(Slots.Order) do
+                if worn[slot] and worn[slot]~=wanted[slot] and (not wanted[slot] or blockers[slot]) then
+                    append({kind="unequip",uid=worn[slot],equipSlot=slot},1);moved=true;break
+                end
             end
         end
         if not moved then return nil end
     end
-    return nil
 end
 
 function Planner.Build(state, intent, mode, capabilities)

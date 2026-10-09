@@ -500,7 +500,7 @@ function Instance:ReconcilePending()
         if pending.batch then
             local compatible=pending.before~=nil and pending.expected~=nil
             local touched={}
-            for _,member in ipairs(pending.batch) do touched[member.equipSlot]=true end
+            for _,member in ipairs(pending.batch) do for slot in pairs(member.effects or {[member.equipSlot]=true})do touched[slot]=true end end
             if compatible then
                 for _,slot in ipairs(Slots.Order) do
                     local v=state.worn[slot]
@@ -517,7 +517,7 @@ function Instance:ReconcilePending()
                     -- each destination/source pair against the current state
                     -- of its siblings, retaining incomplete requests only.
                     local expected=KW.Copy(state.worn)
-                    expected[step.equipSlot]=KW.Copy(pending.expected[step.equipSlot])
+                    for slot,value in pairs(step.effects or {[step.equipSlot]=pending.expected[step.equipSlot]})do expected[slot]=KW.Copy(value)end
                     if mapValid(expected,true) then step.expected=expected end
                 end
                 requests[#requests+1]=step
@@ -525,24 +525,13 @@ function Instance:ReconcilePending()
         else requests[#requests+1]=pending end
     end
     for _,step in ipairs(requests) do
-        local v=state.worn[step.equipSlot]; local loc=state.byUid[step.uid]
         -- Destination-only observation is insufficient: the transfer may still
         -- be waiting for the source release or displaced item's backpack update.
         -- Legacy evidence without a complete boundary remains conservative.
         local observed=step.expected and step.before and Slots.Equal(state.worn,step.expected)
-        if observed and step.kind=="equip" then
-            observed=v.kind=="item" and v.uid==step.uid and step.source~=nil
-            if observed then
-                local source=self.inventory:ReadSlot(step.source.bagId,step.source.slotIndex)
-                observed=not source or source.uid~=step.uid
-            end
-            local displaced=step.before[step.equipSlot]
-            if observed and displaced.kind=="item" and displaced.uid~=step.uid then
-                local destination=state.byUid[displaced.uid]
-                observed=destination and destination.bagId==BAG_BACKPACK
-            end
-        elseif observed then
-            observed=v.kind=="empty" and loc and loc.bagId==BAG_BACKPACK
+        if observed then
+            observed=KW.EquipmentRunner.IsPendingConfirmed(self.inventory,
+                {before=step.before,expected=step.expected,batch={step}},state)
         end
         if not observed then remaining[#remaining+1]=step end
     end

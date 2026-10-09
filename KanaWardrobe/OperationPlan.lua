@@ -68,11 +68,13 @@ function P.Build(snapshot,requested,services,capabilities,catalogue)
   local batch,batchId
   local function flush()
    if not batch then return end
-   if #batch==1 then add(batch[1].kind,batch[1])
+   local count=0;for _ in pairs(batch[1].effects)do count=count+1 end
+   if #batch==1 and count==1 then add(batch[1].kind,batch[1])
    else
     local before,target,items={},{},{}
     for _,item in ipairs(batch)do
-     before[item.equipSlot]=KW.Copy(item.before);target[item.equipSlot]=KW.Copy(item.target)
+     for slot,value in pairs(item.beforeEffects)do if before[slot]==nil then before[slot]=KW.Copy(value)end end
+     for slot,value in pairs(item.effects)do target[slot]=KW.Copy(value)end
      items[#items+1]=KW.Copy(item.details)
     end
     add('equipBatch',{items=batch,before=before,target=target,details={items=items}})
@@ -80,14 +82,16 @@ function P.Build(snapshot,requested,services,capabilities,catalogue)
    batch=nil
   end
   for _,step in ipairs(gear.steps)do
-   local after=step.kind=='equip' and KW.Copy(gear.target[step.equipSlot])or {kind='empty'}
+   local after=step.kind=='equip' and {kind='item',uid=step.uid,link=snapshot.equipmentState.byUid[step.uid].link or ''}or {kind='empty'}
    local location=snapshot.equipmentState.byUid[step.uid]
-   if step.kind~='equip' or not step.batchId or step.batchId~=batchId then flush()end
-   local item={kind=step.kind,uid=step.uid,equipSlot=step.equipSlot,before=KW.Copy(worn[step.equipSlot]),target=after,
-    details={uid=step.uid,slot=step.equipSlot,link=location and location.link or '',before=KW.Copy(worn[step.equipSlot]),target=after}}
-   if step.kind=='equip'then batch=batch or {};batch[#batch+1]=item;batchId=step.batchId
-   else add(step.kind,item);batchId=nil end
-   worn[step.equipSlot]=after
+   if not step.batchId or step.batchId~=batchId then flush()end
+   local item=KW.Copy(step)
+   item.before=KW.Copy(worn[step.equipSlot]);item.target=KW.Copy(after)
+   item.effects=item.effects or {[step.equipSlot]=KW.Copy(after)}
+   item.beforeEffects=item.beforeEffects or {[step.equipSlot]=KW.Copy(item.before)}
+   item.details={kind=step.kind,sourceSlot=step.sourceSlot,uid=step.uid,slot=step.equipSlot,link=location and location.link or '',before=KW.Copy(item.before),target=KW.Copy(after)}
+   batch=batch or {};batch[#batch+1]=item;batchId=step.batchId
+   for slot,value in pairs(item.effects)do worn[slot]=KW.Copy(value)end
   end
   flush()
   if #result.steps>0 then segmentEnds[#segmentEnds+1]=#result.steps end

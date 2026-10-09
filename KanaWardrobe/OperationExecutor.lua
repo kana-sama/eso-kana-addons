@@ -7,6 +7,7 @@ function X.New(saved,clock,handlers,onChanged,onComplete,onFailure)
   operation=J.Load(saved),generation=0},I)
 end
 function I:IsBusy()
+ if self.externalBusy and self.externalBusy()then return true end
  local op=self.operation;return op~=nil and (op.status=='running' or op.status=='pausing')
 end
 function I:GetView()

@@ -6,6 +6,11 @@ return function(specs)
  local f=AF.Attach(BF.InstallSkills(BF.New(),specs or {{lineId=10,kind='active',id=51,purchased=true,morph=1}}));BF.InstallSkillDrafts(f)
  f.k=k;f.events=k.Core.NewEvents();f.skills=k.SkillAdapter.New(f.api,f.events,f.clock);f.attributes=k.AttributeAdapter.New(f.api,f.events)
  f.inventory=k.Inventory.New(f.api);f.repo=k.Presets.New({},'EU','a','c','Kana');f.protection=k.Protection.New(f.repo,f.inventory)
+ f.api.GetBagSize=function()return 2000 end
+ f.api.CallSecureProtected=function(name,bag,slot,destBag,destSlot,count)
+  assert(name=='RequestMoveItem' and count==1)
+  f.api.requests[#f.api.requests+1]={'move',bag,slot,destBag,destSlot};return true
+ end
  f.api.IsUnitDeadOrReincarnating=function()return false end
  f.api.CanItemBePlayerLocked=function()return true end
  f.api.IsItemPlayerLocked=function(bag,slot)return f.api.bags[bag][slot].locked==true end
@@ -29,10 +34,8 @@ return function(specs)
   return {kind='item',uid=id,link=id}
  end
  function f:AckGear(index)
-  local r=self.api.requests[index or #self.api.requests];local bag,slot=r[2],r[3]
-  local item=self.api.bags[bag][slot];self.api.bags[bag][slot]=nil
-  if r[1]=='equip'then local old=self.api.bags[BAG_WORN][r[5]];self.api.bags[BAG_WORN][r[5]]=item;self.api.bags[bag][slot]=old
-  else self.api.bags[BAG_BACKPACK][90+#self.api.requests]=item end
+  index=index or #self.api.requests
+  dofile(ROOT..'/tests/support/gear_ack.lua')(self.api,self.api.requests[index],index)
   self.events:Emit('InventoryChanged',{});self:Advance(1)
  end
  return f

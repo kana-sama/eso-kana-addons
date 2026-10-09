@@ -45,22 +45,31 @@ function I:GearBatch(step,op,report,done)
  local receipts=KW.Copy(step.pending and step.pending.receipts or {})
  local pending={domain='equipment',receipts=receipts,maySent=false}
  local function reached(item,actual)
-  if not sameRef(actual.worn[item.equipSlot],item.target)then return false end
+  local effects=item.effects or {[item.equipSlot]=item.target}
+  for slot,value in pairs(effects)do if not sameRef(actual.worn[slot],value)then return false end end
   local source=receipts[item.uid]
   if source then
    local old=self.inventory:ReadSlot(source.bagId,source.slotIndex)
    if old and old.uid==item.uid then return false end
   end
-  if item.before.kind=='item' and item.before.uid~=item.uid then
-   local old=actual.byUid[item.before.uid]
-   if not old or old.bagId~=self.inventory.api.BAG_BACKPACK then return false end
+  if item.kind=='unequip'then
+   local location=actual.byUid[item.uid]
+   if not location or location.bagId~=self.inventory.api.BAG_BACKPACK then return false end
+  end
+  for _,before in pairs(item.beforeEffects or {[item.equipSlot]=item.before})do
+   if before.kind=='item' and before.uid~=item.uid then
+    local location=actual.byUid[before.uid];local destination
+    for slot,value in pairs(step.target)do if value.kind=='item' and value.uid==before.uid then destination=slot;break end end
+    if not location or destination and (location.bagId~=BAG_WORN or location.slotIndex~=destination)
+     or not destination and location.bagId~=BAG_BACKPACK then return false end
+   end
   end
   return true
  end
  local function missing(actual)
   local items={}
   for _,item in ipairs(step.items)do if not reached(item,actual)then
-   items[#items+1]={uid=item.uid,equipSlot=item.equipSlot,kind='equip',link=item.details.link,
+   items[#items+1]={uid=item.uid,equipSlot=item.equipSlot,kind=item.kind,link=item.details.link,
     actual=KW.Copy(actual.worn[item.equipSlot]),source=KW.Copy(actual.byUid[item.uid])}
   end end
   return items
@@ -73,21 +82,20 @@ function I:GearBatch(step,op,report,done)
   end,done)
  end
  if #missing(state)==0 then done({actual=state.worn,already=true});return end
- for _,item in ipairs(step.items)do
-  local actual=state.worn[item.equipSlot]
-  if not sameRef(actual,item.before)and not sameRef(actual,item.target)then
-   done(nil,KW.Problem('operationDependenciesChanged',{slot=item.equipSlot,expected=item.before,actual=actual}));return
+ for slot,before in pairs(step.before)do
+  local actual=state.worn[slot]
+  if not sameRef(actual,before)and not sameRef(actual,step.target[slot])then
+   done(nil,KW.Problem('operationDependenciesChanged',{slot=slot,expected=before,actual=actual}));return
   end
  end
- -- Rebuild from the live inventory: completed members disappear from the
- -- request list, and a partial failure never replays their old bag locations.
+ -- Retry builds a fresh diff for this group's effects. Already confirmed
+ -- members disappear, including the implicit half of a worn ring exchange.
  local plan,problem=KW.EquipmentPlan.Build(state,step.target,'apply',op.intent.capabilities or {})
  if not plan then done(nil,problem);return end
  if #plan.steps==0 then waitForRelease();return end
- local batchId=plan.steps[1].batchId
- for _,item in ipairs(plan.steps)do
-  if item.kind~='equip' or item.batchId~=batchId then
-   done(nil,KW.Problem('operationDependenciesChanged',{requiredSteps=plan.steps}));return
+ for slot,value in pairs(plan.target)do
+  if step.target[slot]==nil and not sameRef(value,state.worn[slot])then
+   done(nil,KW.Problem('operationDependenciesChanged',{slot=slot,expected=state.worn[slot],actual=value}));return
   end
  end
  local runner=KW.EquipmentRunner.New(self.inventory,self.events,self.clock)
@@ -107,6 +115,17 @@ function I:GearBatch(step,op,report,done)
  if not id then done(nil,err)end
 end
 function I:Gear(step,op,report,done)
+ -- Newly planned single-item steps use the same acknowledgement, explicit
+ -- destination and native-error handling as batches. Persisted older steps
+ -- without effects retain their original adapter for compatibility.
+ if step.effects then
+  local group={items={step},before=step.beforeEffects,target=step.effects,pending=step.pending}
+  return self:GearBatch(group,op,function(pending)
+   pending.kind=step.kind;pending.uid=step.uid;pending.equipSlot=step.equipSlot
+   pending.source=pending.batch and KW.Copy(pending.batch.source) or step.pending and KW.Copy(step.pending.source)
+   report(pending)
+  end,done)
+ end
  local state=self.inventory:Capture('equipment');local current=state.worn[step.equipSlot]
  local function reached(actual)
   if not sameRef(actual.worn[step.equipSlot],step.target)then return false end

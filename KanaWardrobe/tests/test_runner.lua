@@ -36,12 +36,7 @@ local function setup()
     end
     function f:ApplyRequest(index,emit)
         local q=a.requests[index]; assert(q,"request missing")
-        if q[1]=="equip" then
-            local v=a.bags[q[2]][q[3]]; local old=a.bags[BAG_WORN][q[5]]
-            a.bags[q[2]][q[3]]=old; a.bags[BAG_WORN][q[5]]=v
-        else
-            a.bags[BAG_BACKPACK][900+index]=a.bags[BAG_WORN][q[3]]; a.bags[BAG_WORN][q[3]]=nil
-        end
+        dofile(ROOT..'/tests/support/gear_ack.lua')(a,a.requests[index],index)
         if emit~=false then inv:Refresh() end
     end
     return f
@@ -293,14 +288,15 @@ function tests.pre_request_failure_is_definite_and_progress_can_cancel()
     f:Start(f:Plan({[EQUIP_SLOT_RING1]=v}),function(p) if p.phase=="requesting" then f.runner:Stop("cancelled") end end)
     assert(#f.a.requests==0 and #f.done==1 and not f.done[1].pending)
 end
-function tests.unequip_requires_item_in_backpack_before_next_step()
-    local f=setup(); local v=f:Add("ring",BAG_WORN,EQUIP_SLOT_RING1)
-    f:Start(f:Plan({[EQUIP_SLOT_RING2]=v})); assert(f.a.requests[1][1]=="unequip")
-    local item=f.a.bags[BAG_WORN][EQUIP_SLOT_RING1]; f.a.bags[BAG_WORN][EQUIP_SLOT_RING1]=nil; f.inv:Refresh(); f.clock:Advance(1)
-    assert(#f.a.requests==1 and #f.done==0)
-    f.a.bags[BAG_BACKPACK][9]=item; f.inv:Refresh(); f.clock:Advance(1); assert(#f.a.requests==2 and f.a.requests[2][3]==9)
-    f:ApplyRequest(2); f.clock:Advance(1); assert(f.done[1].status=="success")
+function tests.direct_worn_transfer_requires_both_source_release_and_target_ack()
+    local f=setup();local v=f:Add("ring",BAG_WORN,EQUIP_SLOT_RING1)
+    f:Start(f:Plan({[EQUIP_SLOT_RING2]=v}));assert(#f.a.requests==1 and f.a.requests[1][1]=="equip")
+    f.a.bags[BAG_WORN][EQUIP_SLOT_RING2]=f.a.bags[BAG_WORN][EQUIP_SLOT_RING1]
+    f.inv:Refresh();f.clock:Advance(1);assert(not f.done[1],"transient duplicate UID is not a complete transfer")
+    f.a.bags[BAG_WORN][EQUIP_SLOT_RING1]=nil;f.inv:Refresh();f.clock:Advance(1)
+    assert(f.done[1].status=="success" and #f.a.requests==1)
 end
+
 function tests.replacement_tolerates_transient_empty_target_but_requires_displaced_uid()
     local f=setup(); f:Add("old",BAG_WORN,EQUIP_SLOT_RING1); local v=f:Add("new",BAG_BACKPACK,3)
     f:Start(f:Plan({[EQUIP_SLOT_RING1]=v}))
@@ -479,13 +475,13 @@ function tests.outgoing_mythic_and_unique_item_must_confirm_before_incoming()
         f:ApplyRequest(2); f.clock:Advance(1); assert(f.done[1].status=="success")
     end
 end
-function tests.two_handed_to_dual_wield_waits_for_main_hand_replacement()
+function tests.two_handed_to_dual_wield_dispatches_main_before_off_in_one_turn()
     local f=setup(); f:Add("greatsword",BAG_WORN,EQUIP_SLOT_MAIN_HAND,EQUIP_TYPE_TWO_HAND)
     local sword=f:Add("sword",BAG_BACKPACK,1,EQUIP_TYPE_ONE_HAND)
     local dagger=f:Add("dagger",BAG_BACKPACK,2,EQUIP_TYPE_ONE_HAND)
     f:Start(f:Plan({[EQUIP_SLOT_MAIN_HAND]=sword,[EQUIP_SLOT_OFF_HAND]=dagger}))
-    assert(#f.a.requests==1 and f.a.requests[1][5]==EQUIP_SLOT_MAIN_HAND)
-    f:ApplyRequest(1); f.clock:Advance(1); assert(#f.a.requests==2)
+    assert(#f.a.requests==2 and f.a.requests[1][5]==EQUIP_SLOT_MAIN_HAND and f.a.requests[2][5]==EQUIP_SLOT_OFF_HAND)
+    f:ApplyRequest(1); f.clock:Advance(1); assert(not f.done[1])
     f:ApplyRequest(2); f.clock:Advance(1); assert(f.done[1].status=="success")
 end
 function tests.rejected_second_request_keeps_the_first_unconfirmed_request()
@@ -508,19 +504,16 @@ function tests.cancel_before_second_dispatch_does_not_claim_it_was_sent()
     assert(#f.a.requests==1 and f.done[1].status=="interrupted" and #f.done[1].pending.batch==1)
     assert(f.done[1].pending.batch[1].uid=="hat")
 end
-function tests.limited_bag_space_splits_removals_from_their_dependent_equips()
-    local f=setup();f.a.free=2
+function tests.ring_exchange_has_no_temporary_backpack_space_requirement()
+    local f=setup();f.a.free=0
     local a=f:Add('a',BAG_WORN,EQUIP_SLOT_RING1);local b=f:Add('b',BAG_WORN,EQUIP_SLOT_RING2)
     f:Start(f:Plan({[EQUIP_SLOT_RING1]=b,[EQUIP_SLOT_RING2]=a}))
-    assert(#f.a.requests==1 and f.a.requests[1][1]=='unequip')
+    assert(#f.a.requests==1 and f.a.requests[1][1]=='equip' and f.a.requests[1][2]==BAG_WORN)
     f:ApplyRequest(1);f.clock:Advance(1)
-    assert(#f.a.requests==2 and f.a.requests[2][1]=='equip')
-    f:ApplyRequest(2);f.clock:Advance(1)
-    assert(#f.a.requests==3 and f.a.requests[3][1]=='equip')
-    f:ApplyRequest(3);f.clock:Advance(1)
     assert(f.done[1].status=='success' and f.a.bags[BAG_WORN][EQUIP_SLOT_RING1].uid=='b'
         and f.a.bags[BAG_WORN][EQUIP_SLOT_RING2].uid=='a')
 end
+
 function tests.explicit_removals_wait_for_destination_ack_even_with_free_space()
     local f=setup();f.a.free=2
     f:Add('a',BAG_WORN,EQUIP_SLOT_RING1);f:Add('b',BAG_WORN,EQUIP_SLOT_RING2)

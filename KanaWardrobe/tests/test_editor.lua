@@ -43,8 +43,7 @@ local function setup()
     function f:Preset(slots,name) local p=repo:NewDraft(); p.slots=slots; p.name=name or "Test"; return assert(repo:Save(p,0)) end
     function f:ApplyRequest(index)
         local q=a.requests[index]; assert(q,"missing request")
-        if q[1]=="equip" then local v=a.bags[q[2]][q[3]]; a.bags[q[2]][q[3]]=a.bags[BAG_WORN][q[5]]; a.bags[BAG_WORN][q[5]]=v
-        else a.bags[BAG_BACKPACK][900+index]=a.bags[BAG_WORN][q[3]]; a.bags[BAG_WORN][q[3]]=nil; a.free=a.free-1 end
+        dofile(ROOT..'/tests/support/gear_ack.lua')(a,a.requests[index],index)
         inv:Refresh()
     end
     function f:Drain()
@@ -232,19 +231,19 @@ function tests.progress_observer_error_requires_recovery_without_rollback()
     assert(#f.a.requests==0 and not f.runner:IsBusy() and f.saved.journal~=nil)
 end
 function tests.safe_adapter_failure_rolls_back_confirmed_steps()
-    local f=setup(); local ring=f:Add("ring",BAG_WORN,EQUIP_SLOT_RING1)
-    local p=f:Preset({[EQUIP_SLOT_RING1]={kind="empty"},[EQUIP_SLOT_RING2]=ring})
-    local original=f.inv:Capture().worn; assert(f.session:Apply(p.id))
-    -- A worn-to-worn move has a real dependency: removal must finish first.
-    f:ApplyRequest(1); f.applied=1
-    f.a.bags[BAG_BACKPACK][901].unusable=true
+    local f=setup();f:Add("old-mythic",BAG_WORN,EQUIP_SLOT_HEAD,EQUIP_TYPE_HEAD)
+    local incoming=f:Add("new-mythic",BAG_BACKPACK,1,EQUIP_TYPE_NECK)
+    f.a.descriptions['link:old-mythic'].quality=99;f.a.descriptions['link:new-mythic'].quality=99
+    local p=f:Preset({[EQUIP_SLOT_NECK]=incoming});local original=f.inv:Capture().worn
+    assert(f.session:Apply(p.id));assert(f.session:Confirm(f.session:GetView().confirmation.plan.extraKey))
+    f:ApplyRequest(1);f.applied=1;f.a.bags[BAG_BACKPACK][1].unusable=true
     local request=f.inv.Request
     f.inv.Request=function(self,step)
         local ok,problem=request(self,step)
-        if not ok then f.a.bags[BAG_BACKPACK][901].unusable=false end
+        if not ok then f.a.bags[BAG_BACKPACK][1].unusable=false end
         return ok,problem
     end
-    f.clock:Advance(1); f:Drain()
+    f.clock:Advance(1);f:Drain()
     assert(f.k.Slots.Equal(original,f.inv:Capture().worn) and f.saved.journal==nil and f.session:GetView().problem~=nil)
 end
 
@@ -323,26 +322,19 @@ function tests.commit_observer_exception_reports_saved_and_keeps_explicit_recove
     end
 end
 function tests.pending_worn_slot_move_restore_reload_keeps_valid_uncertain_evidence()
-    local f=setup(); local ring=f:Add("r",BAG_WORN,EQUIP_SLOT_RING2); local original=f.inv:Capture().worn
-    local preset=f:Preset({[EQUIP_SLOT_RING1]=ring}); assert(f.session:Apply(preset.id))
-    assert(f.session:Confirm(f.session:GetView().confirmation.plan.extraKey))
-    f:ApplyRequest(1); f.applied=1; f.clock:Advance(1)
-    assert(#f.a.requests==2 and f.a.requests[2][1]=="equip" and f.a.requests[2][5]==EQUIP_SLOT_RING1)
-    f.clock:Advance(5001); assert(f.session:GetView().problem.code=="requestTimeout")
+    local f=setup();local ring=f:Add("r",BAG_WORN,EQUIP_SLOT_RING2);local original=f.inv:Capture().worn
+    local preset=f:Preset({[EQUIP_SLOT_RING1]=ring});assert(f.session:Apply(preset.id))
+    assert(f.session:Confirm(f.session:GetView().confirmation.plan.extraKey));assert(#f.a.requests==1)
+    f.clock:Advance(5001);assert(f.session:GetView().problem.code=="requestTimeout")
     local source=f.k.Copy(f.saved.journal.pending.source)
-    assert(f.session:Recover("restore")); assert(#f.a.requests==3)
-    f.applied=2; f:Drain(); assert(f.k.Slots.Equal(f.inv:Capture().worn,original))
-    local outstanding=f.saved.journal.unresolvedRequests[1]; assert(outstanding.uid=="r" and outstanding.equipSlot==EQUIP_SLOT_RING1)
-    local copies=0; for _,value in pairs(outstanding.expected) do if value.kind=="item" and value.uid=="r" then copies=copies+1 end end
-    assert(copies==1,"outstanding full-snapshot evidence must remain UID-unique")
-    assert(outstanding.source.bagId==source.bagId and outstanding.source.slotIndex==source.slotIndex)
-    assert(outstanding.before[EQUIP_SLOT_RING1].kind=="empty")
-    f:Reload(); assert(f.session:GetView().problem.code~="invalidJournal")
-    assert(f.session:Recover("restore")); assert(f.saved.journal and f.session:GetView().problem.code=="pendingRequest")
-    assert(#f.saved.journal.unresolvedRequests==1 and #f.a.requests==3)
-    f:Reload(); assert(f.session:Recover("restore")); assert(f.saved.journal and #f.saved.journal.unresolvedRequests==1)
-    assert(f.session:Recover("keepCurrent")); assert(f.saved.journal==nil)
+    assert(source.bagId==BAG_WORN and source.slotIndex==EQUIP_SLOT_RING2)
+    assert(f.session:Recover("restore"));assert(#f.a.requests==1 and f.saved.journal.unresolvedRequests[1].uid=='r')
+    f:Reload();assert(f.session:GetView().problem.code~='invalidJournal')
+    assert(f.session:Recover('restore'));assert(#f.saved.journal.unresolvedRequests==1 and #f.a.requests==1)
+    f:ApplyRequest(1);f.applied=1;assert(f.session:Recover('restore'));f:Drain()
+    assert(f.k.Slots.Equal(f.inv:Capture().worn,original) and f.saved.journal==nil)
 end
+
 function tests.reload_mid_sequence_preserves_pending_source_and_restores_originals()
     local f=setup(); local original=f.inv:Capture().worn
     local hat=f:Add("hat",BAG_BACKPACK,1,EQUIP_TYPE_HEAD); local ring=f:Add("ring",BAG_BACKPACK,2)
