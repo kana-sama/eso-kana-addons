@@ -272,7 +272,7 @@ local function pair(a,b,ru,suffix,sign)
     return "[ "..(a~=0 and one(a) or "—").." | "..(b~=0 and one(b) or "—").." ]"
 end
 local function sourceName(source,ru)
-    local name=source.name
+    local name=source.kind=="set" and source.setName or source.name
     if not name and source.link and GetItemLinkName then name=GetItemLinkName(source.link)end
     if name and name~="" then
         if zo_strformat and SI_TOOLTIP_ITEM_NAME then name=zo_strformat(SI_TOOLTIP_ITEM_NAME,name)end

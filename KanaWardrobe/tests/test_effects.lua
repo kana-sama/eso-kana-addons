@@ -373,8 +373,9 @@ function tests.breakdowns_preserve_items_set_provenance_and_exact_displayed_sums
     local sets=0
     for _,r in ipairs(power.tooltip.rows)do
         assert(r.link and r.source.uid)
-        if r.source.kind=="set" then sets=sets+1;assert(r.front==124 and r.name=="Head",
-            "set contributions show only the representative item name")end
+        if r.source.kind=="set" then sets=sets+1;assert(r.front==124 and r.name=="Set",
+            "set contributions must display the set name, not its representative item")
+        else assert(r.name==r.link,'item contributions must retain their item names')end
     end
     assert(sets==1,"a set bonus is one collective contribution, never repeated per piece")
     assert(#crit.tooltip.rows==2 and crit.tooltip.differentBars)
