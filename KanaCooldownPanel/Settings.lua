@@ -3,6 +3,7 @@ local DEFAULTS = {
     fixedBars = false,
     frontBarPosition = 'bottom',
     activeBarPosition = 'bottom',
+    highlightActiveBar = false,
     alertStyle = 'red',
     iconStyle = 'square',
 }
@@ -10,6 +11,7 @@ local DEFAULTS = {
 function addon:InitializeOptions(settings)
     self.settings = settings
     if type(settings.fixedBars) ~= 'boolean' then settings.fixedBars = DEFAULTS.fixedBars end
+    if type(settings.highlightActiveBar) ~= 'boolean' then settings.highlightActiveBar = DEFAULTS.highlightActiveBar end
     for key, choices in pairs({
         frontBarPosition = {top = true, bottom = true},
         activeBarPosition = {top = true, bottom = true},
@@ -26,7 +28,7 @@ function addon:InitializeSettings()
     local panelName = 'KanaCooldownPanelOptions'
     LibAddonMenu2:RegisterAddonPanel(panelName, {
         type = 'panel', name = 'KanaCooldownPanel', displayName = 'KanaCooldownPanel',
-        author = 'Kana', version = '1.2.0', registerForRefresh = true, registerForDefaults = true,
+        author = 'Kana', version = '1.3.0', registerForRefresh = true, registerForDefaults = true,
     })
     local function Getter(key)
         return function() return addon.settings[key] end
@@ -59,6 +61,12 @@ function addon:InitializeSettings()
             choices = ru and {'Сверху', 'Снизу'} or {'Top', 'Bottom'}, choicesValues = {'top', 'bottom'},
             disabled = function() return addon.settings.fixedBars end,
             getFunc = Getter('activeBarPosition'), setFunc = Setter('activeBarPosition'), default = DEFAULTS.activeBarPosition,
+        },
+        {
+            type = 'checkbox', name = ru and 'Выделение активной панели' or 'Highlight active bar',
+            tooltip = ru and 'Полупрозрачная белая подложка со скруглёнными краями за активной строкой. При фиксированных панелях плавно переезжает за 180 мс при смене оружия.'
+                or 'A translucent white rounded backdrop behind the active row. With fixed bars, it slides to the active row over 180 ms when swapping weapons.',
+            getFunc = Getter('highlightActiveBar'), setFunc = Setter('highlightActiveBar'), default = DEFAULTS.highlightActiveBar,
         },
         {
             type = 'dropdown', name = ru and 'Тип alert-иконки' or 'Alert style',

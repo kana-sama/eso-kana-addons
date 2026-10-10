@@ -12,8 +12,9 @@ function methods:SetHidden(hidden)
     if changed and handler then handler(self) end
 end
 function methods:IsHidden() return self.hidden end
-function methods:IsEffectivelyHidden()
-    return self.hidden or (self.parent and self.parent:IsEffectivelyHidden()) or false
+-- ESO provides IsControlHidden (including ancestors), not IsEffectivelyHidden.
+function methods:IsControlHidden()
+    return self.hidden or (self.parent and self.parent:IsControlHidden()) or false
 end
 function methods:SetMouseEnabled(enabled) self.mouseEnabled = enabled end
 function methods:SetHandler(name, callback) self.handlers[name] = callback end
@@ -38,6 +39,7 @@ WINDOW_MANAGER = {
     CreateTopLevelWindow = function(_, name) return control(name) end,
 }
 EVENT_ADD_ON_LOADED, EVENT_PLAYER_ACTIVATED, EVENT_GLOBAL_MOUSE_UP, EVENT_PLAYER_COMBAT_STATE = 1, 2, 3, 4
+EVENT_ACTION_SLOTS_ACTIVE_HOTBAR_UPDATED = 5
 EVENT_MANAGER = {
     RegisterForEvent = function(_, name, event, callback) events[event] = callback end,
     UnregisterForEvent = function() end,
@@ -137,6 +139,7 @@ end
 
 assert(loadfile('Model.lua'))()
 assert(loadfile('Settings.lua'))()
+assert(loadfile('ActiveBar.lua'))()
 assert(loadfile('KanaCooldownPanel.lua'))()
 assert(loadfile('Menu.lua'))()
 events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'KanaCooldownPanel')
@@ -243,9 +246,9 @@ combat = false; events[EVENT_PLAYER_COMBAT_STATE]()
 assert(content:IsHidden() and not root.mouseEnabled, 'No uptime outside combat leaves the entire panel inert')
 assert(content.handlers.OnUpdate == nil, 'No red cells means no pulse update')
 fragments[1]:Hide(); fragments[1]:Show()
-assert(cell(1):IsEffectivelyHidden(), 'Closing a menu outside combat cannot flash an expired cell')
+assert(cell(1):IsControlHidden(), 'Closing a menu outside combat cannot flash an expired cell')
 combat = true; refresh(); fragments[1]:Hide(); refresh()
-assert(cell(1):IsEffectivelyHidden(), 'Polling cannot reveal the panel over an open menu')
+assert(cell(1):IsControlHidden(), 'Polling cannot reveal the panel over an open menu')
 combat = false; fragments[1]:Show()
 assert(content:IsHidden(), 'Scene reveal refreshes combat state even before the next poll')
 
@@ -254,7 +257,7 @@ local saved = KanaCooldownPanelSettings
 local function reload(characterId)
     ShowMenu, ZO_AbilitySlot_OnSlotClicked = nativeShowMenu, nativeSlotClicked
     GetCurrentCharacterId = function() return characterId end
-    dofile('Model.lua'); dofile('Settings.lua'); dofile('KanaCooldownPanel.lua'); dofile('Menu.lua')
+    dofile('Model.lua'); dofile('Settings.lua'); dofile('ActiveBar.lua'); dofile('KanaCooldownPanel.lua'); dofile('Menu.lua')
     events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'KanaCooldownPanel')
     events[EVENT_PLAYER_ACTIVATED]()
 end
@@ -271,8 +274,9 @@ print('PASS: four states, bars/rings, native menus, per-skill persistence, chara
 
 assert(panelName ~= 'KanaCooldownPanel' and panelName ~= 'KanaCooldownPanelSettings',
     'LAM panel must not overwrite addon or saved-variable globals')
-assert(panelData.registerForRefresh and #settingsOptions == 5, 'Five settings with live dependent refresh')
-local fixed, position, activePosition, alert, style = unpack(settingsOptions)
+assert(panelData.registerForRefresh and #settingsOptions == 6, 'Six settings with live dependent refresh')
+local fixed, position, activePosition, highlight, alert, style = unpack(settingsOptions)
+assert(highlight.getFunc() == false and highlight.disabled == nil, 'Highlight is independent, available in either mode, initially off')
 assert(activePosition.getFunc() == 'bottom' and not activePosition.disabled(), 'Dynamic active position defaults below and is available')
 assert(fixed.getFunc() == false and position.disabled(), 'Frontbar position is disabled until fixed layout is enabled')
 assert(position.getFunc() == 'bottom' and alert.getFunc() == 'red' and style.getFunc() == 'square',
@@ -354,12 +358,75 @@ alert.setFunc('red')
 assert(glow(1):IsHidden() and isRed(1) and label(1).text == '!', 'Changing alert style clears the previous treatment immediately')
 style.setFunc('skill'); alert.setFunc('gold')
 combat = false; refresh()
-assert(cell(1):IsHidden() and glow(1):IsEffectivelyHidden(), 'Gold skill warning is absent outside combat')
+assert(cell(1):IsHidden() and glow(1):IsControlHidden(), 'Gold skill warning is absent outside combat')
 reload('character-a')
 assert(settingsOptions[1].getFunc() and settingsOptions[2].getFunc() == 'top'
     and settingsOptions[3].getFunc() == 'top'
-    and settingsOptions[4].getFunc() == 'gold' and settingsOptions[5].getFunc() == 'skill',
+    and settingsOptions[5].getFunc() == 'gold' and settingsOptions[6].getFunc() == 'skill',
     'All presentation settings including dynamic position survive reload')
 assert(KanaCooldownPanelSettings.y == 220 and KanaCooldownPanelSettings.characters['character-a'].skills['skill:10'].hidden,
     'Presentation settings preserve existing position and skill preferences')
 print('PASS: live settings, fixed/dynamic rows, alert styles, native icons and opacity, persistence')
+
+fixed, position, activePosition, highlight = unpack(settingsOptions)
+local backdrop = controls.KanaCooldownPanelActiveBar
+local currentContent = controls.KanaCooldownPanelContent
+fragments[#fragments]:Show()
+bars[0][3] = {401, 10000, duration = 10000}; bars[1][3] = {201, 8000, duration = 10000}
+combat, activeBar = true, 0
+fixed.setFunc(true); position.setFunc('top')
+assert(backdrop:IsHidden(), 'Disabled highlighting leaves the old presentation unchanged')
+highlight.setFunc(true)
+assert(not backdrop:IsControlHidden() and backdrop.width == 234 and backdrop.height == 50,
+    'A single padded backdrop spans all five skills')
+assert(backdrop.color[1] == 1 and backdrop.color[2] == 1 and backdrop.color[3] == 1
+    and backdrop.color[4] > 0 and backdrop.color[4] < 0.3, 'Backdrop is translucent white')
+assert(backdrop.layer == cell(1).layer and backdrop.level < cell(1).level and not backdrop.mouseEnabled,
+    'Backdrop draws behind cells and cannot intercept dragging')
+assert(backdrop.texture == 'eso-kana-addons/KanaCooldownPanel/textures/ActiveRow.dds', 'Uses the rounded asset from the installed repo path')
+assert(backdrop.anchor[5] == -4 and not backdrop.handlers.OnUpdate, 'Enabling snaps to the current active row')
+local function swap(category)
+    activeBar = category
+    events[EVENT_ACTION_SLOTS_ACTIVE_HOTBAR_UPDATED]()
+end
+swap(1)
+assert(backdrop.anchor[5] == -4 and backdrop.handlers.OnUpdate, 'Fixed swap starts moving immediately, without jumping')
+now = now + 0.09; backdrop.handlers.OnUpdate()
+assert(math.abs(backdrop.anchor[5] - 19) < 0.00001, 'Halfway through the 180ms transition is halfway between rows')
+refresh()
+now = now + 0.10; backdrop.handlers.OnUpdate()
+assert(backdrop.anchor[5] == 42 and not backdrop.handlers.OnUpdate, 'Polling does not restart the animation; it stops exactly on the row')
+assert(currentContent.handlers.OnUpdate, 'Red/gold pulse driver remains independent from movement')
+swap(0); now = now + 0.05; backdrop.handlers.OnUpdate()
+local interruptedY = backdrop.anchor[5]
+swap(1)
+assert(math.abs(backdrop.anchor[5] - interruptedY) < 0.00001, 'A rapid reverse swap starts from the visible position')
+now = now + 0.2; backdrop.handlers.OnUpdate(); assert(backdrop.anchor[5] == 42)
+fixed.setFunc(false); activePosition.setFunc('top')
+assert(backdrop.anchor[5] == -4 and not backdrop.handlers.OnUpdate, 'Dynamic layout changes place the backdrop without a swap animation')
+swap(0); swap(1)
+assert(backdrop.anchor[5] == -4 and not backdrop.handlers.OnUpdate, 'Dynamic swaps leave the backdrop at the selected active position')
+activePosition.setFunc('bottom'); assert(backdrop.anchor[5] == 42)
+fixed.setFunc(true); swap(0)
+highlight.setFunc(false)
+assert(backdrop:IsHidden() and not backdrop.handlers.OnUpdate, 'Disabling cancels an in-flight animation')
+highlight.setFunc(true); swap(1)
+rings[EQUIP_SLOT_RING1] = 187658; refresh()
+assert(backdrop.anchor[5] == -4 and not backdrop.handlers.OnUpdate, 'Single-row override snaps and cancels movement')
+rings[EQUIP_SLOT_RING1] = nil; refresh()
+wolf, activeBar = true, 2; refresh()
+assert(backdrop.anchor[5] == -4 and not backdrop.handlers.OnUpdate, 'Werewolf highlights its only row')
+wolf, activeBar = false, 0; refresh(); swap(1)
+fragments[#fragments]:Hide()
+assert(backdrop:IsControlHidden() and not backdrop.handlers.OnUpdate, 'Menu hide cancels movement and hides the backdrop')
+swap(0); swap(1)
+fragments[#fragments]:Show()
+assert(backdrop.anchor[5] == 42 and not backdrop.handlers.OnUpdate, 'Scene return snaps to the current active row')
+for _, data in pairs(bars[1]) do data[2] = 0 end
+combat = false; refresh()
+assert(backdrop:IsHidden() and not currentContent:IsHidden(), 'Empty active row has no backdrop even if the other row has a timer')
+for _, bar in pairs(bars) do for _, data in pairs(bar) do data[2] = 0 end end
+refresh(); assert(currentContent:IsHidden() and backdrop:IsControlHidden(), 'Highlight never reveals an otherwise empty HUD')
+reload('character-a')
+assert(settingsOptions[4].getFunc(), 'Highlight preference survives reload independently')
+print('PASS: active-row backdrop, fixed-swap animation, interruption, dynamic layout, single row and scene lifecycle')

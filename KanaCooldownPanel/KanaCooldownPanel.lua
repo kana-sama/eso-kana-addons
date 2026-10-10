@@ -65,6 +65,7 @@ function addon:Refresh()
     local skillIcons = settings.iconStyle == 'skill'
     local goldAlert = settings.alertStyle == 'gold'
     local visible, pulsing = false, false
+    local active, activeRowVisible = GetActiveHotbarCategory(), false
     for index = 1, COLUMNS * MAX_ROWS do
         local row = math.floor((index - 1) / COLUMNS) + 1
         local slot = ACTION_BAR_FIRST_NORMAL_SLOT_INDEX + (index - 1) % COLUMNS + 1
@@ -94,11 +95,13 @@ function addon:Refresh()
             pulsing = true
         end
         visible = visible or state ~= 'skip'
+        if bars[row] == active and state ~= 'skip' then activeRowVisible = true end
     end
     if not visible then StopDrag() end
     -- Scene fragments control only the root. Empty content stays hidden when
     -- a fragment unhides the root on returning from a menu.
     content:SetHidden(not visible)
+    self.activeBarHighlight:Update(bars, activeRowVisible)
     root:SetMouseEnabled(visible)
     content:SetHandler('OnUpdate', pulsing and Pulse or nil)
     if pulsing then Pulse() end
@@ -131,6 +134,7 @@ local function Initialize(_, addonName)
     content:SetAnchorFill(root)
     content:SetMouseEnabled(false)
     content:SetHidden(true)
+    addon:CreateActiveBarHighlight(content, WIDTH, CELL, GAP)
 
     for index = 1, COLUMNS * MAX_ROWS do
         local column = (index - 1) % COLUMNS
@@ -141,6 +145,7 @@ local function Initialize(_, addonName)
         cell:SetCenterColor(0, 0, 0, 0.55)
         cell:SetEdgeColor(0, 0, 0, 0)
         cell:SetDrawLayer(DL_BACKGROUND)
+        cell:SetDrawLevel(1)
         cell:SetMouseEnabled(false)
         cell:SetHidden(true)
         cells[index] = cell
@@ -197,7 +202,10 @@ local function Initialize(_, addonName)
     root:SetHandler('OnMouseUp', function(_, button)
         if button == MOUSE_BUTTON_INDEX_LEFT then StopDrag() end
     end)
-    root:SetHandler('OnHide', StopDrag)
+    root:SetHandler('OnHide', function()
+        StopDrag()
+        addon.activeBarHighlight:Reset()
+    end)
     local function Refresh() addon:Refresh() end
     -- Refresh before the first frame after a scene opens, even between polls.
     root:SetHandler('OnShow', Refresh)
@@ -210,6 +218,7 @@ local function Initialize(_, addonName)
         Refresh()
     end)
     EVENT_MANAGER:RegisterForEvent(NAME, EVENT_PLAYER_COMBAT_STATE, Refresh)
+    EVENT_MANAGER:RegisterForEvent(NAME, EVENT_ACTION_SLOTS_ACTIVE_HOTBAR_UPDATED, Refresh)
     EVENT_MANAGER:RegisterForEvent(NAME, EVENT_GLOBAL_MOUSE_UP, function(_, button)
         if button == MOUSE_BUTTON_INDEX_LEFT then StopDrag() end
     end)
