@@ -35,6 +35,7 @@ function addon:GetBars()
         return {HOTBAR_CATEGORY_BACKUP, HOTBAR_CATEGORY_PRIMARY}
     end
     local inactive = active == HOTBAR_CATEGORY_PRIMARY and HOTBAR_CATEGORY_BACKUP or HOTBAR_CATEGORY_PRIMARY
+    if self.settings.activeBarPosition == 'top' then return {active, inactive} end
     return {inactive, active}
 end
 

@@ -2,6 +2,7 @@ local addon = KanaCooldownPanel
 local DEFAULTS = {
     fixedBars = false,
     frontBarPosition = 'bottom',
+    activeBarPosition = 'bottom',
     alertStyle = 'red',
     iconStyle = 'square',
 }
@@ -11,6 +12,7 @@ function addon:InitializeOptions(settings)
     if type(settings.fixedBars) ~= 'boolean' then settings.fixedBars = DEFAULTS.fixedBars end
     for key, choices in pairs({
         frontBarPosition = {top = true, bottom = true},
+        activeBarPosition = {top = true, bottom = true},
         alertStyle = {red = true, gold = true},
         iconStyle = {square = true, skill = true},
     }) do
@@ -24,7 +26,7 @@ function addon:InitializeSettings()
     local panelName = 'KanaCooldownPanelOptions'
     LibAddonMenu2:RegisterAddonPanel(panelName, {
         type = 'panel', name = 'KanaCooldownPanel', displayName = 'KanaCooldownPanel',
-        author = 'Kana', version = '1.1.0', registerForRefresh = true, registerForDefaults = true,
+        author = 'Kana', version = '1.2.0', registerForRefresh = true, registerForDefaults = true,
     })
     local function Getter(key)
         return function() return addon.settings[key] end
@@ -38,8 +40,8 @@ function addon:InitializeSettings()
     LibAddonMenu2:RegisterOptionControls(panelName, {
         {
             type = 'checkbox', name = ru and 'Фиксированные панели' or 'Fixed bars',
-            tooltip = ru and 'Панели основного и запасного оружия сохраняют свои строки при смене оружия. Если выключено, текущая панель всегда снизу.'
-                or 'Keep primary and backup weapon bars in the same rows when swapping weapons. When disabled, the active bar is always below.',
+            tooltip = ru and 'Панели основного и запасного оружия сохраняют свои строки при смене оружия. Если выключено, текущая панель занимает выбранное положение активной панели.'
+                or 'Keep primary and backup weapon bars in the same rows when swapping weapons. When disabled, the active bar stays at the selected active bar position.',
             getFunc = Getter('fixedBars'), setFunc = Setter('fixedBars'), default = DEFAULTS.fixedBars,
         },
         {
@@ -49,6 +51,14 @@ function addon:InitializeSettings()
             choices = ru and {'Сверху', 'Снизу'} or {'Top', 'Bottom'}, choicesValues = {'top', 'bottom'},
             disabled = function() return not addon.settings.fixedBars end,
             getFunc = Getter('frontBarPosition'), setFunc = Setter('frontBarPosition'), default = DEFAULTS.frontBarPosition,
+        },
+        {
+            type = 'dropdown', name = ru and 'Положение активной панели' or 'Active bar position',
+            tooltip = ru and 'В нефиксированном режиме активная панель всегда на выбранной стороне, независимо от оружия.'
+                or 'With dynamic bars, the active bar always stays on this side, regardless of the equipped weapon.',
+            choices = ru and {'Сверху', 'Снизу'} or {'Top', 'Bottom'}, choicesValues = {'top', 'bottom'},
+            disabled = function() return addon.settings.fixedBars end,
+            getFunc = Getter('activeBarPosition'), setFunc = Setter('activeBarPosition'), default = DEFAULTS.activeBarPosition,
         },
         {
             type = 'dropdown', name = ru and 'Тип alert-иконки' or 'Alert style',

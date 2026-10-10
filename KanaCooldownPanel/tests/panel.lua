@@ -271,14 +271,15 @@ print('PASS: four states, bars/rings, native menus, per-skill persistence, chara
 
 assert(panelName ~= 'KanaCooldownPanel' and panelName ~= 'KanaCooldownPanelSettings',
     'LAM panel must not overwrite addon or saved-variable globals')
-assert(panelData.registerForRefresh and #settingsOptions == 4, 'Four settings with live dependent refresh')
-local fixed, position, alert, style = unpack(settingsOptions)
+assert(panelData.registerForRefresh and #settingsOptions == 5, 'Five settings with live dependent refresh')
+local fixed, position, activePosition, alert, style = unpack(settingsOptions)
+assert(activePosition.getFunc() == 'bottom' and not activePosition.disabled(), 'Dynamic active position defaults below and is available')
 assert(fixed.getFunc() == false and position.disabled(), 'Frontbar position is disabled until fixed layout is enabled')
 assert(position.getFunc() == 'bottom' and alert.getFunc() == 'red' and style.getFunc() == 'square',
     'Existing presentation remains the default')
 bars[0][3] = {401, 10000, duration = 10000}; bars[1][3] = {201, 8000, duration = 20000}
 activeBar, wolf, combat = 0, false, true
-fixed.setFunc(true); assert(not position.disabled(), 'Enabling fixed layout unlocks position')
+fixed.setFunc(true); assert(not position.disabled() and activePosition.disabled(), 'Fixed layout enables only frontbar position')
 for _, placement in ipairs({'top', 'bottom'}) do
     position.setFunc(placement)
     for _, category in ipairs({0, 1}) do
@@ -291,7 +292,18 @@ position.setFunc('top'); fixed.setFunc(false)
 assert(position.disabled(), 'Turning fixed mode off disables the dependent option again')
 activeBar = 0; refresh(); assert(label(6).text == '10', 'Inactive fixed placement is ignored in dynamic mode')
 activeBar = 1; refresh(); assert(label(6).text == '8.0', 'Dynamic mode still keeps the active bar below')
+for _, placement in ipairs({'top', 'bottom'}) do
+    activePosition.setFunc(placement)
+    for _, category in ipairs({0, 1}) do
+        activeBar = category; refresh()
+        local rowIndex = placement == 'top' and 1 or 6
+        assert(label(rowIndex).text == (category == 0 and '10' or '8.0'), 'Dynamic position follows the active category after swaps')
+    end
+end
+activePosition.setFunc('top')
 fixed.setFunc(true)
+activeBar = 1; refresh()
+assert(label(1).text == '10' and label(6).text == '8.0', 'Fixed ordering ignores saved dynamic position')
 for _, ringSlot in ipairs({EQUIP_SLOT_RING1, EQUIP_SLOT_RING2}) do
     rings[ringSlot] = 187658; refresh()
     assert(label(1).text == '8.0' and cell(6):IsHidden(), 'Single active row overrides fixed positions with Oakensoul')
@@ -345,8 +357,9 @@ combat = false; refresh()
 assert(cell(1):IsHidden() and glow(1):IsEffectivelyHidden(), 'Gold skill warning is absent outside combat')
 reload('character-a')
 assert(settingsOptions[1].getFunc() and settingsOptions[2].getFunc() == 'top'
-    and settingsOptions[3].getFunc() == 'gold' and settingsOptions[4].getFunc() == 'skill',
-    'All four presentation settings survive reload')
+    and settingsOptions[3].getFunc() == 'top'
+    and settingsOptions[4].getFunc() == 'gold' and settingsOptions[5].getFunc() == 'skill',
+    'All presentation settings including dynamic position survive reload')
 assert(KanaCooldownPanelSettings.y == 220 and KanaCooldownPanelSettings.characters['character-a'].skills['skill:10'].hidden,
     'Presentation settings preserve existing position and skill preferences')
 print('PASS: live settings, fixed/dynamic rows, alert styles, native icons and opacity, persistence')
