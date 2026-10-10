@@ -1,0 +1,22 @@
+## Title: KanaTrifecta
+## Author: Kana
+## Version: 0.1.0
+## AddOnVersion: 100
+## APIVersion: 101051
+## Description: Native quest-tracker panel for veteran dungeon trifecta attempts.
+## OptionalDependsOn: LibAddonMenu-2.0
+## SavedVariables: KanaTrifectaState
+
+Run.lua
+lang/en.lua
+lang/ru.lua
+Profiles.lua
+profiles/catalog.lua
+profiles/coral_aerie.lua
+Diagnostics.lua
+Observer.lua
+State.lua
+Hud.lua
+Achievements.lua
+Settings.lua
+Bootstrap.lua

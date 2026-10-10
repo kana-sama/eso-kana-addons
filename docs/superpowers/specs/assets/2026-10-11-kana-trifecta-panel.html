@@ -1,0 +1,228 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap');
+#eso-trifecta-design .preview-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin: 0 0 14px; }
+#eso-trifecta-design .preview-controls label { display: flex; align-items: center; gap: 10px; }
+#eso-trifecta-design .preview-controls select { width: auto; max-width: 100%; }
+#eso-trifecta-design .eso-scene {
+  --eso-title: #e5cf69;
+  --eso-normal: #c5c29e;
+  --eso-selected: #efefef;
+  --eso-success: #80b86b;
+  --eso-error: #e34c4c;
+  --eso-shadow: #080a08;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 330px;
+  padding: 38px 30px 38px;
+  background: radial-gradient(ellipse at 6% 100%, #454b39 0%, #29302a 37%, #191e1c 78%);
+  color: var(--eso-selected);
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+  text-shadow: 0 1px 2px var(--eso-shadow), 1px 0 1px var(--eso-shadow), -1px 0 1px var(--eso-shadow), 0 -1px 1px var(--eso-shadow);
+}
+#eso-trifecta-design .hud-stack { width: min(100%, 320px); margin-left: auto; text-align: right; }
+#eso-trifecta-design .quest-title { color: var(--eso-title); margin: 0; font: inherit; }
+#eso-trifecta-design .quest-step { margin: 2px 0 0; }
+#eso-trifecta-design .quest-extra { margin: 2px 0 0; }
+#eso-trifecta-design .trifecta-panel { padding-top: 18px; }
+#eso-trifecta-design .dungeon-heading { display: flex; align-items: flex-start; justify-content: flex-end; gap: 7px; }
+#eso-trifecta-design .dungeon-title { margin: 0; color: var(--eso-title); font: inherit; }
+#eso-trifecta-design .achievement-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 24px; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--eso-normal); }
+#eso-trifecta-design .achievement-button svg { width: 17px; height: 17px; filter: drop-shadow(0 1px 1px var(--eso-shadow)); }
+#eso-trifecta-design .achievement-button:hover { color: var(--eso-title); }
+#eso-trifecta-design .achievement-view { text-align: left; }
+#eso-trifecta-design .achievement-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; color: var(--eso-normal); }
+#eso-trifecta-design .achievement-back { display: inline-flex; align-items: center; gap: 7px; padding: 0; border: 0; background: transparent; color: var(--eso-selected); font: inherit; text-shadow: inherit; }
+#eso-trifecta-design .achievement-back svg { width: 16px; height: 16px; }
+#eso-trifecta-design .achievement-category-title { margin: 0 0 16px; color: var(--eso-title); font: inherit; }
+#eso-trifecta-design .achievement-list { list-style: none; margin: 0; padding: 0; }
+#eso-trifecta-design .achievement-entry { margin: 0 0 16px; }
+#eso-trifecta-design .achievement-name { margin: 0; font: inherit; }
+#eso-trifecta-design .achievement-status { margin: 2px 0 0; color: var(--eso-normal); font-size: 15px; line-height: 19px; }
+#eso-trifecta-design .achievement-entry[data-completed='true'] .achievement-status { color: var(--eso-success); }
+#eso-trifecta-design .run-numbers { display: flex; align-items: center; justify-content: flex-end; gap: 24px; margin-top: 4px; }
+#eso-trifecta-design .timer-number,
+#eso-trifecta-design .death-number { font-size: 36px; line-height: 44px; font-variant-numeric: tabular-nums; }
+#eso-trifecta-design .deaths { display: flex; align-items: center; gap: 7px; }
+#eso-trifecta-design .deaths svg { width: 19px; height: 19px; stroke-width: 1.7; filter: drop-shadow(0 1px 1px var(--eso-shadow)); }
+#eso-trifecta-design .boss-list { list-style: none; margin: 5px 0 0; padding: 0; }
+#eso-trifecta-design .boss-row { display: flex; align-items: flex-start; justify-content: flex-end; gap: 7px; margin: 2px 0 0; color: var(--eso-normal); }
+#eso-trifecta-design .boss-text { max-width: calc(100% - 23px); }
+#eso-trifecta-design .boss-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; min-width: 16px; height: 22px; }
+#eso-trifecta-design .boss-icon[hidden] { display: none; }
+#eso-trifecta-design .boss-icon svg { width: 14px; height: 14px; stroke-width: 2; filter: drop-shadow(0 1px 1px var(--eso-shadow)); }
+#eso-trifecta-design .boss-row[data-status='complete'] { color: var(--eso-success); }
+#eso-trifecta-design .boss-row[data-status='failed'],
+#eso-trifecta-design .is-failed { color: var(--eso-error); }
+#eso-trifecta-design .screenreader-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 420px) {
+  #eso-trifecta-design .eso-scene { padding: 34px 22px 34px; min-height: 330px; }
+  #eso-trifecta-design .preview-controls label { flex-wrap: wrap; }
+}
+@media (pointer: coarse) {
+  #eso-trifecta-design .achievement-button { position: relative; }
+  #eso-trifecta-design .achievement-button::after { content: ''; position: absolute; inset: -10px; }
+}
+</style>
+<div id="eso-trifecta-design">
+  <div class="preview-controls">
+    <label class="form-label" for="eso-run-state">Состояние
+      <select class="form-select" id="eso-run-state">
+        <option value="start">Начало забега</option>
+        <option value="normal" selected>Забег идёт</option>
+        <option value="death">Одна смерть</option>
+        <option value="no-hm">Босс убит без HM</option>
+        <option value="overtime">Овертайм · смертей нет</option>
+        <option value="finish">Все боссы убиты с HM</option>
+      </select>
+    </label>
+    <label class="form-check">
+      <input class="form-check-input" type="checkbox" id="eso-long-quest">
+      <span class="form-check-label">Больше строк квеста</span>
+    </label>
+    <span class="text-small" id="eso-achievement-preview-note" hidden>Пример списка и статусов</span>
+  </div>
+  <div class="eso-scene" aria-label="Макет HUD ESO: штатный квест-трекер и панель трифекты">
+    <div class="hud-stack">
+      <div class="quest-tracker" aria-label="Штатный квест-трекер">
+        <p class="quest-title">Коралловое гнездо</p>
+        <p class="quest-step">Найти Вараллиона</p>
+        <div class="quest-extra" hidden>
+          <p class="quest-step">Поговорить с посланницей</p>
+          <p class="quest-step">Войти во внутренний двор</p>
+          <p class="quest-step">Спасти пленников: 2 / 3</p>
+        </div>
+      </div>
+      <section class="trifecta-panel" aria-label="Панель трифекты">
+        <div class="dungeon-heading">
+          <button class="achievement-button cursor-interaction" type="button" id="eso-achievements-button" aria-label="Достижения подземелья" aria-controls="eso-achievement-view" aria-expanded="false" data-tooltip="Достижения подземелья"><i data-lucide="award" aria-hidden="true"></i></button>
+          <h2 class="dungeon-title">Коралловое гнездо</h2>
+        </div>
+        <div class="run-numbers">
+          <span class="timer-number" aria-label="До лимита спидрана осталось 20 минут">20:00</span>
+          <span class="deaths" aria-label="Смертей: 0"><i data-lucide="skull" aria-hidden="true"></i><span class="death-number">0</span></span>
+        </div>
+        <ul class="boss-list" aria-label="Боссы и хардмоды">
+          <li class="boss-row" data-status="complete" data-has-hm="true" aria-label="Малигалиг: убит с хардмодом"><span class="boss-icon" data-tooltip="У босса есть хардмод"><i data-lucide="scroll-text" aria-hidden="true"></i></span><span class="boss-text">Малигалиг</span></li>
+          <li class="boss-row" data-status="waiting" data-has-hm="true" aria-label="Саридил: есть хардмод, ещё не убита"><span class="boss-icon" data-tooltip="У босса есть хардмод"><i data-lucide="scroll-text" aria-hidden="true"></i></span><span class="boss-text">Саридил</span></li>
+          <li class="boss-row" data-status="waiting" data-has-hm="true" aria-label="Вараллион: есть хардмод, ещё не убит"><span class="boss-icon" data-tooltip="У босса есть хардмод"><i data-lucide="scroll-text" aria-hidden="true"></i></span><span class="boss-text">Вараллион</span></li>
+        </ul>
+      </section>
+    </div>
+    <section class="achievement-view" id="eso-achievement-view" aria-labelledby="eso-achievement-category-title" hidden>
+      <div class="achievement-nav">
+        <button class="achievement-back cursor-interaction" type="button" id="eso-achievements-back"><i data-lucide="arrow-left" aria-hidden="true"></i>Назад</button>
+        <span>Журнал · Достижения</span>
+      </div>
+      <h2 class="achievement-category-title" id="eso-achievement-category-title">Коралловое гнездо</h2>
+      <ul class="achievement-list" aria-label="Пример достижений Кораллового гнезда">
+        <li class="achievement-entry" data-completed="true"><p class="achievement-name">Триумфатор Кораллового Гнезда</p><p class="achievement-status">Получено</p></li>
+        <li class="achievement-entry" data-completed="true"><p class="achievement-name">Завоеватель Кораллового Гнезда</p><p class="achievement-status">Получено</p></li>
+        <li class="achievement-entry" data-completed="false"><p class="achievement-name">Безупречное происхождение</p><p class="achievement-status">Не получено</p></li>
+        <li class="achievement-entry" data-completed="false"><p class="achievement-name">Пролетая над гнездом грифонов</p><p class="achievement-status">Не получено</p></li>
+        <li class="achievement-entry" data-completed="false"><p class="achievement-name">Морской волк</p><p class="achievement-status">Не получено</p></li>
+        <li class="achievement-entry" data-completed="false"><p class="achievement-name">Господство на суше, в воздухе и на море</p><p class="achievement-status">Не получено</p></li>
+      </ul>
+    </section>
+    <div class="screenreader-only" aria-live="polite" id="eso-design-announcement"></div>
+  </div>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('eso-trifecta-design');
+  const stateSelect = root.querySelector('#eso-run-state');
+  const questToggle = root.querySelector('#eso-long-quest');
+  const panel = root.querySelector('.trifecta-panel');
+  const achievementButton = root.querySelector('#eso-achievements-button');
+  const achievementBack = root.querySelector('#eso-achievements-back');
+  const achievementView = root.querySelector('#eso-achievement-view');
+  const timer = root.querySelector('.timer-number');
+  const deaths = root.querySelector('.deaths');
+  const deathNumber = root.querySelector('.death-number');
+  const rows = [...root.querySelectorAll('.boss-row')];
+  const names = ['Малигалиг', 'Саридил', 'Вараллион'];
+  const cases = {
+    start: { elapsed: 0, deaths: 0, bosses: ['waiting', 'waiting', 'waiting'] },
+    normal: { elapsed: 5, deaths: 0, bosses: ['complete', 'waiting', 'waiting'] },
+    death: { elapsed: 5, deaths: 1, bosses: ['complete', 'waiting', 'waiting'] },
+    'no-hm': { elapsed: 12, deaths: 0, bosses: ['complete', 'failed', 'waiting'] },
+    overtime: { elapsed: 30, deaths: 0, bosses: ['complete', 'complete', 'waiting'] },
+    finish: { elapsed: 21, deaths: 0, bosses: ['complete', 'complete', 'complete'] }
+  };
+  const saved = window.openai?.widgetState;
+  const previous = saved?.privateContent || saved?.modelContent || saved;
+  const view = { state: cases[previous?.state] ? previous.state : 'finish', longQuest: previous?.longQuest === true, achievementsOpen: previous?.achievementsOpen === true };
+
+  function render() {
+    const active = cases[view.state];
+    const over = active.elapsed > 25;
+    const minuteCount = Math.abs(25 - active.elapsed);
+    timer.textContent = String(minuteCount).padStart(2, '0') + ':00';
+    timer.classList.toggle('is-failed', over);
+    timer.setAttribute('aria-label', over ? 'Превышение лимита спидрана: ' + minuteCount + ' минут' : 'До лимита спидрана осталось ' + minuteCount + ' минут');
+    deathNumber.textContent = active.deaths;
+    deaths.classList.toggle('is-failed', over || active.deaths > 0);
+    deaths.setAttribute('aria-label', 'Смертей: ' + active.deaths + (over ? '. Лимит времени превышен' : ''));
+    rows.forEach((row, i) => {
+      const status = active.bosses[i];
+      row.dataset.status = status;
+      row.querySelector('.boss-icon').hidden = row.dataset.hasHm !== 'true';
+      row.setAttribute('aria-label', names[i] + ': ' + (status === 'complete' ? 'убит с хардмодом' : status === 'failed' ? 'убит без хардмода' : 'есть хардмод, ожидает убийства'));
+    });
+    root.querySelector('.quest-extra').hidden = !view.longQuest;
+    stateSelect.value = view.state;
+    questToggle.checked = view.longQuest;
+    root.querySelector('.hud-stack').hidden = view.achievementsOpen;
+    achievementView.hidden = !view.achievementsOpen;
+    root.querySelector('#eso-achievement-preview-note').hidden = !view.achievementsOpen;
+    achievementButton.setAttribute('aria-expanded', String(view.achievementsOpen));
+    if (globalThis.lucide) lucide.createIcons({ attrs: { width: 16, height: 16 } });
+  }
+  function changed() {
+    render();
+    root.querySelector('#eso-design-announcement').textContent = view.achievementsOpen ? 'Открыт список достижений Кораллового гнезда' : stateSelect.options[stateSelect.selectedIndex].text;
+    if (window.openai?.setWidgetState) {
+      window.openai.setWidgetState({ modelContent: { state: view.state, longQuest: view.longQuest, achievementsOpen: view.achievementsOpen }, privateContent: { ...view } }).catch(() => {});
+    }
+  }
+  stateSelect.addEventListener('change', () => { view.state = stateSelect.value; changed(); });
+  questToggle.addEventListener('change', () => { view.longQuest = questToggle.checked; changed(); });
+  achievementButton.addEventListener('click', () => { view.achievementsOpen = true; changed(); achievementBack.focus(); });
+  function closeAchievements() {
+    view.achievementsOpen = false;
+    changed();
+    achievementButton.focus();
+  }
+  achievementBack.addEventListener('click', closeAchievements);
+  root.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && view.achievementsOpen) {
+      event.preventDefault();
+      closeAchievements();
+    }
+  });
+  window.addEventListener('openai:set_globals', event => {
+    const stored = event.detail?.globals?.widgetState?.privateContent;
+    if (stored && cases[stored.state]) {
+      view.state = stored.state;
+      view.longQuest = stored.longQuest === true;
+      view.achievementsOpen = stored.achievementsOpen === true;
+      render();
+    }
+  });
+  render();
+  if (globalThis.Tweak) {
+    const tweak = new Tweak({ container: panel, onChange: changed });
+    tweak.addSelect(view, 'state', { label: 'Состояние забега', options: [
+      { label: 'Начало забега', value: 'start' }, { label: 'Забег идёт', value: 'normal' },
+      { label: 'Одна смерть', value: 'death' }, { label: 'Босс без HM', value: 'no-hm' },
+      { label: 'Овертайм', value: 'overtime' }, { label: 'Боссы убиты', value: 'finish' }
+    ] });
+    tweak.addToggle(view, 'longQuest', { label: 'Больше строк квеста' });
+  }
+})();
+</script>
