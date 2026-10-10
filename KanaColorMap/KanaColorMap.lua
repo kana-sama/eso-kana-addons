@@ -49,9 +49,11 @@ end
 function K:ShowLabels(tilesManager)
     if not self.saved or not self.saved.enabled or GetCurrentMapId() ~= TAMRIEL_MAP_ID
         or not tilesManager or not GetNumMapBlobs or not GetMapBlobNameInfo
-        or not g_mapPanAndZoom then return end
+        or not ZO_WorldMap_GetPanAndZoom then return end
+    local panAndZoom = ZO_WorldMap_GetPanAndZoom()
+    if not panAndZoom then return end
     local parent = tilesManager.parent
-    local _, zoomMax = g_mapPanAndZoom:GetZoomMinMax()
+    local _, zoomMax = panAndZoom:GetZoomMinMax()
     if not zoomMax or zoomMax <= 0 then return end
     local zoom = (WORLD_MAP_MANAGER and WORLD_MAP_MANAGER.lastBlobZoom or zoomMax) / zoomMax
     local count = GetNumMapBlobs()
@@ -68,19 +70,23 @@ function K:ShowLabels(tilesManager)
                 entry = {outline={}}
                 for i = 1, #NAME_OFFSETS do
                     entry.outline[i] = CreateNameControl(NAME .. "MapName" .. index .. "Outline" .. i,
-                        parent, {0, 0, 0, 1}, DT_MEDIUM, 5)
+                        parent, {0, 0, 0, 1}, DT_HIGH, 5)
                 end
                 entry.label = CreateNameControl(NAME .. "MapName" .. index, parent,
                     {1, 1, 1, 1}, DT_HIGH, 6)
                 self.nameLabels[index] = entry
             end
             local text = zo_strformat(SI_ZONE_NAME, name)
+            -- A name can carry inline ESO color tags, which override SetColor.
+            text = text:gsub("|[cC]%x%x%x%x%x%x", ""):gsub("|[rR]", "")
+            local outlineText = "|c000000" .. text .. "|r"
+            local foregroundText = "|cFFFFFF" .. text .. "|r"
             local scale = math.max(MIN_NAME_SCALE, zoom * nameScale)
             local uiWidth = math.max(100, width * mapWidth) / scale
             local centerX, centerY = x * mapWidth, y * mapHeight
             for i, stroke in ipairs(entry.outline) do
                 stroke:SetParent(parent)
-                stroke:SetText(text)
+                stroke:SetText(outlineText)
                 stroke:SetWidth(uiWidth)
                 stroke:SetScale(scale)
                 stroke:ClearAnchors()
@@ -90,7 +96,7 @@ function K:ShowLabels(tilesManager)
             end
             local label = entry.label
             label:SetParent(parent)
-            label:SetText(text)
+            label:SetText(foregroundText)
             label:SetWidth(uiWidth)
             label:SetScale(scale)
             label:ClearAnchors()
@@ -119,8 +125,12 @@ function K:UpdateLabels(worldManager)
     end
     self:ShowLabels(self.activeManager)
     if self.visibleNames > 0 and worldManager.blobNameLabelControlPool then
-        for _, label in worldManager.blobNameLabelControlPool:ActiveObjectIterator() do
-            label:SetHidden(true)
+        local pool = worldManager.blobNameLabelControlPool
+        for _ in pool:ActiveObjectIterator() do
+            -- ESO can reacquire its brown names during UpdateBlobs. Remove
+            -- them from the active pool after each native update.
+            pool:ReleaseAllObjects()
+            break
         end
         self.nativeNamesManager = worldManager
     end

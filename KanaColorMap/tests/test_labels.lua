@@ -10,7 +10,7 @@ function GetMapBlobNameInfo(i)
  if i == 1 then return 'Гленумбра', .2, .3, .12, 1.2 end
  return 'Ротгар', .7, .2, .1, 1
 end
-function zo_strformat(_, text) return text end
+function zo_strformat(_, text) return '|c544426'..text..'|r' end
 SI_ZONE_NAME = 7
 local init
 EVENT_MANAGER = {RegisterForEvent=function(_,_,_,callback) init=callback end,
@@ -50,15 +50,17 @@ WINDOW_MANAGER = {CreateControl=function(_, name, parent, kind)
  assert(kind == CT_LABEL)
  local c=control(name,parent);created[#created+1]=c;return c
 end}
-g_mapPanAndZoom={GetZoomMinMax=function() return .02, 1 end}
+local panAndZoom={GetZoomMinMax=function() return .02, 1 end}
+function ZO_WorldMap_GetPanAndZoom() return panAndZoom end
+assert(g_mapPanAndZoom==nil, 'ESO keeps g_mapPanAndZoom local to worldmap.lua')
 local native={hidden=false}
 function native:SetHidden(value) self.hidden=value end
 function native:IsHidden() return self.hidden end
-local pool={}
-function pool:ActiveObjectIterator() return next, {[1]=native}, nil end
-function pool:ReleaseAllObjects() native.hidden=true end
+local pool={releases=0,active=true}
+function pool:ActiveObjectIterator() return next, self.active and {[1]=native} or {}, nil end
+function pool:ReleaseAllObjects() self.releases=self.releases+1;self.active=false;native.hidden=true end
 ZO_WorldMapManager = {}
-function ZO_WorldMapManager:UpdateBlobs() native.hidden=false;self.lastBlobZoom=zoom end
+function ZO_WorldMapManager:UpdateBlobs() pool.active=true;native.hidden=false;self.lastBlobZoom=zoom end
 WORLD_MAP_MANAGER=setmetatable({blobNameLabelControlPool=pool,lastBlobZoom=zoom},{__index=ZO_WorldMapManager})
 dofile(root..'/KanaColorMap.lua')
 init(nil,'KanaColorMap')
@@ -71,7 +73,7 @@ local function check()
  assert(native.hidden, 'hide native duplicate only while custom labels render')
  for i,name in ipairs({'Гленумбра','Ротгар'}) do
   local entry=assert(K.nameLabels[i])
-  assert(not entry.label.hidden and entry.label.text==name)
+  assert(not entry.label.hidden and entry.label.text=='|cFFFFFF'..name..'|r')
   assert(entry.label.font=='$(HANDWRITTEN_FONT)|34')
   assert(entry.label.layer==DL_OVERLAY and entry.label.level==6)
   assert(entry.label.color[1]==1 and entry.label.color[2]==1 and entry.label.color[3]==1,
@@ -81,8 +83,8 @@ local function check()
   assert(#entry.outline==8)
   for _,stroke in ipairs(entry.outline) do
    assert(not stroke.hidden and stroke.color[1]==0 and stroke.color[2]==0 and stroke.color[3]==0)
-   assert(stroke.layer==DL_OVERLAY and stroke.level==5 and stroke.text==name)
-   assert(stroke.tier==DT_MEDIUM)
+   assert(stroke.layer==DL_OVERLAY and stroke.level==5 and stroke.text=='|c000000'..name..'|r')
+   assert(stroke.tier==DT_HIGH)
    assert(stroke.scale==entry.label.scale and stroke.parent==parent)
   end
   for index,control in ipairs(created) do
@@ -97,6 +99,8 @@ local function check()
  end
 end
 check()
+assert(pool.releases>0, 'native labels must be released after their update')
+assert(not pool.active, 'no native brown names may remain above custom labels')
 local firstCount=#created
 K:Reset()
 for _,c in ipairs(created) do assert(c.hidden) end
