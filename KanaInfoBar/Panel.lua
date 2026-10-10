@@ -47,7 +47,8 @@ function A:ShowWidgetTooltip(id)
     InitializeTooltip(InformationTooltip,GuiRoot,TOPLEFT,x+12,y+20,TOPLEFT)
     InformationTooltip:SetClampedToScreen(true)
     InformationTooltip:AddLine(badge and badge.name or module.name,'ZoFontWinH4',.85,.8,.66)
-    InformationTooltip:AddLine(badge and ('Количество: '..tostring(v.counts[badge.key] or 0)) or v.detail or '', 'ZoFontGame', .85,.85,.8)
+    local detail=badge and v.counts and ('Количество: '..tostring(v.counts[badge.key] or 0)) or v.detail or ''
+    InformationTooltip:AddLine(detail,'ZoFontGame',.85,.85,.8)
     if self.edit then
         InformationTooltip:AddLine('Перетащи в строку, между строками или в «Не используются».','ZoFontGameSmall')
         if not v.visible then InformationTooltip:AddLine('Скрыт в игре: нет данных или значение равно нулю.','ZoFontGameSmall') end
@@ -130,28 +131,28 @@ function A:CreateBadges(c,module)
         badge.counter=self:Label(badge,'0',11)
         badge.counter:SetDimensions(30,16)
         badge.counter:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
-        badge.counter:SetAnchor(BOTTOMRIGHT,badge.iconBox,BOTTOMRIGHT,8,3)
+        badge.counter:SetAnchor(BOTTOMRIGHT,badge,BOTTOMRIGHT,-4,-3)
         badge.counter:SetDrawLayer(DL_OVERLAY); badge.counter:SetDrawLevel(3)
         c.badges[i]=badge
     end
 end
 
 function A:RefreshBadges(c,module,v)
-    local x,active=0,0
+    local x=0
     local counts=v.counts or {}
     for i,definition in ipairs(module.badges) do
         local badge=c.badges[i]
         local count=counts[definition.key] or 0
-        local show=self.edit or count>0
-        badge:SetHidden(not show)
-        badge.counter:SetText(tostring(count))
-        if show then
-            if active>0 then x=x+BADGE_GAP end
-            badge:ClearAnchors()
-            badge:SetAnchor(TOPLEFT,c,TOPLEFT,x,self.edit and 7 or 0)
-            x=x+BADGE_WIDTH
-            active=active+1
-        end
+        local text=count>0 and tostring(count) or ''
+        local width=BADGE_WIDTH+math.max(0,#text-1)*8
+        badge:SetHidden(false)
+        badge:SetDimensions(width,32)
+        badge.counter:SetText(text)
+        badge.counter:SetDimensions(math.max(30,badge.counter:GetTextWidth()),16)
+        if i>1 then x=x+BADGE_GAP end
+        badge:ClearAnchors()
+        badge:SetAnchor(TOPLEFT,c,TOPLEFT,x,self.edit and 7 or 0)
+        x=x+width
     end
     return x
 end
@@ -242,7 +243,10 @@ function A:PaintWidget(id)
     if c.badges then
         for i,badge in ipairs(c.badges) do
             local hot=self.hoverId==id and not self.edit and self.hoverBadge==self.modules[id].badges[i].key
-            badge.icon:SetColor(hot and 1 or .96,hot and .46 or .24,hot and .43 or .22,1)
+            local count=v.counts and v.counts[self.modules[id].badges[i].key] or 0
+            badge.icon:SetColor(count>0 and (hot and 1 or .96) or 1,
+                count>0 and (hot and .46 or .24) or 1,
+                count>0 and (hot and .43 or .22) or 1,1)
             badge.counter:SetColor(hot and 1 or .88,hot and .97 or .87,hot and .88 or .83,1)
         end
         c:SetAlpha(self.edit and (not v.visible or not self:Config().enabled[id]) and .55 or 1)
@@ -294,7 +298,7 @@ function A:Refresh(force)
         local module=self.modules[id]
         local ok,v=pcall(module.read)
         if not ok or type(v)~='table' then
-            v={text='—',visible=id~='messages' and id~='treasure',clickable=false,
+            v={text='—',visible=id~='treasure',clickable=false,
                 detail='Источник временно недоступен. '..tostring(v)}
         end
         v.text=tostring(v.text or '—')

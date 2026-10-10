@@ -47,14 +47,14 @@ SYSTEMS={GetObject=function(_,name)
     assert(name=='mainMenu')
     return {ToggleCategory=function(_,category) opened[#opened+1]=category end}
 end}
-assert(value('messages').visible==false,'all zero counts must hide the group')
+assert(value('messages').visible==true,'all zero counts keep the group visible')
 mail=2
 assert(value('messages').visible and value('messages').counts.chat==0 and value('messages').counts.mail==2,
     'mail remains available when AetherChat is absent')
 mail=0
 AetherChat={Messenger={GetTotalUnreadCount=function() return 0 end,
     Show=function() opened[#opened+1]='chat' end}}
-assert(value('messages').visible==false)
+assert(value('messages').visible==true)
 AetherChat.Messenger.GetTotalUnreadCount=function() return 42 end
 assert(value('messages').counts.chat==42 and value('messages').visible)
 mail=3; notice=7

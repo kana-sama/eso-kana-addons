@@ -1,7 +1,7 @@
 ## Title: KanaInfoBar
 ## Author: Kana
-## Version: 1.0.12
-## AddOnVersion: 10012
+## Version: 1.0.13
+## AddOnVersion: 10013
 ## APIVersion: 101050 101051
 ## Description: Compact draggable multiline HUD with DPS, chat, mail, notifications, performance, inventory and stolen treasures.
 ## DependsOn: LibAddonMenu-2.0

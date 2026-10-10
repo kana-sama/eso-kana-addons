@@ -1,7 +1,13 @@
 local H=dofile('KanaInfoBar/tests/ui_harness.lua')
 local A=H.load()
 local M=A.Model
-assert(A.controls.messages:IsHidden() and A.controls.treasure:IsHidden())
+assert(not A.controls.messages:IsHidden() and A.controls.treasure:IsHidden())
+assert(A.currentWidths.messages==104,'three empty badges reserve their single-digit cells')
+for _,badge in ipairs(A.controls.messages.badges) do
+    assert(not badge:IsHidden() and badge.counter:GetText()=='','empty badges stay visible without numbers')
+    assert(badge.icon.color[1]==1 and badge.icon.color[2]==1 and badge.icon.color[3]==1,
+        'empty badge icons are white')
+end
 assert(A.layout.height==32)
 local originalX,originalY=A.sv.x,A.sv.y
 A:OpenEditor()
@@ -88,26 +94,44 @@ assert(A.layout.slots.ping.x==A.currentWidths.fps+A.sv.gap,
 -- A single saved messages slot contains up to three independently clickable badges.
 local badgeCalls={}
 for i,badge in ipairs(A.modules.messages.badges) do badge.action=function() badgeCalls[#badgeCalls+1]=i end end
-A.sv.gridMode=false; A.sv.rows={{'messages'}}
+A.sv.gridMode=false; A.sv.enabled.messages=true; A.sv.rows={{'messages'}}
 A.modules.messages.read=function() return {counts={chat=4,mail=0,notifications=8},visible=true} end
 A:Refresh(true)
 local group=A.controls.messages
-assert(A.currentWidths.messages==68,'two fixed 32px icon cells with a 4px gap')
-assert(not group.badges[1]:IsHidden() and group.badges[2]:IsHidden() and not group.badges[3]:IsHidden())
+assert(A.currentWidths.messages==104,'single-digit counts keep three fixed cells')
+assert(not group.badges[1]:IsHidden() and not group.badges[2]:IsHidden() and not group.badges[3]:IsHidden())
+assert(group.badges[2].counter:GetText()=='' and group.badges[2].icon.color[1]==1,
+    'zero mail is a white icon without a number')
+assert(group.badges[1].icon.color[1]>.9 and group.badges[1].icon.color[2]<.5,
+    'nonzero badge stays red')
 assert(group.badges[3].counter:GetText()=='8','count appears on its own badge')
 H.mouseX=group.badges[3]:GetLeft()+10; H.mouseY=group.badges[3]:GetTop()+10
 group.handlers.OnMouseUp(nil,1,true)
 assert(#badgeCalls==1 and badgeCalls[1]==3,'click must target the badge under the pointer')
+H.mouseX=group.badges[2]:GetLeft()+10; H.mouseY=group.badges[2]:GetTop()+10
+group.handlers.OnMouseUp(nil,1,true)
+assert(#badgeCalls==2 and badgeCalls[2]==2,'empty badge still opens its own window')
 A.modules.messages.read=function() return {counts={chat=4,mail=2,notifications=8},visible=true} end
 A:Refresh(true)
 assert(A.currentWidths.messages==104 and not group.badges[2]:IsHidden(),'three badge cells share one widget')
 A.modules.messages.read=function() return {counts={chat=0,mail=2,notifications=0},visible=true} end
 A:Refresh(true)
-assert(A.currentWidths.messages==32 and group.badges[1]:IsHidden() and not group.badges[2]:IsHidden(),
-    'only a nonzero mail count shows one fixed-width cell')
-A.modules.messages.read=function() return {counts={chat=0,mail=0,notifications=0},visible=false} end
+assert(A.currentWidths.messages==104 and not group.badges[1]:IsHidden() and not group.badges[3]:IsHidden(),
+    'zero counts do not move the other icons')
+A.modules.messages.read=function() return {counts={chat=10,mail=2,notifications=0},visible=true} end
 A:Refresh(true)
-assert(group:IsHidden(),'group disappears when all counts are zero')
+assert(A.currentWidths.messages==112 and group.badges[1]:GetWidth()==40,
+    'two-digit count expands only its own cell')
+A.modules.messages.read=function() return {counts={chat=0,mail=0,notifications=0},visible=true} end
+A:Refresh(true)
+assert(not group:IsHidden() and A.currentWidths.messages==104,'all-zero group keeps its place')
+A.modules.messages.read=function() error('temporary source failure') end
+A:Refresh(true)
+assert(not group:IsHidden() and group.badges[1].counter:GetText()=='',
+    'source failure retains three empty icons')
+H.mouseX=group.badges[1]:GetLeft()+10; H.mouseY=group.badges[1]:GetTop()+10
+group.handlers.OnMouseEnter()
+group.handlers.OnMouseExit()
 A:OpenEditor()
 assert(not group:IsHidden() and not group.badges[2]:IsHidden(),'all badge positions remain editable')
 A:CloseEditor(false)

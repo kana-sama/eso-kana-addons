@@ -112,7 +112,7 @@ A:RegisterWidget({id='messages',name='Сообщения, почта и увед
         local notifications=NOTIFICATIONS and NOTIFICATIONS.GetNumNotifications and NOTIFICATIONS:GetNumNotifications() or 0
         chat,mail,notifications=math.max(0,tonumber(chat) or 0),math.max(0,tonumber(mail) or 0),math.max(0,tonumber(notifications) or 0)
         return {counts={chat=chat,mail=mail,notifications=notifications},
-            visible=chat+mail+notifications>0,
+            visible=true,
             detail=string.format('Сообщения: %d\nПисьма: %d\nУведомления: %d',chat,mail,notifications)}
     end,
 })

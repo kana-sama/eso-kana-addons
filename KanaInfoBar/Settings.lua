@@ -8,7 +8,7 @@ end
 function A:InitializeSettings()
     local panelName='KanaInfoBarSettings'
     self.settingsPanel=LibAddonMenu2:RegisterAddonPanel(panelName,{
-        type='panel',name='KanaInfoBar',displayName='KanaInfoBar',author='Kana',version='1.0.12',
+        type='panel',name='KanaInfoBar',displayName='KanaInfoBar',author='Kana',version='1.0.13',
         registerForRefresh=true,registerForDefaults=false,
     })
     local options={
@@ -38,7 +38,7 @@ function A:InitializeSettings()
             getFunc=function() return self.sv.enabled[id] end,
             setFunc=function(v) self.sv.enabled[id]=v; self:Refresh(true) end,
             tooltip=function()
-                if id=='messages' then return 'Сообщения AetherChat, непрочитанная почта и уведомления ESO. Каждый значок скрывается при нуле; весь виджет скрывается, когда все счётчики равны нулю.' end
+                if id=='messages' then return 'Сообщения AetherChat, непрочитанная почта и уведомления ESO. Значки видны всегда: белые без числа при нуле, красные со счётчиком при новых событиях.' end
                 if id=='dps' then return CMX and 'Свой DPS из Combat Metrics; доля группового DPS показывается только в группе.' or 'Combat Metrics не загружен; вместо данных будет прочерк.' end
                 if id=='treasure' then return 'Только краденые сокровища. При отсутствии скрывается; клик открывает все краденые вещи.' end
                 if id=='durability' then return 'Минимальная прочность надетого снаряжения. Оранжевый при 20% и ниже, красный при поломке.' end
