@@ -2,6 +2,10 @@ local T=dofile('KanaStatSources/tests/support.lua')
 local K=T.load({'Core','Stats','Rules','Critical','Model','capture/Equipment','capture/Build','capture/Effects','Snapshot'})
 local makeApi=dofile('KanaStatSources/tests/fixtures/capture.lua')
 return {
+ savagery_buff_enum_is_captured=function()
+    local api=makeApi();api.BUFF_TYPE_MAJOR_SAVAGERY=4
+    T.eq(K.Snapshot.New(api):Capture(false).constants.BUFF_TYPE_MAJOR_SAVAGERY,4)
+ end,
  item_specific_set_values_are_cached_and_refreshed_with_equipment=function()
     local api=makeApi();local value=58;local calls=0
     api.GetItemLinkSetBonusInfo=function(link,equipped,index)

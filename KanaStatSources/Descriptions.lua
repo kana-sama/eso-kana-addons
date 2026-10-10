@@ -35,8 +35,8 @@ local aliases={
     {{'maxStamina'},{'maximum stamina','max stamina','максимальный запас сил','максимального запаса сил','макс. запас сил','макс. запаса сил'}},
     {{'weaponDamage'},{'weapon damage','силу оружия','сила оружия','силы оружия'}},
     {{'spellDamage'},{'spell damage','силу заклинаний','сила заклинаний','силы заклинаний'}},
-    {{'weaponCritical'},{'weapon critical rating','weapon critical','критический рейтинг оружия'}},
-    {{'spellCritical'},{'spell critical rating','spell critical','критический рейтинг заклинаний'}},
+    {{'weaponCritical'},{'weapon critical rating','weapon critical','критический рейтинг оружия','крит. рейтинг оружия'}},
+    {{'spellCritical'},{'spell critical rating','spell critical','критический рейтинг заклинаний','крит. рейтинг заклинаний'}},
     {{'physicalResistance'},{'physical resistance','физическую сопротивляемость','физическая сопротивляемость'}},
     {{'spellResistance'},{'spell resistance','магическую сопротивляемость','магическая сопротивляемость'}},
     {{'criticalResistance'},{'critical resistance','критическое сопротивление','критическую сопротивляемость','сопротивляемость критическому урону'}},
@@ -77,6 +77,14 @@ local function parse(raw,language,kind)
                 if not index and kind=='effect' then index,percent,tail=text:match('^'..a..' — на @([0-9]+)@([%%]?)(.*)$') end
                 if index then
                     local ending=tail:gsub('^ ед%.','')
+                    -- Native critical effects describe the same bonus twice:
+                    -- an exact rating followed by its rounded chance. Consume
+                    -- that explanation without emitting a second contribution.
+                    if kind=='effect' and percent~='%' and (definition[1][1]=='weaponCritical' or definition[1][1]=='spellCritical') then
+                        local attack=definition[1][1]=='weaponCritical' and 'оружием' or 'заклинаниями'
+                        ending=ending:gsub('^, увеличивая ваш шанс критического удара '..attack..' на @[0-9]+@%%%.?','')
+                            :gsub('^, increasing your chance to critically strike by @[0-9]+@%%%.?','')
+                    end
                     if kind=='effect' then ending=ending:gsub('^ for @[0-9]+@ hours?%.?$',''):gsub('^ for @[0-9]+@ minutes?%.?$',''):gsub('^ for @[0-9]+@ seconds?%.?$',''):gsub('^ на @[0-9]+@ ч%.?$','') end
                     local conjunction=kind=='effect' and (ending:match('^ and (.*)$') or ending:match('^ и (.*)$'))
                     if ending=='' or ending:match('^[%.,;\n]') or conjunction then
