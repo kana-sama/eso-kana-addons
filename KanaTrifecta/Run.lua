@@ -147,6 +147,14 @@ function Run:Apply(event)
         end
         if not found then return false end
         self.serverConfirmations[p.id]={atMs=event.atMs,evidence=K.Copy(event.evidence)}
+        for _,definition in ipairs(self.profile.bosses or {}) do
+            local boss=self.bosses[definition.key]
+            if definition.hardModeAchievementId==p.id and boss.pullId and (boss.pullActive or boss.killed) then
+                self:Apply({kind='HardModeObserved',contextGeneration=self.contextGeneration,atMs=event.atMs,
+                    payload={bossKey=definition.key,pullId=boss.pullId,mode='active',priority=2},
+                    evidence={source='achievementAwarded',achievementId=p.id}})
+            end
+        end
     elseif kind == 'RunCompleted' then
         self.lifecycle='finished'
         if p.closeDeathWindow~=false then self.deathWindowOpen=false end

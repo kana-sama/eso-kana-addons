@@ -3,7 +3,7 @@ local function setup(maxHealth)
  dofile('KanaTrifecta/profiles/catalog.lua')
  local p=KanaTrifecta.Copy(KanaTrifecta.Profiles:Find(283,2))
  local now,exists=0,true;local handlers={}
- local a={EVENT_PLAYER_COMBAT_STATE=1,EVENT_COMBAT_EVENT=2,EVENT_UNIT_DEATH_STATE_CHANGED=3,
+ local a={EVENT_PLAYER_COMBAT_STATE=1,EVENT_COMBAT_EVENT=2,EVENT_UNIT_DEATH_STATE_CHANGED=3,EVENT_POWER_UPDATE=4,
   REGISTER_FILTER_SOURCE_COMBAT_UNIT_TYPE=1,REGISTER_FILTER_COMBAT_RESULT=2,REGISTER_FILTER_TARGET_COMBAT_UNIT_TYPE=3,
   COMBAT_UNIT_TYPE_PLAYER=1,COMBAT_UNIT_TYPE_GROUP=2,COMBAT_UNIT_TYPE_OTHER=3,
   ACTION_RESULT_DAMAGE=10,ACTION_RESULT_KILLING_BLOW=11,ACTION_RESULT_DIED=12,ACTION_RESULT_DIED_XP=13,
@@ -11,7 +11,9 @@ local function setup(maxHealth)
   GetGroupSize=function() return 0 end,GetUnitDisplayName=function() return '@one' end,GetRawUnitName=function() return 'Char' end,
   IsUnitDead=function() return false end,IsUnitInCombat=function(tag) return tag=='boss1' end,
   DoesUnitExist=function(tag) return exists and tag=='boss1' end,
-  GetUnitName=function() return "Кра'гх Король Дреугов^M" end,GetUnitPower=function() return 100,maxHealth or 123 end,POWERTYPE_HEALTH=1,
+  GetUnitName=function() return "Кра'гх Король Дреугов^M" end,
+  GetUnitPower=function(_,power) return 100,power==1 and (maxHealth or 123) or 0 end,
+  COMBAT_MECHANIC_FLAGS_HEALTH=1,POWERTYPE_HEALTH=99,
   EVENT_MANAGER={RegisterForEvent=function(_,name,id,fn) handlers[name]=fn end,AddFilterForEvent=function() end,
    UnregisterForEvent=function(_,name) handlers[name]=nil end}}
  local b=KanaTrifecta.Bootstrap.New(a);b.generation=1;b.context={contextGeneration=1,language='ru',freshness='fresh'}
@@ -19,6 +21,44 @@ local function setup(maxHealth)
  return b,a,handlers,function(t,e) now=t;exists=e end
 end
 return {
+ final_health_snapshot_after_combat_exit_still_recognizes_hm=function()
+  local b,a,h,set=setup()
+  h.KanaTrifectaObserver_EVENT_PLAYER_COMBAT_STATE(1,true)
+  a.GetUnitPower=function(_,power) assert(power==a.COMBAT_MECHANIC_FLAGS_HEALTH);return 0,4593053 end
+  a.IsUnitInCombat=function() return false end
+  set(73000,true);h.KanaTrifectaObserver_EVENT_UNIT_DEATH_STATE_CHANGED(3,'boss1',true)
+  assert(b.run:View(90000).bossRows[5].colorRole=='success','Death snapshot must retain mode evidence')
+ end,
+ health_power_update_uses_current_api_flag=function()
+  local b,a,h=setup()
+  a.GetUnitPower=function(_,power) assert(power==a.COMBAT_MECHANIC_FLAGS_HEALTH);return 100,4593053 end
+  h.KanaTrifectaObserver_EVENT_POWER_UPDATE(4,'boss1',1,a.COMBAT_MECHANIC_FLAGS_HEALTH,100,4593053,4593053)
+  assert(b.run.bosses.boss_5.mode=='active','Health event must use the current flag')
+ end,
+ awarded_hm_achievement_confirms_before_or_after_kill=function()
+  for _,beforeKill in ipairs({true,false}) do
+   local b,a,h,set=setup(3993959)
+   h.KanaTrifectaObserver_EVENT_PLAYER_COMBAT_STATE(1,true)
+   for i=1,4 do F.Kill(b.run,'boss_'..i,i*1000) end
+   local function award() b.observer:Emit('AchievementAwarded',{id=1561},73000,{source='achievementAwarded'}) end
+   if beforeKill then award();assert(not b.run.bosses.boss_5.killed,'Award must not fabricate a death') end
+   set(73000,false);h.KanaTrifectaObserver_EVENT_UNIT_DEATH_STATE_CHANGED(3,'boss1',true)
+   if not beforeKill then award() end
+   local row=b.run:View(90000).bossRows[5]
+   assert(row.colorRole=='success','Current HM achievement must outweigh HP evidence')
+   assert(row.killTimeText=='01:13' and b.run.clock.stoppedElapsedMs==73000)
+   assert(not b.run.failureReasons['boss:boss_5'])
+  end
+ end,
+ historical_or_unrelated_award_does_not_confirm_hm=function()
+  local b=setup()
+  b.observer:Emit('AchievementAwarded',{id=1561,historical=true})
+  b.observer:Emit('AchievementAwarded',{id=1559})
+  assert(b.run.bosses.boss_5.mode=='unknown')
+  b.observer:Handle({kind='wipe'})
+  b.observer:Emit('AchievementAwarded',{id=1561})
+  assert(b.run.bosses.boss_5.mode=='unknown','Award must not revive an abandoned pull')
+ end,
  normal_kragh_kill_fails_hm_and_freezes_finish=function()
   local b,a,h,set=setup(3993959)
   h.KanaTrifectaObserver_EVENT_PLAYER_COMBAT_STATE(1,true)

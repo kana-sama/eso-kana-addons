@@ -68,11 +68,11 @@ function Profiles.ObserveEncounters(profile,signal,context,snapshot)
             local boss=(snapshot.bosses or {})[definition.key]
             if match and boss and not boss.killed and (not unit.combatDeath or boss.pullActive) then
                 local pull=boss.pullId
-                if unit.inCombat and (not pull or not boss.pullActive) then
+                if (unit.inCombat or (unit.isDead==true and definition.terminalDeath)) and (not pull or not boss.pullActive) then
                     pull=definition.key..':'..signal.atMs
                     emit('PullStarted',{bossKey=definition.key,pullId=pull})
                 end
-                if pull and unit.inCombat and definition.healthModes then
+                if pull and (unit.inCombat or unit.isDead==true) and definition.healthModes then
                     local mode=definition.healthModes[unit.maxHealth]
                     if mode then emit('HardModeObserved',{bossKey=definition.key,pullId=pull,mode=mode,priority=1},
                         {source='bossMaxHealth',maxHealth=unit.maxHealth,reference=definition.healthSource}) end

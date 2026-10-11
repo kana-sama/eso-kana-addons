@@ -123,8 +123,8 @@ function Observer:Activate(profile,context)
     end
     self:Bind('EVENT_BOSSES_CHANGED',function() self:ScanBosses('bossesChanged') end)
     self:Bind('EVENT_POWER_UPDATE',function(_,tag,_,power)
-        if power==self.api.POWERTYPE_HEALTH and tag:match('^boss%d+$') then self:ScanBosses('power',tag) end
-    end, self.api.REGISTER_FILTER_POWER_TYPE and {{self.api.REGISTER_FILTER_POWER_TYPE,self.api.POWERTYPE_HEALTH}} or nil)
+        if power==self.api.COMBAT_MECHANIC_FLAGS_HEALTH and tag:match('^boss%d+$') then self:ScanBosses('power',tag) end
+    end, self.api.REGISTER_FILTER_POWER_TYPE and {{self.api.REGISTER_FILTER_POWER_TYPE,self.api.COMBAT_MECHANIC_FLAGS_HEALTH}} or nil)
     self:Bind('EVENT_PLAYER_COMBAT_STATE',function(_,combat)
         self:Handle({kind='combatState',inCombat=combat});self:ScanBosses('combatState')
     end)
@@ -185,7 +185,7 @@ function Observer:ScanBosses(source,deathTag,isDead)
     for i=1,(a.MAX_BOSSES or 6) do
         local tag='boss'..i
         if a.DoesUnitExist(tag) then
-            local hp,maxHp=a.GetUnitPower(tag,a.POWERTYPE_HEALTH)
+            local hp,maxHp=a.GetUnitPower(tag,a.COMBAT_MECHANIC_FLAGS_HEALTH)
             local unit={tag=tag,name=a.GetUnitName(tag),health=hp,maxHealth=maxHp,
                 inCombat=a.IsUnitInCombat and a.IsUnitInCombat(tag) or false,
                 isDead=a.IsUnitDead(tag)}
