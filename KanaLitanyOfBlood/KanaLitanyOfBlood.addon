@@ -1,0 +1,8 @@
+## Title: KanaLitanyOfBlood
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## Description: Crosses out completed targets in the native Litany of Blood book.
+
+KanaLitanyOfBlood.lua
