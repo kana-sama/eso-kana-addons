@@ -147,6 +147,13 @@ assert(KanaColorMap.overlays[7] and not KanaColorMap.overlays[7].control.hidden,
 assert(KanaColorMap.visibleZones==#KanaColorMapData.zones,'all packaged zones must pass validation')
 for _,zone in ipairs(KanaColorMapData.zones) do
  local entry=KanaColorMap.overlays[zone.id]
+ assert(math.abs(entry.control.w-zone.renderWidth*1200)<1e-6)
+ assert(math.abs(entry.control.anchor[4]-zone.renderX*1200)<1e-6)
+ assert(math.abs(entry.control.anchor[5]-zone.renderY*920)<1e-6)
+ if zone.id==13 then
+  assert(zone.renderX<zone.x and zone.renderY<zone.y,
+   'Deshaan art must extend beyond the native clipped blob rectangle')
+ end
  assert(entry.border,'every world-map zone needs a continuous border: '..zone.id)
  assert(entry.border.parent==manager.parent and entry.border.fill==entry.control)
  assert(entry.border.mouse==false and entry.border.level>entry.control.level)

@@ -10,129 +10,40 @@ local function NormalizePath(path)
     return path:lower():gsub("\\", "/"):gsub("^/", "")
 end
 
-K.nameLabels = {}
-local NAME_OFFSETS = {{-3,-3}, {-3,0}, {-3,3}, {0,-3}, {0,3}, {3,-3}, {3,0}, {3,3}}
-local MIN_NAME_SCALE = 0.75
-
-local function CreateNameControl(name, parent, color, tier, level)
-    local label = WINDOW_MANAGER:CreateControl(name, parent, CT_LABEL)
-    label:SetFont("$(HANDWRITTEN_FONT)|34")
-    label:SetColor(color[1], color[2], color[3], color[4])
-    label:SetHorizontalAlignment(TEXT_ALIGN_CENTER)
-    label:SetVerticalAlignment(TEXT_ALIGN_CENTER)
-    label:SetDrawLayer(DL_OVERLAY)
-    label:SetDrawTier(tier)
-    label:SetDrawLevel(level)
-    label:SetPixelRoundingEnabled(false)
-    label:SetMouseEnabled(false)
-    return label
-end
+K.nativeNameColors = {}
 
 function K:ResetLabels()
-    for _, entry in pairs(self.nameLabels) do
-        entry.label:SetHidden(true)
-        for _, stroke in ipairs(entry.outline) do stroke:SetHidden(true) end
-    end
-    self.nameSignature = nil
-    self.nameParent = nil
-    self.visibleNames = 0
-    if self.nativeNamesManager then
-        local manager = self.nativeNamesManager
-        manager.blobNameLabelControlPool:ReleaseAllObjects()
-        manager.blobNamesVisible = false
-        manager.blobNamesReset = true
-        manager.blobNamesDirty = true
-        self.nativeNamesManager = nil
-    end
-end
-
-function K:ShowLabels(tilesManager)
-    if not self.saved or not self.saved.enabled or GetCurrentMapId() ~= TAMRIEL_MAP_ID
-        or not tilesManager or not GetNumMapBlobs or not GetMapBlobNameInfo
-        or not ZO_WorldMap_GetPanAndZoom then return end
-    local panAndZoom = ZO_WorldMap_GetPanAndZoom()
-    if not panAndZoom then return end
-    local parent = tilesManager.parent
-    local _, zoomMax = panAndZoom:GetZoomMinMax()
-    if not zoomMax or zoomMax <= 0 then return end
-    local zoom = (WORLD_MAP_MANAGER and WORLD_MAP_MANAGER.lastBlobZoom or zoomMax) / zoomMax
-    local count = GetNumMapBlobs()
-    local mapWidth, mapHeight = ZO_MAP_CONSTANTS.MAP_WIDTH, ZO_MAP_CONSTANTS.MAP_HEIGHT
-    local signature = string.format("%d|%.6f|%.2f|%.2f", count, zoom, mapWidth, mapHeight)
-    if self.nameSignature == signature and self.nameParent == parent then return end
-    self.nameSignature, self.nameParent = signature, parent
-    self.visibleNames = 0
-    for index = 1, count do
-        local name, x, y, width, nameScale = GetMapBlobNameInfo(index)
-        local entry = self.nameLabels[index]
-        if name and name ~= "" and x and y and width and nameScale and nameScale > 0 then
-            if not entry then
-                entry = {outline={}}
-                for i = 1, #NAME_OFFSETS do
-                    entry.outline[i] = CreateNameControl(NAME .. "MapName" .. index .. "Outline" .. i,
-                        parent, {0, 0, 0, 1}, DT_HIGH, 5)
-                end
-                entry.label = CreateNameControl(NAME .. "MapName" .. index, parent,
-                    {1, 1, 1, 1}, DT_HIGH, 6)
-                self.nameLabels[index] = entry
-            end
-            local text = zo_strformat(SI_ZONE_NAME, name)
-            -- A name can carry inline ESO color tags, which override SetColor.
-            text = text:gsub("|[cC]%x%x%x%x%x%x", ""):gsub("|[rR]", "")
-            local outlineText = "|c000000" .. text .. "|r"
-            local foregroundText = "|cFFFFFF" .. text .. "|r"
-            local scale = math.max(MIN_NAME_SCALE, zoom * nameScale)
-            local uiWidth = math.max(100, width * mapWidth) / scale
-            local centerX, centerY = x * mapWidth, y * mapHeight
-            for i, stroke in ipairs(entry.outline) do
-                stroke:SetParent(parent)
-                stroke:SetText(outlineText)
-                stroke:SetWidth(uiWidth)
-                stroke:SetScale(scale)
-                stroke:ClearAnchors()
-                stroke:SetAnchor(CENTER, parent, TOPLEFT,
-                    centerX + NAME_OFFSETS[i][1], centerY + NAME_OFFSETS[i][2])
-                stroke:SetHidden(false)
-            end
-            local label = entry.label
-            label:SetParent(parent)
-            label:SetText(foregroundText)
-            label:SetWidth(uiWidth)
-            label:SetScale(scale)
-            label:ClearAnchors()
-            label:SetAnchor(CENTER, parent, TOPLEFT, centerX, centerY)
-            label:SetHidden(false)
-            self.visibleNames = self.visibleNames + 1
-        elseif entry then
-            entry.label:SetHidden(true)
-            for _, stroke in ipairs(entry.outline) do stroke:SetHidden(true) end
+    for label, colors in pairs(self.nativeNameColors) do
+        label:SetColor(unpack(colors.foreground))
+        if colors.shadow and label.shadowLabel then
+            label.shadowLabel:SetColor(unpack(colors.shadow))
         end
     end
-    for index, entry in pairs(self.nameLabels) do
-        if index > count then
-            entry.label:SetHidden(true)
-            for _, stroke in ipairs(entry.outline) do stroke:SetHidden(true) end
-        end
-    end
+    self.nativeNameColors = {}
+    self.visibleNames = 0
 end
 
 function K:UpdateLabels(worldManager)
-    if not self.activeManager or GetCurrentMapId() ~= TAMRIEL_MAP_ID then
-        if self.visibleNames and self.visibleNames > 0 or self.nativeNamesManager then
-            self:ResetLabels()
-        end
+    if not self.saved or not self.saved.enabled or not self.activeManager
+        or GetCurrentMapId() ~= TAMRIEL_MAP_ID then
+        self:ResetLabels()
         return
     end
-    self:ShowLabels(self.activeManager)
-    if self.visibleNames > 0 and worldManager.blobNameLabelControlPool then
-        local pool = worldManager.blobNameLabelControlPool
-        for _ in pool:ActiveObjectIterator() do
-            -- ESO can reacquire its brown names during UpdateBlobs. Remove
-            -- them from the active pool after each native update.
-            pool:ReleaseAllObjects()
-            break
+    self.visibleNames = 0
+    if not worldManager.blobNameLabelControlPool then return end
+    for _, label in worldManager.blobNameLabelControlPool:ActiveObjectIterator() do
+        if not self.nativeNameColors[label] then
+            local r, g, b, a = label:GetColor()
+            local colors = {foreground={r, g, b, a}}
+            if label.shadowLabel then
+                r, g, b, a = label.shadowLabel:GetColor()
+                colors.shadow = {r, g, b, a}
+            end
+            self.nativeNameColors[label] = colors
         end
-        self.nativeNamesManager = worldManager
+        label:SetColor(1, 1, 1, 1)
+        if label.shadowLabel then label.shadowLabel:SetColor(0, 0, 0, 1) end
+        self.visibleNames = self.visibleNames + 1
     end
 end
 
@@ -157,13 +68,16 @@ function K:Layout(manager)
     if self.activeManager ~= manager then return end
     for _, entry in pairs(self.overlays) do
         local zone, control = entry.zone, entry.control
+        local renderX, renderY = zone.renderX or zone.x, zone.renderY or zone.y
+        local renderWidth = zone.renderWidth or zone.width
+        local renderHeight = zone.renderHeight or zone.height
         control:ClearAnchors()
         control:SetAnchor(TOPLEFT, manager.parent, TOPLEFT,
-            zone.x * ZO_MAP_CONSTANTS.MAP_WIDTH, zone.y * ZO_MAP_CONSTANTS.MAP_HEIGHT)
-        control:SetDimensions(zone.width * ZO_MAP_CONSTANTS.MAP_WIDTH,
-            zone.height * ZO_MAP_CONSTANTS.MAP_HEIGHT)
+            renderX * ZO_MAP_CONSTANTS.MAP_WIDTH,
+            renderY * ZO_MAP_CONSTANTS.MAP_HEIGHT)
+        control:SetDimensions(renderWidth * ZO_MAP_CONSTANTS.MAP_WIDTH,
+            renderHeight * ZO_MAP_CONSTANTS.MAP_HEIGHT)
     end
-    if self.visibleNames and self.visibleNames > 0 then self:ShowLabels(manager) end
 end
 
 local function MatchesNativeZone(zone)
@@ -237,7 +151,6 @@ function K:Apply(manager)
     end
     self.activeManager = manager
     self:Layout(manager)
-    self:ShowLabels(manager)
 end
 
 function K:Refresh()

@@ -1,12 +1,13 @@
-"""Crop generated artwork into exact native zone rectangles; no procedural painting.
+"""Package zone artwork and refined contours; keep native blob validation.
 
-Requires Pillow. Native masks are lossless RGBA DDS (both alpha and luminance).
+Requires Pillow and NumPy. Masks are lossless RGBA DDS (alpha and luminance).
 The SVG preview depicts the original parchment atlas and masked texture controls.
 """
 import base64
 import json
 import math
 from pathlib import Path
+import numpy as np
 from PIL import Image
 from zone_border import build_border
 
@@ -15,6 +16,8 @@ zones = json.loads((ROOT / 'research/zones.json').read_text())
 source = Image.open(ROOT / 'art/tamriel-color-v2.png').convert('RGB')
 assert source.width == source.height
 overrides = json.loads((ROOT / 'art/zone-art-sources.json').read_text())
+refined_bounds_path = ROOT / 'art/refined-bounds.json'
+refined_bounds = json.loads(refined_bounds_path.read_text()) if refined_bounds_path.exists() else {}
 for directory in ['textures/zones', 'masks', 'textures/borders', 'art/zone-borders']:
     (ROOT / directory).mkdir(parents=True, exist_ok=True)
 
@@ -35,22 +38,44 @@ for z in zones:
         filename = override['file'] if isinstance(override, dict) else override
         zone_source = Image.open(ROOT / 'art' / filename).convert('RGB')
     x, y, w, h = [z[k] for k in ('x', 'y', 'width', 'height')]
-    tw, th = [max(32, 2 ** math.ceil(math.log2(v * 2048))) for v in (w, h)]
+    native_box = tuple(round(value * 2048) for value in (x, y, x+w, y+h))
+    render_box = tuple(refined_bounds.get(str(z['id']), native_box))
+    rx, ry = render_box[0] / 2048, render_box[1] / 2048
+    rw, rh = (render_box[2] - render_box[0]) / 2048, (render_box[3] - render_box[1]) / 2048
+    tw, th = [max(32, 2 ** math.ceil(math.log2(v))) for v in
+              (render_box[2]-render_box[0], render_box[3]-render_box[1])]
     if crop_space:
-        crop = zone_source.resize((tw, th), Image.Resampling.LANCZOS)
+        if render_box == native_box:
+            crop = zone_source.resize((tw, th), Image.Resampling.LANCZOS)
+        else:
+            # Zone-local corrections retain their own artwork across the
+            # small contour-search margin instead of exposing black pixels.
+            sx = zone_source.width / (native_box[2] - native_box[0])
+            sy = zone_source.height / (native_box[3] - native_box[1])
+            pads = (math.ceil((native_box[0]-render_box[0])*sx),
+                    math.ceil((native_box[1]-render_box[1])*sy),
+                    math.ceil((render_box[2]-native_box[2])*sx),
+                    math.ceil((render_box[3]-native_box[3])*sy))
+            padded = Image.fromarray(np.pad(np.asarray(zone_source),
+                ((pads[1], pads[3]), (pads[0], pads[2]), (0, 0)), mode='edge'))
+            crop = padded.resize((tw, th), Image.Resampling.LANCZOS)
     else:
         crop = zone_source.transform((tw, th), Image.Transform.EXTENT,
-            (x * zone_source.width, y * zone_source.height,
-             (x+w) * zone_source.width, (y+h) * zone_source.height),
+            (rx * zone_source.width, ry * zone_source.height,
+             (rx+rw) * zone_source.width, (ry+rh) * zone_source.height),
             Image.Resampling.BICUBIC)
     crop.save(ROOT / f'textures/zones/{z["id"]}.dds', pixel_format='DXT1')
-    mask = Image.open(ROOT / f'art/native-masks/{z["id"]}.png').convert('RGBA')
+    mask_path = ROOT / f'art/refined-masks/{z["id"]}.png'
+    if not mask_path.exists():
+        mask_path = ROOT / f'art/native-masks/{z["id"]}.png'
+    mask = Image.open(mask_path).convert('RGBA')
     mask.save(ROOT / f'masks/{z["id"]}.dds')
     fields = {'id': z['id'], 'x': x, 'y': y, 'width': w, 'height': h,
+              'renderX': rx, 'renderY': ry, 'renderWidth': rw, 'renderHeight': rh,
               'probeX': z['probeX'], 'probeY': z['probeY'], 'sourceMask': z['mask'],
               'mask': f'eso-kana-addons/KanaColorMap/masks/{z["id"]}.dds',
               'art': f'eso-kana-addons/KanaColorMap/textures/zones/{z["id"]}.dds'}
-    border = build_border(mask, w, h, (tw, th))
+    border = build_border(mask, rw, rh, (tw, th))
     border.save(ROOT / f'textures/borders/{z["id"]}.dds')
     border.save(ROOT / f'art/zone-borders/{z["id"]}.png')
     fields['border'] = f'eso-kana-addons/KanaColorMap/textures/borders/{z["id"]}.dds'
@@ -58,8 +83,8 @@ for z in zones:
     # Render from encoded DDS to include compression in visual QA.
     png = ROOT / f'art/native-masks/preview-{z["id"]}.png'
     Image.open(ROOT / f'textures/zones/{z["id"]}.dds').save(png)
-    bounds = f'x="{x*2048}" y="{y*2048}" width="{w*2048}" height="{h*2048}"'
-    mask_uri = uri(ROOT / f'art/native-masks/{z["id"]}.png')
+    bounds = f'x="{render_box[0]}" y="{render_box[1]}" width="{render_box[2]-render_box[0]}" height="{render_box[3]-render_box[1]}"'
+    mask_uri = uri(mask_path)
     svg += [f'<defs><mask id="z{z["id"]}" maskUnits="userSpaceOnUse" style="mask-type:alpha" {bounds}><image {bounds} href="{mask_uri}" preserveAspectRatio="none"/></mask></defs>',
             f'<image {bounds} href="{uri(png)}" preserveAspectRatio="none" mask="url(#z{z["id"]})"/>']
     border_uri = uri(ROOT / f'art/zone-borders/{z["id"]}.png')
@@ -70,4 +95,4 @@ lua += ['} }', '']
 svg.extend(border_svg)
 svg.append('</svg>')
 (ROOT / 'art/tamriel-preview.svg').write_text('\n'.join(svg))
-print(f'Packaged {len(zones)} zone textures + lossless native masks from {source.size}; wrote Zones.lua and SVG preview')
+print(f'Packaged {len(zones)} zone textures and refined masks from {source.size}; wrote Zones.lua and SVG preview')

@@ -1,122 +1,112 @@
 local root = arg[0]:match('^(.*)/tests/[^/]+$') or '.'
-local mapId, zoom, mapWidth = 27, .08, 920
-EVENT_ADD_ON_LOADED, CT_LABEL, CENTER, TOPLEFT, DL_OVERLAY, TEXT_ALIGN_CENTER = 1, 2, 3, 4, 5, 6
-DT_MEDIUM, DT_HIGH = 7, 8
-ZO_MAP_CONSTANTS = {MAP_WIDTH=mapWidth, MAP_HEIGHT=mapWidth}
+unpack = unpack or table.unpack -- ESO uses Lua 5.1.
+local mapId, zoom = 27, .08
+EVENT_ADD_ON_LOADED = 1
 SLASH_COMMANDS = {}
 function GetCurrentMapId() return mapId end
-function GetNumMapBlobs() return 2 end
-function GetMapBlobNameInfo(i)
- if i == 1 then return 'Гленумбра', .2, .3, .12, 1.2 end
- return 'Ротгар', .7, .2, .1, 1
+function GetNumMapBlobs() return 1 end
+function GetMapBlobNameInfo() return 'Ротгар', .5, .4, .2, 1 end
+function zo_strformat(_, name) return name end
+SI_ZONE_NAME = 1
+ZO_MAP_CONSTANTS = {MAP_WIDTH=920, MAP_HEIGHT=920}
+CT_LABEL, DL_OVERLAY, DT_HIGH, CENTER, TOPLEFT, TEXT_ALIGN_CENTER = 1, 2, 3, 4, 5, 6
+function ZO_WorldMap_GetPanAndZoom()
+    return {GetZoomMinMax=function() return .02, 1 end}
 end
-function zo_strformat(_, text) return '|c544426'..text..'|r' end
-SI_ZONE_NAME = 7
+
 local init
-EVENT_MANAGER = {RegisterForEvent=function(_,_,_,callback) init=callback end,
- UnregisterForEvent=function() end}
+EVENT_MANAGER = {
+    RegisterForEvent=function(_, _, _, callback) init=callback end,
+    UnregisterForEvent=function() end,
+}
 ZO_SavedVars = {NewAccountWide=function() return {enabled=true} end}
-function ZO_PostHook(target, name, callback)
- local original=target[name]
- target[name]=function(self, ...)
-  if original then original(self, ...) end
-  callback(self, ...)
- end
+function ZO_PostHook(target, method, callback)
+    local original = target[method]
+    target[method] = function(self, ...)
+        if original then original(self, ...) end
+        callback(self, ...)
+    end
 end
 ZO_WorldMapTiles_Manager = {}
-local created={}
-local function control(name, parent)
- local c={name=name,parent=parent,hidden=true}
- function c:SetFont(v) self.font=v end
- function c:SetColor(...) self.color={...} end
- function c:SetMouseEnabled(v) self.mouse=v end
- function c:SetPixelRoundingEnabled(v) self.round=v end
- function c:SetDrawLayer(v) self.layer=v end
- function c:SetDrawTier(v) self.tier=v end
- function c:SetDrawLevel(v) self.level=v end
- function c:SetHorizontalAlignment(v) self.align=v end
- function c:SetVerticalAlignment(v) self.valign=v end
- function c:SetText(v) self.text=v end
- function c:SetScale(v) self.scale=v end
- function c:SetWidth(v) self.width=v end
- function c:ClearAnchors() self.anchor=nil end
- function c:SetAnchor(...) self.anchor={...} end
- function c:SetHidden(v) self.hidden=v end
- function c:IsHidden() return self.hidden end
- function c:SetParent(v) self.parent=v end
- return c
-end
-WINDOW_MANAGER = {CreateControl=function(_, name, parent, kind)
- assert(kind == CT_LABEL)
- local c=control(name,parent);created[#created+1]=c;return c
-end}
-local panAndZoom={GetZoomMinMax=function() return .02, 1 end}
-function ZO_WorldMap_GetPanAndZoom() return panAndZoom end
-assert(g_mapPanAndZoom==nil, 'ESO keeps g_mapPanAndZoom local to worldmap.lua')
-local native={hidden=false}
-function native:SetHidden(value) self.hidden=value end
-function native:IsHidden() return self.hidden end
-local pool={releases=0,active=true}
-function pool:ActiveObjectIterator() return next, self.active and {[1]=native} or {}, nil end
-function pool:ReleaseAllObjects() self.releases=self.releases+1;self.active=false;native.hidden=true end
-ZO_WorldMapManager = {}
-function ZO_WorldMapManager:UpdateBlobs() pool.active=true;native.hidden=false;self.lastBlobZoom=zoom end
-WORLD_MAP_MANAGER=setmetatable({blobNameLabelControlPool=pool,lastBlobZoom=zoom},{__index=ZO_WorldMapManager})
-dofile(root..'/KanaColorMap.lua')
-init(nil,'KanaColorMap')
-local K=KanaColorMap
-local parent={}
-K.activeManager={parent=parent}
-K:UpdateLabels(WORLD_MAP_MANAGER)
-local function check()
- assert(K.visibleNames==2, 'both names displayed independently of native pool')
- assert(native.hidden, 'hide native duplicate only while custom labels render')
- for i,name in ipairs({'Гленумбра','Ротгар'}) do
-  local entry=assert(K.nameLabels[i])
-  assert(not entry.label.hidden and entry.label.text=='|cFFFFFF'..name..'|r')
-  assert(entry.label.font=='$(HANDWRITTEN_FONT)|34')
-  assert(entry.label.layer==DL_OVERLAY and entry.label.level==6)
-  assert(entry.label.color[1]==1 and entry.label.color[2]==1 and entry.label.color[3]==1,
-   'foreground must be pure white')
-  assert(entry.label.tier==DT_HIGH, 'foreground must render above dark copies')
-  assert(entry.label.scale>=.75 and entry.label.mouse==false)
-  assert(#entry.outline==8)
-  for _,stroke in ipairs(entry.outline) do
-   assert(not stroke.hidden and stroke.color[1]==0 and stroke.color[2]==0 and stroke.color[3]==0)
-   assert(stroke.layer==DL_OVERLAY and stroke.level==5 and stroke.text=='|c000000'..name..'|r')
-   assert(stroke.tier==DT_HIGH)
-   assert(stroke.scale==entry.label.scale and stroke.parent==parent)
-  end
-  for index,control in ipairs(created) do
-   if control==entry.label then
-    for _,stroke in ipairs(entry.outline) do
-     local earlier=false
-     for j=1,index-1 do if created[j]==stroke then earlier=true end end
-     assert(earlier, 'dark copies must be created before white foreground')
+
+local created = 0
+WINDOW_MANAGER = {CreateControl=function()
+    created = created + 1
+    local control = {}
+    for _, method in ipairs({'SetFont', 'SetColor', 'SetHorizontalAlignment',
+        'SetVerticalAlignment', 'SetDrawLayer', 'SetDrawTier', 'SetDrawLevel',
+        'SetPixelRoundingEnabled', 'SetMouseEnabled', 'SetParent', 'SetText',
+        'SetWidth', 'SetScale', 'ClearAnchors', 'SetAnchor', 'SetHidden'}) do
+        control[method] = function() end
     end
-   end
-  end
- end
+    return control
+end}
+
+local function label(r, g, b, a)
+    local control = {color={r,g,b,a}, hidden=true, alpha=0, scale=1, text='Ротгар'}
+    function control:GetColor() return unpack(self.color) end
+    function control:SetColor(...) self.color={...} end
+    function control:SetHidden(value) self.hidden=value end
+    return control
 end
-check()
-assert(pool.releases>0, 'native labels must be released after their update')
-assert(not pool.active, 'no native brown names may remain above custom labels')
-local firstCount=#created
+local native = label(.33, .27, .15, 1)
+native.shadowLabel = label(.79, .63, .3, 1)
+local originalText = native.text
+local pool = {active={}, releases=0}
+function pool:ActiveObjectIterator() return next, self.active, nil end
+function pool:ReleaseAllObjects()
+    self.releases=self.releases+1
+    self.active={}
+    native.hidden=true
+end
+ZO_WorldMapManager = {}
+function ZO_WorldMapManager:UpdateBlobs()
+    self.lastBlobZoom=zoom
+    if zoom >= .15 then
+        pool.active={[1]=native}
+        native.hidden=false
+        native.alpha=.6
+        native.scale=zoom
+    else
+        pool:ReleaseAllObjects()
+    end
+end
+WORLD_MAP_MANAGER = setmetatable({blobNameLabelControlPool=pool}, {__index=ZO_WorldMapManager})
+
+dofile(root..'/KanaColorMap.lua')
+init(nil, 'KanaColorMap')
+local K = KanaColorMap
+K.activeManager = {parent={}}
+
+WORLD_MAP_MANAGER:UpdateBlobs()
+assert(created==0 and K.visibleNames==0, 'zoomed-out map must not create or show zone names')
+assert(native.hidden, 'native visibility threshold remains intact')
+
+zoom=.5
+WORLD_MAP_MANAGER:UpdateBlobs()
+assert(created==0, 'addon must not create replacement name controls')
+assert(not native.hidden and native.alpha==.6 and native.scale==zoom,
+    'native visibility, fade, and scale remain intact')
+assert(native.text==originalText and native.color[1]==1 and native.color[2]==1 and native.color[3]==1,
+    'native handwritten text stays in place and becomes white')
+assert(native.shadowLabel.color[1]==0 and native.shadowLabel.color[2]==0
+    and native.shadowLabel.color[3]==0, 'native backing becomes black')
+assert(pool.releases==1, 'addon must not release native names')
+
 K:Reset()
-for _,c in ipairs(created) do assert(c.hidden) end
-assert(K.visibleNames==0)
-K.activeManager={parent=parent}
+assert(native.color[1]==.33 and native.color[2]==.27 and native.color[3]==.15,
+    'native foreground color restores on leaving Tamriel')
+assert(native.shadowLabel.color[1]==.79 and native.shadowLabel.color[2]==.63
+    and native.shadowLabel.color[3]==.3, 'native shadow color restores')
+assert(native.text==originalText and native.scale==zoom and pool.releases==1,
+    'reset does not change text, zoom, or native pool state')
+
+K.activeManager = {parent={}}
 WORLD_MAP_MANAGER:UpdateBlobs()
-check()
-assert(#created==firstCount, 'reopen must reuse controls')
-zoom=.9;WORLD_MAP_MANAGER:UpdateBlobs()
-assert(K.nameLabels[1].label.scale==1.08, 'normal zoom still scales naturally')
-assert(K.nameLabels[2].label.scale==.9)
-ZO_MAP_CONSTANTS.MAP_WIDTH=1200;ZO_MAP_CONSTANTS.MAP_HEIGHT=1200
-K:ShowLabels(K.activeManager)
-assert(K.nameLabels[1].label.anchor[4]==.2*1200, 'reposition on map resize')
-K:Reset();mapId=61;K.activeManager={parent=parent}
+assert(native.color[1]==1 and pool.releases==1 and created==0,
+    'reopening reuses and recolors native names')
+mapId=61
 WORLD_MAP_MANAGER:UpdateBlobs()
-assert(not native.hidden, 'detailed map keeps native names')
-for _,c in ipairs(created) do assert(c.hidden) end
-print('PASS: visible own labels, black outline, scale floor, zoom/resize, second open, restore')
+assert(native.color[1]==.33 and native.shadowLabel.color[1]==.79,
+    'detailed zone maps retain native colors')
+print('PASS: native labels only, zoom/fade preserved, white text, dark backing, restore/reopen')
