@@ -101,6 +101,24 @@ function Hud.New(api,onClick,settings)
     return self
 end
 function Hud:ResolveAnchor()
+    local manager=self.api.HUD_TRACKER_MANAGER
+    if manager and manager.trackers then
+        -- IsDetached's native validity callback needs the initialized manager HUD element.
+        if not manager.isFullyLoaded or not manager:GetPlatformHUDElement() then return nil end
+        local lowest,bottom
+        for _,data in ipairs(manager.trackers) do
+            local owner=data.owner
+            if owner:IsActive() and not owner:IsDetached() then
+                -- Quest text excludes its keybind; other trackers expose the visible container.
+                local control=owner.GetTrackerControl and owner:GetTrackerControl() or owner:GetContainerControl()
+                if control and not control:IsControlHidden() and control:GetHeight()>0 then
+                    local y=control:GetBottom()
+                    if not bottom or y>bottom then lowest,bottom=control,y end
+                end
+            end
+        end
+        return lowest
+    end
     local tracker=self.api.FOCUSED_QUEST_TRACKER
     if tracker and tracker.GetTrackerControl then
         local control=tracker:GetTrackerControl()
@@ -116,6 +134,10 @@ function Hud:Attach(anchor)
     if self.anchor~=anchor then
         self.anchor=anchor;self.root:ClearAnchors();self.root:SetAnchor(self.api.TOPRIGHT,anchor,self.api.BOTTOMRIGHT,0,18)
         self.layoutDirty=true
+    end
+    local right,bottom=anchor:GetRight(),anchor:GetBottom()
+    if self.anchorRight~=right or self.anchorBottom~=bottom then
+        self.anchorRight,self.anchorBottom=right,bottom;self.layoutDirty=true
     end
     self.content:SetHidden(not self.visible);return true
 end

@@ -18,6 +18,7 @@ function M:ClearAnchors() self.anchor=nil end
 function M:SetAnchorFill() end
 function M:SetHidden(v) self.hidden=v end
 function M:IsHidden() return self.hidden end
+function M:IsControlHidden() return S.isHidden(self) end
 function S.isHidden(control) return control:IsHidden() or (control.parent and S.isHidden(control.parent)) or false end
 function M:SetText(t) self.text=t end
 function M:GetTextHeight() return math.ceil(#(self.text or '')/math.max(1,math.floor((self.w or 300)/10)))*20 end
