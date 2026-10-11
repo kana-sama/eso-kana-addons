@@ -12,9 +12,16 @@ function P.New(api)return setmetatable({api=api or _G,widths={},textureWidths={}
 function Pages:Get(page)
  local d=definitions[page];if not d then return nil end
  local a=self.api;local root,background=a[d.root],a[d.background]
+ local artChild=(page=='skills' or page=='collectionsBook')and 'Left'or 'BG'
+ if page=='stats'then
+  -- ESO replaces STATS_BG_FRAGMENT with RIGHT_BG_FRAGMENT while advanced
+  -- stats are open. Extending the normal background then changes hidden art.
+  local advanced=a.ZO_AdvancedStatsPanel
+  if advanced and not advanced:IsHidden()then background=a.ZO_SharedRightBackground;artChild='Left'end
+ end
  local scene=a.SCENE_MANAGER and a.SCENE_MANAGER:GetScene(page)
  if not root or not background or not scene then return nil end
- return {scene=scene,root=root,background=background,side=d.side}
+ return {scene=scene,root=root,background=background,side=d.side,artChild=artChild}
 end
 function Pages:Bounds(page)
  local p=self:Get(page);local a=self.api;if not p or not a.GuiRoot then return nil end
@@ -135,16 +142,16 @@ function Pages:SetBackgroundExpanded(page,expanded)
  local target=math.max(self.widths[bg],width)
  -- Right/Stats backgrounds have fixed-width art anchored to their left edge.
  -- Widening only the RIGHT-anchored owner moves that art away from the native
- -- page. Skills preserves the native edge/remainder with slices; Stats keeps
- -- its existing width extension. Inventory uses other art.
+ -- page. Preserve the Right background's native edge/remainder with slices;
+ -- the normal Stats background keeps its width extension. Inventory uses other art.
  if p.side=='left'and not self.textureWidths[bg]then
-  local ok,texture=pcall(bg.GetNamedChild,bg,(page=='skills' or page=='collectionsBook')and 'Left'or 'BG')
+  local ok,texture=pcall(bg.GetNamedChild,bg,p.artChild)
   if ok and texture then self.textureWidths[bg]={control=texture,width=texture:GetWidth()/scale(texture)}end
  end
  local art=self.textureWidths[bg]
  if math.abs(bg:GetWidth()/factor-target)>.01 then bg:SetWidth(target)end
  if art then
-  if page=='skills' or page=='collectionsBook'then self:ExpandSkillArt(art,(target-self.widths[bg])*factor)
+  if p.artChild=='Left'then self:ExpandSkillArt(art,(target-self.widths[bg])*factor)
   else
    local textureScale=scale(art.control)
    local artWidth=art.width+(target-self.widths[bg])*factor/textureScale
