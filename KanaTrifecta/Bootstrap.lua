@@ -20,6 +20,7 @@ function Bootstrap:Later(fn,delay)
     (self.api.CallLater or self.api.zo_callLater)(fn,delay)
 end
 function Bootstrap:RefreshContext()
+    if self.playerActive==false then return end
     self.refreshToken=self.refreshToken+1
     local token,first=self.refreshToken,self.observer:ReadContext()
     self:Later(function()
@@ -81,6 +82,13 @@ function Bootstrap:RefreshContext()
         self:UpdateView()
     end,250)
 end
+function Bootstrap:CheckContext()
+    if self.playerActive==false then return end
+    local current=self.observer:ReadContext()
+    if self.context then
+        if current.zoneId~=self.context.zoneId or current.difficulty~=self.context.difficulty then self:RefreshContext() end
+    elseif K.Profiles:Find(current.zoneId,current.difficulty) then self:RefreshContext() end
+end
 function Bootstrap:Clocks()
     return {nowMs=self.api.GetGameTimeMilliseconds(),nowWallSec=self.api.GetTimeStamp(),monotonicContinuous=false}
 end
@@ -110,9 +118,14 @@ function Bootstrap:Initialize()
     end
     local em=self.api.EVENT_MANAGER
     for _,event in ipairs({'EVENT_PLAYER_ACTIVATED','EVENT_ZONE_CHANGED'}) do
-        if self.api[event] then em:RegisterForEvent('KanaTrifecta_'..event,self.api[event],function() self:RefreshContext() end) end
+        if self.api[event] then em:RegisterForEvent('KanaTrifecta_'..event,self.api[event],function()
+            if event=='EVENT_PLAYER_ACTIVATED' then self.playerActive=true end
+            self:RefreshContext()
+        end) end
     end
+    em:RegisterForUpdate('KanaTrifectaContext',1000,function() self:CheckContext() end)
     if self.api.EVENT_PLAYER_DEACTIVATED then em:RegisterForEvent('KanaTrifectaSave',self.api.EVENT_PLAYER_DEACTIVATED,function()
+        self.playerActive=false;self.refreshToken=self.refreshToken+1
         self.exitContext=self.observer:ReadContext();self.exitContext.atMs=self.api.GetGameTimeMilliseconds()
         if self.run then self.run:Apply({kind='ContextLeft',contextGeneration=self.generation,payload={}}) end
         self:Save();self.context=nil;self.observer:Deactivate()
