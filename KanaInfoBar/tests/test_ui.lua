@@ -10,7 +10,12 @@ for _,badge in ipairs(A.controls.messages.badges) do
 end
 assert(A.layout.height==32)
 local originalX,originalY=A.sv.x,A.sv.y
+local originalTier,originalLayer,originalLevel=A.root:GetDrawTier(),A.root:GetDrawLayer(),A.root:GetDrawLevel()
 A:OpenEditor()
+assert(A.root:GetDrawTier()==DT_HIGH and A.root:GetDrawLayer()==DL_OVERLAY and
+    A.root:GetDrawLevel()>originalLevel,'entire editor panel draws above HUD and chat')
+assert(A.capture:GetDrawTier()==DT_HIGH and A.capture:GetDrawLayer()==DL_OVERLAY and
+    A.capture:GetDrawLevel()>A.root:GetDrawLevel(),'drag capture remains above the raised panel')
 assert(A.edit and not A.controls.messages:IsHidden(),'zero indicators appear in editor')
 assert(A.controls.messages.nameLabel,'editor cards need names, including hidden metrics')
 local initialRows=M.Copy(A.sv.rows)
@@ -36,6 +41,8 @@ local oldLeft,oldTop=A.root:GetLeft(),A.root:GetTop()
 A:SetAnchorChoice('TOP')
 assert(math.abs(A.root:GetLeft()-oldLeft)<.001 and math.abs(A.root:GetTop()-oldTop)<.001,'anchor change cannot teleport panel')
 A:CloseEditor(false)
+assert(A.root:GetDrawTier()==originalTier and A.root:GetDrawLayer()==originalLayer and
+    A.root:GetDrawLevel()==originalLevel,'cancel restores normal HUD drawing order')
 assert(A.sv.anchor=='BOTTOMRIGHT' and A.sv.x==originalX and A.sv.y==originalY)
 assert(#A.sv.rows==1 and #A.sv.rows[1]==#initialRows[1],'cancel restores full snapshot')
 A:OpenEditor();drop('fps',A.dropZones[#A.dropZones]);A:CloseEditor(true)
@@ -52,6 +59,8 @@ A.controls.inventory.handlers.OnMouseUp(nil,1,true);assert(calls==1)
 A:OpenEditor();A:BeginWidgetDrag('dps')
 A.fragment.callback(nil,SCENE_FRAGMENT_HIDING)
 assert(not A.edit and not A.drag and A.capture:IsHidden())
+assert(A.root:GetDrawTier()==originalTier and A.root:GetDrawLayer()==originalLayer and
+    A.root:GetDrawLevel()==originalLevel,'scene exit restores normal HUD drawing order')
 A.sv.enabled.messages=false
 A.sv.scale=1.25; A.sv.gap=19; A.sv.rowGap=9
 A:OpenEditor()

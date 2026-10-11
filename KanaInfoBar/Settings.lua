@@ -8,7 +8,7 @@ end
 function A:InitializeSettings()
     local panelName='KanaInfoBarSettings'
     self.settingsPanel=LibAddonMenu2:RegisterAddonPanel(panelName,{
-        type='panel',name='KanaInfoBar',displayName='KanaInfoBar',author='Kana',version='1.0.13',
+        type='panel',name='KanaInfoBar',displayName='KanaInfoBar',author='Kana',version='1.0.14',
         registerForRefresh=true,registerForDefaults=false,
     })
     local options={

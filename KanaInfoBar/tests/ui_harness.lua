@@ -9,7 +9,8 @@ for _,name in ipairs({'CT_CONTROL','CT_LABEL','CT_TEXTURE','CT_BACKDROP','DT_MED
     'EVENT_ADD_ON_LOADED','EVENT_PLAYER_ACTIVATED','EVENT_SCREEN_RESIZED','EVENT_INVENTORY_SINGLE_SLOT_UPDATE',
     'EVENT_INVENTORY_FULL_UPDATE','EVENT_INVENTORY_BAG_CAPACITY_CHANGED','EVENT_PLAYER_COMBAT_STATE','REGISTER_FILTER_BAG_ID'}) do _G[name]=name end
 MOUSE_BUTTON_INDEX_LEFT=1;MOUSE_BUTTON_INDEX_RIGHT=2;BAG_BACKPACK=1;BAG_WORN=2;ITEMTYPE_TREASURE=7
-function H.control(parent) return setmetatable({parent=parent,width=0,height=0,scale=1,handlers={}},C) end
+function H.control(parent) return setmetatable({parent=parent,width=0,height=0,scale=1,handlers={},
+    drawTier=DT_MEDIUM,drawLayer=DL_CONTROLS,drawLevel=0},C) end
 function C:SetDimensions(w,h) self.width,self.height=w,h end
 function C:SetAnchor(p,r,rp,x,y) self.anchor={p,r,rp,x or 0,y or 0} end
 function C:ClearAnchors() self.anchor=nil end
@@ -38,8 +39,14 @@ function C:SetHidden(v) self.hidden=v end
 function C:IsHidden() return self.hidden==true end
 function C:SetHandler(k,v) self.handlers[k]=v end
 function C:SetColor(...) self.color={...} end
-for _,method in ipairs({'SetMouseEnabled','SetHorizontalAlignment','SetCenterColor','SetEdgeColor','SetEdgeTexture','SetDrawLayer','SetDrawLevel',
-    'SetTexture','SetDesaturation','SetAlpha','SetClampedToScreen','SetDrawTier','AddLine'}) do C[method]=function() end end
+function C:SetDrawTier(v) self.drawTier=v end
+function C:GetDrawTier() return self.drawTier end
+function C:SetDrawLayer(v) self.drawLayer=v end
+function C:GetDrawLayer() return self.drawLayer end
+function C:SetDrawLevel(v) self.drawLevel=v end
+function C:GetDrawLevel() return self.drawLevel end
+for _,method in ipairs({'SetMouseEnabled','SetHorizontalAlignment','SetCenterColor','SetEdgeColor','SetEdgeTexture',
+    'SetTexture','SetDesaturation','SetAlpha','SetClampedToScreen','AddLine'}) do C[method]=function() end end
 GuiRoot=H.control();GuiRoot:SetDimensions(1920,1080)
 WINDOW_MANAGER={CreateControl=function(_,_,parent) return H.control(parent) end,
     CreateTopLevelWindow=function() return H.control(GuiRoot) end,

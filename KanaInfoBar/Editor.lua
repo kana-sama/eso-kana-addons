@@ -1,5 +1,20 @@
 local A,M=KanaInfoBar,KanaInfoBar.Model
 local wm=WINDOW_MANAGER
+local EDITOR_DRAW_LEVEL=100
+
+function A:SetEditorDrawing(enabled)
+    if enabled then
+        self.normalDrawing={self.root:GetDrawTier(),self.root:GetDrawLayer(),self.root:GetDrawLevel()}
+        self.root:SetDrawTier(DT_HIGH)
+        self.root:SetDrawLayer(DL_OVERLAY)
+        self.root:SetDrawLevel(EDITOR_DRAW_LEVEL)
+    elseif self.normalDrawing then
+        self.root:SetDrawTier(self.normalDrawing[1])
+        self.root:SetDrawLayer(self.normalDrawing[2])
+        self.root:SetDrawLevel(self.normalDrawing[3])
+        self.normalDrawing=nil
+    end
+end
 
 function A:OpenEditor()
     if self.edit then return end
@@ -13,6 +28,7 @@ function A:OpenEditor()
         self:HideTooltip()
         SCENE_MANAGER:SetInUIMode(true)
         self:CreateEditorControls()
+        self:SetEditorDrawing(true)
         self.editorUI:SetHidden(false)
         KEYBIND_STRIP:AddKeybindButtonGroup(self.editorKeys)
         self:Refresh(true)
@@ -36,6 +52,7 @@ function A:CloseEditor(save)
     self.editorUI:SetHidden(true)
     for _,zone in ipairs(self.zoneControls) do zone:SetHidden(true) end
     self.capture:SetHidden(true)
+    self:SetEditorDrawing(false)
     KEYBIND_STRIP:RemoveKeybindButtonGroup(self.editorKeys)
     self:Refresh(true)
 end
@@ -80,6 +97,8 @@ function A:CreateEditorControls()
     self.capture:SetAnchorFill(GuiRoot)
     self.capture:SetMouseEnabled(true)
     self.capture:SetDrawTier(DT_HIGH)
+    self.capture:SetDrawLayer(DL_OVERLAY)
+    self.capture:SetDrawLevel(EDITOR_DRAW_LEVEL+1)
     self.capture:SetHidden(true)
     self.capture:SetHandler('OnMouseUp',function(_,button)
         if button==MOUSE_BUTTON_INDEX_LEFT then
