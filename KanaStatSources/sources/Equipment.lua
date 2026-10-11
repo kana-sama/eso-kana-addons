@@ -59,14 +59,17 @@ local function setItemWeight(item,s)
         if K.Core.Finite(c[name]) and item.weaponType==c[name]then return 1 end
     end
 end
-local function averageSetDamage(s,set,bonus,clause,language)
+local function activeSetBonus(s,set,bonus,clause,language)
     -- Working hypothesis explicitly accepted by the user: average individual
     -- damage values by active set pieces, then floor before percent modifiers.
-    -- This rule is limited to flat weapon/spell damage; resource bonuses use
-    -- their equipped descriptions, which already reconcile the native totals.
+    -- Other flat stats use individual values only when ALL active items agree.
+    -- Equipped descriptions can include different-quality/level backup weapons
+    -- (#1 CP18). Mixed non-damage values retain the equipped description.
     local family=set.familyId or set.id
     local template=K.Descriptions.Tokens(bonus.description,language)
-    local audit={rule='weightedFloor',equippedAmount=clause.amount,numerator=0,denominator=0,samples={}}
+    local damage=damageClause(clause)
+    local audit={rule=damage and 'weightedFloor' or 'uniformActiveItems',equippedAmount=clause.amount,numerator=0,denominator=0,samples={}}
+    local uniformAmount,uniform=nil,true
     for _,item in ipairs(s.equipment or {})do
         if E.Active(item,s) and (item.familyId or item.setId)==family and (not bonus.perfected or item.setId~=family)then
             local weight=setItemWeight(item,s)
@@ -76,14 +79,15 @@ local function averageSetDamage(s,set,bonus,clause,language)
                 if own.required==bonus.required and (own.perfected==true)==(bonus.perfected==true) and K.Descriptions.Tokens(own.description,language)==template then
                     local clauses=K.Descriptions.Parse(own.description,language,'set')
                     for _,candidate in ipairs(clauses)do
-                        if damageClause(candidate) and K.Core.Signature(candidate.stats)==K.Core.Signature(clause.stats)then
+                        if candidate.operation=='flat' and K.Core.Finite(candidate.amount) and candidate.amount>=0 and K.Core.Signature(candidate.stats)==K.Core.Signature(clause.stats)then
                             if amount~=nil then return nil,nil,'item bonus description is ambiguous' end
                             amount=candidate.amount;matched=own
                         end
                     end
                 end
             end
-            if amount==nil then return nil,nil,'item-specific set damage unavailable' end
+            if amount==nil then return nil,nil,'item-specific set bonus unavailable' end
+            if uniformAmount==nil then uniformAmount=amount elseif uniformAmount~=amount then uniform=false end
             audit.numerator=audit.numerator+amount*weight;audit.denominator=audit.denominator+weight
             audit.samples[#audit.samples+1]={slot=item.slot,link=item.link,setId=item.setId,amount=amount,weight=weight,index=matched.index,description=matched.description}
         end
@@ -91,7 +95,8 @@ local function averageSetDamage(s,set,bonus,clause,language)
     if audit.denominator==0 then return nil,nil,'active set items unavailable' end
     local count=bonus.perfected and set.perfected or ((set.normal or 0)+(set.perfected or 0))
     if audit.denominator~=count then return nil,nil,'active item weights disagree with native set count' end
-    audit.mean=audit.numerator/audit.denominator;audit.amount=math.floor(audit.mean)
+    if not damage and not uniform then return nil,nil,'active item-specific set values differ' end
+    audit.mean=audit.numerator/audit.denominator;audit.amount=damage and math.floor(audit.mean) or uniformAmount
     return audit.amount,audit
 end
 function E.Build(s)
@@ -101,12 +106,14 @@ function E.Build(s)
         local clauses,tail=K.Descriptions.Parse(text,language,kind)
         if set and bonus then
             clauses=K.Core.CopySerializable(clauses)
-            for _,clause in ipairs(clauses)do if damageClause(clause)then
-                local amount,audit,reason=averageSetDamage(s,set,bonus,clause,language)
+            for _,clause in ipairs(clauses)do if clause.operation=='flat' and K.Core.Finite(clause.amount) and clause.amount>=0 then
+                local amount,audit,reason=activeSetBonus(s,set,bonus,clause,language)
                 if amount~=nil then
-                    clause.amount=amount;source.damageAverages=source.damageAverages or {}
-                    for _,stat in ipairs(clause.stats)do source.damageAverages[stat]=audit end
-                else diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'set damage averaging: '..reason)end
+                    clause.amount=amount
+                    local field=audit.rule=='weightedFloor' and 'damageAverages' or 'activeSetValues'
+                    source[field]=source[field] or {}
+                    for _,stat in ipairs(clause.stats)do source[field][stat]=audit end
+                else diagnostics[#diagnostics+1]=K.Core.Diagnostic(source,'active set bonus: '..reason)end
             end end
         end
         local start=#out
@@ -115,6 +122,9 @@ function E.Build(s)
             if source.damageAverages and source.damageAverages[out[i].stat]then
                 out[i].ruleId='setDamage:weightedFloor'
                 out[i].evidence='user-accepted working rule; floor(weighted mean of individual native set damage values); active two-handed weapons count twice; other items once'
+            elseif source.activeSetValues and source.activeSetValues[out[i].stat]then
+                out[i].ruleId='setBonus:uniformActiveItems'
+                out[i].evidence='matching native item-specific bonuses agree on every active set piece; backup weapons excluded; weights verify native set count; no averaging of mixed non-damage values'
             end
         end
         if tail~='' then source.description=text;local d=K.Core.Diagnostic(source,'unrecognized or conditional description');d.unparsed=tail;diagnostics[#diagnostics+1]=d end

@@ -10,10 +10,10 @@ function R.Resolve(source,snapshot)
     local rule=R.registry[source.kind..':'..tostring(source.id)]
     if not rule then return {},{K.Core.Diagnostic(source,'no verified rule')} end
     if rule.active and not rule.active(source,snapshot) then return {},{K.Core.Diagnostic(source,'condition inactive or unavailable')} end
-    local cs=rule.build(source,snapshot) or {}
+    local cs,diagnostics=rule.build(source,snapshot);cs=cs or {}
     if #cs==0 then return {},{K.Core.Diagnostic(source,'registered rule has no verified current amount')}end
     for _,c in ipairs(cs) do c.ruleId=rule.kind..':'..tostring(rule.id);c.evidence=c.evidence or rule.evidence end
-    return cs,{}
+    return cs,diagnostics or {}
 end
 -- Erudition's flavor sentence precedes a permanent percentage clause. Accept
 -- this exact known description, never skip arbitrary prose in generic parsing.
@@ -64,10 +64,39 @@ R.Register({id=29397,kind='skill',active=oneHandAndShield,evidence='native Sword
     local out={};R.Emit(out,source,{{stats={'weaponDamage','spellDamage'},amount=amount,operation='percent'}},'native Sword and Board current description; verified active one-hand weapon plus shield')
     return out
 end})
+-- Spell Attunement has two unconditional bonuses separated by the known
+-- conditional resistance doubling. Attribute only the base resistance and
+-- recovery; the extra resistance still requires a verified active effect.
+R.Register({id=45262,kind='skill',evidence='native Spell Attunement RU/EN description; unconditional resistance and recovery only',build=function(source,s)
+    local language=(s.meta or {}).language
+    if language~='ru' and language~='en' then return {}end
+    local text,values=K.Descriptions.Tokens(source.description,language)
+    text=text:gsub('%s+',' '):gsub('^ ',''):gsub(' $','')
+    local pattern=language=='ru' and '^ваша магическая сопротивляемость увеличивается на @([0-9]+)@%. сила эффекта увеличивается в два раза, когда на вас действуют эффекты «горение», «обморожение» или «контузия»%. восстановление магии увеличивается на @([0-9]+)@%.?$'
+        or '^increases your spell resistance by @([0-9]+)@%. this effect is doubled if you are afflicted with burning, chilled, or concussed%. increases your magicka recovery by @([0-9]+)@%.?$'
+    local resistance,recovery=text:match(pattern)
+    if not resistance or not K.Core.Finite(values[tonumber(resistance)]) or not K.Core.Finite(values[tonumber(recovery)]) then
+        local clauses,tail=K.Descriptions.Parse(source.description,language,'skill');local out,diagnostics={},{}
+        R.Emit(out,source,clauses,'native unconditional passive prefix; Spell Attunement remainder not recognized')
+        if tail~='' then local d=K.Core.Diagnostic(source,'passive condition or description not recognized');d.unparsed=tail;diagnostics[1]=d end
+        return out,diagnostics
+    end
+    local out={};R.Emit(out,source,{
+        {stats={'spellResistance'},amount=values[tonumber(resistance)],operation='flat'},
+        {stats={'magickaRecovery'},amount=values[tonumber(recovery)],operation='flat'},
+    },'native Spell Attunement base resistance and unconditional recovery; conditional doubling is not inferred')
+    return out
+end})
+
 -- These passives expose a native "Current bonus" already calculated from the
 -- current armor or skill bar. Read that total rather than multiplying per-piece
 -- or per-ability values from the preceding conditional sentence.
 for _,definition in ipairs({
+    {31425,{'weaponDamage','spellDamage'},'flat'},
+    {45557,{'magickaRecovery'},'percent'},
+    {45559,{'spellResistance'},'flat'},
+    {45561,{'weaponCritical','spellCritical'},'flat'},
+    {45562,{'physicalPenetration','spellPenetration'},'flat'},
     {184887,{'physicalPenetration','spellPenetration'},'flat'},
     {185036,{'healthRecovery','magickaRecovery','staminaRecovery'},'flat'},
     {45572,{'weaponDamage','spellDamage'},'percent'},

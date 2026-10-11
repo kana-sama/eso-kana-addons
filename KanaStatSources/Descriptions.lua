@@ -22,6 +22,7 @@ function D.Tokens(s,language)
     return D.Lower(s),values
 end
 local aliases={
+    {{'healthRecovery','magickaRecovery','staminaRecovery'},{'health, magicka, and stamina recovery','восстановление здоровья, магии и запаса сил'}},
     {{'maxStamina','maxMagicka'},{'максимальный запас сил и магии','максимального запаса сил и магии'}},
     {{'weaponDamage','spellDamage'},{'weapon and spell damage','сила оружия и заклинаний','силу оружия и заклинаний','силы оружия и заклинаний'}},
     {{'weaponCritical','spellCritical'},{'weapon and spell critical rating','weapon and spell critical','critical chance','critical rating','критический рейтинг','крит. рейтинг','критический рейтинг оружия и заклинаний','шанс критического удара','шанс крит. удара','показателя крит. удара'}},
