@@ -261,6 +261,45 @@ return {
    assert(ZO_StatsPanel:GetNumAnchors()==anchors and ZO_StatsPanel:GetLeft()==before.l)
   end)
  end,
+ stats_background_follows_native_fragment_switch_when_advanced_stats_toggle=function()
+  for _,factor in ipairs({1,1.25,2.5})do
+   G.With(2560*factor,1440*factor,factor,function(f)
+    local kw=load();local scenes=native(f);local pages=kw.PageAdapters.New(_G)
+    local normal,right=ZO_SharedStatsBackground,ZO_SharedRightBackground
+    local normalArt,rightArt=normal:GetNamedChild('BG'),right:GetNamedChild('Left')
+    local original={normalWidth=normal:GetWidth(),normalArtWidth=normalArt:GetWidth(),
+     rightWidth=right:GetWidth(),rightArtWidth=rightArt:GetWidth(),rightEdge=right:GetNamedChild('Right'):GetRight(),
+     treeWidth=ZO_SharedTreeUnderlay:GetWidth(),statsLeft=ZO_StatsPanel:GetLeft()}
+    scenes.stats:Fire(SCENE_SHOWN);pages:Mount('stats')
+    for _,advanced in ipairs({false,true,false,true})do
+     -- ESO removes STATS_BG_FRAGMENT and adds RIGHT_BG_FRAGMENT together
+     -- with ADVANCED_STATS_FRAGMENT; these are distinct background controls.
+     ZO_AdvancedStatsPanel:SetHidden(not advanced);normal:SetHidden(advanced);right:SetHidden(not advanced)
+     pages:SetBackgroundExpanded('stats',true)
+     local bg=pages:Get('stats').background
+     assert(not bg:IsHidden(),'preset background still targets the hidden normal stats fragment')
+     local list=pages:Bounds('stats').list
+     local art=assert(pages.textureWidths[bg])
+     local coverage=art.slices and art.slices.edge or art.control
+     assert(coverage:GetLeft()<=list.x*factor,'visible background must cover the relocated preset list')
+     if advanced then
+      assert(bg==right and normal:GetWidth()==original.normalWidth and normalArt:GetWidth()==original.normalArtWidth,
+       'opening advanced stats must restore the normal background before extending the replacement')
+      assert(math.abs(right:GetNamedChild('Right'):GetRight()-original.rightEdge)<.01,'native right edge moved')
+     else
+      assert(bg==normal and right:GetWidth()==original.rightWidth and rightArt:GetWidth()==original.rightArtWidth,
+       'closing advanced stats must release the shared right background')
+     end
+     assert(ZO_SharedTreeUnderlay:GetWidth()==original.treeWidth,'advanced stats must not extend the Skills-only tree layer')
+     assert(ZO_StatsPanel:GetLeft()==original.statsLeft,'character controls must not move')
+    end
+    pages:Mount('skills');pages:SetBackgroundExpanded('skills',true);pages:Unmount('skills')
+    assert(normal:GetWidth()==original.normalWidth and normalArt:GetWidth()==original.normalArtWidth)
+    assert(right:GetWidth()==original.rightWidth and rightArt:GetWidth()==original.rightArtWidth,
+     'leaving stats with its advanced panel open must restore both backgrounds')
+   end)
+  end
+ end,
  apply_identity_restored_with_same_group_for_owned_phases=function()
   G.With(1920,1080,1,function(f)
    local kw=load();local scenes,strip,apply,groups,others=native(f);local _,s=setup(kw);local p=kw.PageAdapters.New(_G)
