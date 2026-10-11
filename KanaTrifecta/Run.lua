@@ -112,10 +112,22 @@ function Run:Apply(event)
         if not boss or boss.killed or boss.pullId==p.pullId then return false end
         boss.coverageLost=nil
         boss.pullId, boss.mode, boss.modePriority, boss.conflict, boss.pullActive = p.pullId, 'unknown', nil, false, true
+        if boss.pendingActivation then
+            boss.mode,boss.modePriority,boss.modeEvidence='active',0,boss.pendingActivation.evidence
+            boss.pendingActivation=nil
+        end
+    elseif kind=='HardModeActivated' then
+        local boss=self.bosses[p.bossKey]
+        if not boss or not boss.hasHardMode or boss.killed then return false end
+        if boss.pullActive then
+            return self:Apply({kind='HardModeObserved',contextGeneration=self.contextGeneration,atMs=event.atMs,
+                payload={bossKey=p.bossKey,pullId=boss.pullId,mode='active',priority=0},evidence=event.evidence})
+        end
+        boss.pendingActivation={atMs=event.atMs,evidence=K.Copy(event.evidence)}
     elseif kind == 'HardModeObserved' then
         local boss=self.bosses[p.bossKey]
         if not boss or boss.pullId~=p.pullId then return false end
-        if p.endPull then boss.pullActive=false;return true end
+        if p.endPull then boss.pullActive=false;boss.pendingActivation=nil;return true end
         if p.mode~='active' and p.mode~='inactive' then return false end
         local priority=p.priority or 0
         if boss.modePriority==nil or priority>boss.modePriority then

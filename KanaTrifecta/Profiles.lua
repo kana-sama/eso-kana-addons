@@ -29,6 +29,18 @@ function Profiles.ObserveEncounters(profile,signal,context,snapshot)
             evidence=evidence or {source=signal.kind,profile=profile.key}}
     end
     local clock=snapshot.clock or {}
+    local activation=profile.hardModeActivation
+    if activation and (signal.kind=='hardModeInteraction' or signal.kind=='hardModeEffect') then
+        local matched=signal.kind=='hardModeEffect' and signal.inInstance and activation.effectAbilityIds[signal.abilityId]
+        if signal.kind=='hardModeInteraction' and signal.success then
+            for _,name in ipairs(activation.scrollNames or {}) do
+                if K.MatchName(name)==K.MatchName(signal.targetName) then matched=true end
+            end
+        end
+        if matched then emit('HardModeActivated',{bossKey=activation.bossKey},
+            {source=signal.source or signal.kind,abilityId=signal.abilityId,targetName=signal.targetName}) end
+        return events
+    end
     if not clock.startedAtMs and not clock.stopped and (snapshot.lifecycle=='ready' or snapshot.lifecycle=='observing') then
         local engagement=(signal.kind=='combatState' and signal.inCombat)
             or (signal.kind=='combat' and signal.sourceInInstance and signal.isDamage and (signal.hitValue or 0)>0)
@@ -51,7 +63,7 @@ function Profiles.ObserveEncounters(profile,signal,context,snapshot)
     end
     if signal.kind=='wipe' then
         for key,boss in pairs(snapshot.bosses or {}) do
-            if not boss.killed and boss.pullId then emit('HardModeObserved',{bossKey=key,pullId=boss.pullId,endPull=true}) end
+            if not boss.killed and (boss.pullId or boss.pendingActivation) then emit('HardModeObserved',{bossKey=key,pullId=boss.pullId,endPull=true}) end
         end
         return events
     end
@@ -68,7 +80,7 @@ function Profiles.ObserveEncounters(profile,signal,context,snapshot)
             local boss=(snapshot.bosses or {})[definition.key]
             if match and boss and not boss.killed and (not unit.combatDeath or boss.pullActive) then
                 local pull=boss.pullId
-                if (unit.inCombat or (unit.isDead==true and definition.terminalDeath)) and (not pull or not boss.pullActive) then
+                if (unit.inCombat or (unit.isDead==true and definition.terminalDeath and not unit.healthOnly)) and (not pull or not boss.pullActive) then
                     pull=definition.key..':'..signal.atMs
                     emit('PullStarted',{bossKey=definition.key,pullId=pull})
                 end
@@ -78,7 +90,7 @@ function Profiles.ObserveEncounters(profile,signal,context,snapshot)
                         {source='bossMaxHealth',maxHealth=unit.maxHealth,reference=definition.healthSource}) end
                 end
                 -- Zero HP, disappearance and combat exit alone are deliberately insufficient.
-                if unit.isDead==true and definition.terminalDeath then
+                if unit.isDead==true and definition.terminalDeath and not unit.healthOnly then
                     if not pull then pull=definition.key..':death:'..signal.atMs;emit('PullStarted',{bossKey=definition.key,pullId=pull}) end
                     emit('BossKilled',{bossKey=definition.key,pullId=pull,terminal=true},
                         {source=unit.combatDeath and 'bossCombatDeath' or 'bossUnitDeath',name=unit.name,tag=unit.tag,result=unit.combatDeath and signal.result or nil})

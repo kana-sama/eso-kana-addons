@@ -67,3 +67,8 @@ for _,profile in ipairs(data) do
     profile.conditionSupport={start=(profile.startRule>=0 or profile.startAbilityId) and 'source' or (profile.startRule==-1 and 'estimated' or 'unknown'),timer='source',deaths='source',kills='partial',hardMode='partial',achievements='source'}
     P:Register(profile)
 end
+
+-- Scroll activation is an additional, lower-priority signal; see SOURCES.md.
+P:Find(283,2).hardModeActivation={bossKey="boss_5",
+    scrollNames={"Scroll of Glorious Battle","Свиток славной битвы"},
+    effectAbilityIds={[70113]=true}}

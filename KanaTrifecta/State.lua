@@ -25,6 +25,7 @@ function State:Restore(saved,profile,context,clocks)
     if run.deathWindowOpen and run.deathCoverage=='full' then run.deathCoverage='partial' end
     for _,boss in pairs(run.bosses) do
         if not boss.killed then
+            boss.pendingActivation=nil
             boss.mode='unknown';boss.modePriority=nil;boss.pullActive=false;boss.pullId=nil;boss.coverageLost=true
         end
     end

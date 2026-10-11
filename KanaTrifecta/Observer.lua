@@ -122,6 +122,23 @@ function Observer:Activate(profile,context)
         self:Bind(event,function() self:SyncMembers() end)
     end
     self:Bind('EVENT_BOSSES_CHANGED',function() self:ScanBosses('bossesChanged') end)
+    self:Bind('EVENT_RETICLE_TARGET_CHANGED',function() self:ScanBosses('reticleChanged') end)
+    local activation=profile.hardModeActivation
+    if activation then
+        self:Bind('EVENT_CLIENT_INTERACT_RESULT',function(_,result,name)
+            local dialog=self.api.GetInteractionType and self.api.GetInteractionType()==self.api.INTERACTION_CONVERSATION
+            self:Handle({kind='hardModeInteraction',success=result==self.api.CLIENT_INTERACT_RESULT_SUCCESS and not dialog,targetName=name})
+        end)
+        local function effect(_,change,_,_,tag,_,_,_,_,_,_,_,_,_,_,abilityId)
+            local member=self.members[self.tags[tag]]
+            if change==self.api.EFFECT_RESULT_GAINED and member and member.inInstance and member.online then
+                self:Handle({kind='hardModeEffect',abilityId=abilityId,inInstance=true,source='unitEffect'})
+            end
+        end
+        for abilityId in pairs(activation.effectAbilityIds) do
+            self:Bind('EVENT_EFFECT_CHANGED',effect,{{self.api.REGISTER_FILTER_ABILITY_ID,abilityId}},'HardMode'..abilityId)
+        end
+    end
     self:Bind('EVENT_POWER_UPDATE',function(_,tag,_,power)
         if power==self.api.COMBAT_MECHANIC_FLAGS_HEALTH and tag:match('^boss%d+$') then self:ScanBosses('power',tag) end
     end, self.api.REGISTER_FILTER_POWER_TYPE and {{self.api.REGISTER_FILTER_POWER_TYPE,self.api.COMBAT_MECHANIC_FLAGS_HEALTH}} or nil)
@@ -138,6 +155,14 @@ function Observer:Activate(profile,context)
         local damageResult=result==self.api.ACTION_RESULT_DAMAGE or result==self.api.ACTION_RESULT_CRITICAL_DAMAGE
             or result==self.api.ACTION_RESULT_DOT_TICK or result==self.api.ACTION_RESULT_DOT_TICK_CRITICAL
             or result==self.api.ACTION_RESULT_BLOCKED_DAMAGE
+        if activation and activation.effectAbilityIds[abilityId] and result==self.api.ACTION_RESULT_EFFECT_GAINED
+            and (targetType==self.api.COMBAT_UNIT_TYPE_PLAYER or targetType==self.api.COMBAT_UNIT_TYPE_GROUP) then
+            for key,member in pairs(self.members) do
+                if member.inInstance and member.online and K.CleanName(key:match('\31(.*)$'))==K.CleanName(target) then
+                    self:Handle({kind='hardModeEffect',abilityId=abilityId,inInstance=true,source='combatEffect'});break
+                end
+            end
+        end
         self:Handle({kind='combat',result=result,sourceName=source,sourceType=sourceType,targetName=target,
             targetType=targetType,sourceUnitId=sourceId,targetUnitId=targetId,abilityId=abilityId,hitValue=value,
             sourceInInstance=sourceInInstance,isDamage=damageResult,
@@ -154,6 +179,13 @@ function Observer:Activate(profile,context)
                 filters[#filters+1]={self.api.REGISTER_FILTER_TARGET_COMBAT_UNIT_TYPE,self.api.COMBAT_UNIT_TYPE_OTHER}
             end
             self:Bind('EVENT_COMBAT_EVENT',combat,filters,'Death'..result)
+        end
+    end
+    if activation then
+        for abilityId in pairs(activation.effectAbilityIds) do
+            self:Bind('EVENT_COMBAT_EVENT',combat,{
+                {self.api.REGISTER_FILTER_ABILITY_ID,abilityId},
+                {self.api.REGISTER_FILTER_COMBAT_RESULT,self.api.ACTION_RESULT_EFFECT_GAINED}},'HardMode'..abilityId)
         end
     end
     local snapshot=self.snapshot and self.snapshot() or {}
@@ -195,6 +227,11 @@ function Observer:ScanBosses(source,deathTag,isDead)
             local unit=K.Copy(self.bossUnits[tag]);unit.isDead=true;unit.inCombat=false
             units[#units+1]=unit
         end
+    end
+    if a.DoesUnitExist('reticleover') then
+        local hp,maxHp=a.GetUnitPower('reticleover',a.COMBAT_MECHANIC_FLAGS_HEALTH)
+        units[#units+1]={tag='reticleover',name=a.GetUnitName('reticleover'),health=hp,maxHealth=maxHp,healthOnly=true,
+            inCombat=a.IsUnitInCombat and a.IsUnitInCombat('reticleover') or false,isDead=a.IsUnitDead('reticleover')}
     end
     self:Handle({kind='bossSnapshot',units=units,source=source})
 end
