@@ -37,4 +37,19 @@ def build_border(mask, width, height, output_size):
         rgba[:, :, c] = np.round((dark * ink + light * parchment) / np.maximum(total, 1))
     rgba[:, :, 3] = np.round(total)
     # Bilinear conversion keeps coverage nonnegative and avoids ringing outside it.
-    return Image.fromarray(rgba).resize(output_size, Image.Resampling.BILINEAR)
+    result = Image.fromarray(rgba).resize(output_size, Image.Resampling.BILINEAR)
+    # A subpixel island may survive in the final mask while vanishing in the
+    # intermediate contour raster. Cover those final mask pixels explicitly.
+    final_mask = mask.getchannel('A').resize(output_size, Image.Resampling.BILINEAR)
+    final_coverage = outer_coverage(final_mask.point(lambda a: 255 if a >= 128 else 0))
+    padded = ImageOps.expand(final_coverage, 1, fill=0)
+    inner = padded.filter(ImageFilter.MinFilter(3)).crop(
+        (1, 1, output_size[0] + 1, output_size[1] + 1))
+    edge = (np.asarray(final_coverage) > 0) & (np.asarray(inner) == 0)
+    nearby = np.asarray(result.getchannel('A').filter(ImageFilter.MaxFilter(3))) >= 128
+    missed = edge & ~nearby
+    if missed.any():
+        pixels = np.asarray(result).copy()
+        pixels[missed] = (68, 52, 29, 255)
+        result = Image.fromarray(pixels)
+    return result

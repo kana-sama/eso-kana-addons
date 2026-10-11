@@ -2,241 +2,241 @@
   {
     "id": 1,
     "name": "Glenumbra",
-    "boundaryPixels": 1690,
+    "boundaryPixels": 2211,
     "gaps": 0
   },
   {
     "id": 7,
     "name": "Stonefalls",
-    "boundaryPixels": 2080,
+    "boundaryPixels": 2187,
     "gaps": 0
   },
   {
     "id": 9,
     "name": "Grahtwood",
-    "boundaryPixels": 1884,
+    "boundaryPixels": 2375,
     "gaps": 0
   },
   {
     "id": 10,
     "name": "Rivenspire",
-    "boundaryPixels": 1204,
+    "boundaryPixels": 1074,
     "gaps": 0
   },
   {
     "id": 12,
     "name": "Stormhaven",
-    "boundaryPixels": 1300,
+    "boundaryPixels": 1700,
     "gaps": 0
   },
   {
     "id": 13,
     "name": "Deshaan",
-    "boundaryPixels": 1916,
+    "boundaryPixels": 1769,
     "gaps": 0
   },
   {
     "id": 16,
     "name": "Cyrodiil",
-    "boundaryPixels": 1980,
+    "boundaryPixels": 3850,
     "gaps": 0
   },
   {
     "id": 20,
     "name": "Bangkorai",
-    "boundaryPixels": 2108,
+    "boundaryPixels": 1880,
     "gaps": 0
   },
   {
     "id": 22,
     "name": "Malabal Tor",
-    "boundaryPixels": 1300,
+    "boundaryPixels": 2479,
     "gaps": 0
   },
   {
     "id": 26,
     "name": "Shadowfen",
-    "boundaryPixels": 1096,
+    "boundaryPixels": 1442,
     "gaps": 0
   },
   {
     "id": 30,
     "name": "Alik'r Desert",
-    "boundaryPixels": 1724,
+    "boundaryPixels": 1554,
     "gaps": 0
   },
   {
     "id": 61,
     "name": "Eastmarch",
-    "boundaryPixels": 1724,
+    "boundaryPixels": 1628,
     "gaps": 0
   },
   {
     "id": 74,
     "name": "Bleakrock Isle",
-    "boundaryPixels": 276,
+    "boundaryPixels": 300,
     "gaps": 0
   },
   {
     "id": 75,
     "name": "Bal Foyen",
-    "boundaryPixels": 604,
+    "boundaryPixels": 394,
     "gaps": 0
   },
   {
     "id": 125,
     "name": "The Rift",
-    "boundaryPixels": 1724,
+    "boundaryPixels": 1558,
     "gaps": 0
   },
   {
     "id": 143,
     "name": "Auridon",
-    "boundaryPixels": 1960,
+    "boundaryPixels": 2694,
     "gaps": 0
   },
   {
     "id": 201,
     "name": "Stros M'Kai",
-    "boundaryPixels": 328,
+    "boundaryPixels": 343,
     "gaps": 0
   },
   {
     "id": 227,
     "name": "Betnikh",
-    "boundaryPixels": 312,
+    "boundaryPixels": 370,
     "gaps": 0
   },
   {
     "id": 256,
     "name": "Reaper's March",
-    "boundaryPixels": 1722,
+    "boundaryPixels": 1535,
     "gaps": 0
   },
   {
     "id": 258,
     "name": "Khenarthi's Roost",
-    "boundaryPixels": 336,
+    "boundaryPixels": 420,
     "gaps": 0
   },
   {
     "id": 300,
     "name": "Greenshade",
-    "boundaryPixels": 1160,
+    "boundaryPixels": 1565,
     "gaps": 0
   },
   {
     "id": 667,
     "name": "Wrothgar",
-    "boundaryPixels": 2054,
+    "boundaryPixels": 2147,
     "gaps": 0
   },
   {
     "id": 994,
     "name": "Hew's Bane",
-    "boundaryPixels": 912,
+    "boundaryPixels": 1229,
     "gaps": 0
   },
   {
     "id": 1006,
     "name": "Gold Coast",
-    "boundaryPixels": 1272,
+    "boundaryPixels": 963,
     "gaps": 0
   },
   {
     "id": 1060,
     "name": "Vvardenfell",
-    "boundaryPixels": 8308,
+    "boundaryPixels": 4535,
     "gaps": 0
   },
   {
     "id": 1126,
     "name": "Craglorn",
-    "boundaryPixels": 1668,
+    "boundaryPixels": 2052,
     "gaps": 0
   },
   {
     "id": 1349,
     "name": "Summerset",
-    "boundaryPixels": 3752,
+    "boundaryPixels": 3840,
     "gaps": 0
   },
   {
     "id": 1484,
     "name": "Murkmire",
-    "boundaryPixels": 1172,
+    "boundaryPixels": 972,
     "gaps": 0
   },
   {
     "id": 1552,
     "name": "Norg-Tzel",
-    "boundaryPixels": 131,
+    "boundaryPixels": 108,
     "gaps": 0
   },
   {
     "id": 1555,
     "name": "Northern Elsweyr",
-    "boundaryPixels": 1622,
+    "boundaryPixels": 1957,
     "gaps": 0
   },
   {
     "id": 1654,
     "name": "Southern Elsweyr",
-    "boundaryPixels": 2104,
+    "boundaryPixels": 2516,
     "gaps": 0
   },
   {
     "id": 1719,
     "name": "Western Skyrim",
-    "boundaryPixels": 2246,
+    "boundaryPixels": 1834,
     "gaps": 0
   },
   {
     "id": 1814,
     "name": "The Reach",
-    "boundaryPixels": 1168,
+    "boundaryPixels": 962,
     "gaps": 0
   },
   {
     "id": 1864,
     "name": "Greyhome",
-    "boundaryPixels": 256,
+    "boundaryPixels": 275,
     "gaps": 0
   },
   {
     "id": 1887,
     "name": "Blackwood",
-    "boundaryPixels": 2680,
+    "boundaryPixels": 2438,
     "gaps": 0
   },
   {
     "id": 2114,
     "name": "High Isle",
-    "boundaryPixels": 744,
+    "boundaryPixels": 647,
     "gaps": 0
   },
   {
     "id": 2212,
     "name": "Galen",
-    "boundaryPixels": 268,
+    "boundaryPixels": 288,
     "gaps": 0
   },
   {
     "id": 2274,
     "name": "Telvanni Peninsula",
-    "boundaryPixels": 3508,
+    "boundaryPixels": 3027,
     "gaps": 0
   },
   {
     "id": 2427,
     "name": "West Weald",
-    "boundaryPixels": 2320,
+    "boundaryPixels": 2130,
     "gaps": 0
   },
   {
     "id": 2603,
     "name": "Solstice",
-    "boundaryPixels": 1468,
+    "boundaryPixels": 1136,
     "gaps": 0
   }
 ]

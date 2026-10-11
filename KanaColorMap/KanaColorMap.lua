@@ -68,11 +68,15 @@ function K:Layout(manager)
     if self.activeManager ~= manager then return end
     for _, entry in pairs(self.overlays) do
         local zone, control = entry.zone, entry.control
+        local renderX, renderY = zone.renderX or zone.x, zone.renderY or zone.y
+        local renderWidth = zone.renderWidth or zone.width
+        local renderHeight = zone.renderHeight or zone.height
         control:ClearAnchors()
         control:SetAnchor(TOPLEFT, manager.parent, TOPLEFT,
-            zone.x * ZO_MAP_CONSTANTS.MAP_WIDTH, zone.y * ZO_MAP_CONSTANTS.MAP_HEIGHT)
-        control:SetDimensions(zone.width * ZO_MAP_CONSTANTS.MAP_WIDTH,
-            zone.height * ZO_MAP_CONSTANTS.MAP_HEIGHT)
+            renderX * ZO_MAP_CONSTANTS.MAP_WIDTH,
+            renderY * ZO_MAP_CONSTANTS.MAP_HEIGHT)
+        control:SetDimensions(renderWidth * ZO_MAP_CONSTANTS.MAP_WIDTH,
+            renderHeight * ZO_MAP_CONSTANTS.MAP_HEIGHT)
     end
 end
 
