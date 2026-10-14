@@ -22,12 +22,12 @@ function D.Tokens(s,language)
     return D.Lower(s),values
 end
 local aliases={
-    {{'healthRecovery','magickaRecovery','staminaRecovery'},{'health, magicka, and stamina recovery','восстановление здоровья, магии и запаса сил'}},
+    {{'healthRecovery','magickaRecovery','staminaRecovery'},{'health, magicka, and stamina recovery','восстановление здоровья, магии и запаса сил','восстановления здоровья, магии и запаса сил'}},
     {{'maxStamina','maxMagicka'},{'максимальный запас сил и магии','максимального запаса сил и магии'}},
     {{'weaponDamage','spellDamage'},{'weapon and spell damage','сила оружия и заклинаний','силу оружия и заклинаний','силы оружия и заклинаний'}},
     {{'weaponCritical','spellCritical'},{'weapon and spell critical rating','weapon and spell critical','critical chance','critical rating','критический рейтинг','крит. рейтинг','критический рейтинг оружия и заклинаний','шанс критического удара','шанс крит. удара','показателя крит. удара'}},
     {{'physicalResistance','spellResistance'},{'physical and spell resistance','физическую и магическую сопротивляемость','физическая и магическая сопротивляемость','физической и магической сопротивляемости','armor','броню'}},
-    {{'physicalPenetration','spellPenetration'},{'physical and spell penetration','offensive penetration','physical and magical penetration','физическое и магическое пробивание','физического и магического пробивания','пробивание'}},
+    {{'physicalPenetration','spellPenetration'},{'physical and spell penetration','offensive penetration','physical and magical penetration','физическое и магическое пробивание','физического и магического пробивания','пробивание','пробивания'}},
     {{'healthRecovery'},{'health recovery','восстановление здоровья','восст. здоровья'}},
     {{'magickaRecovery'},{'magicka recovery','восстановление магии','восст. магии'}},
     {{'staminaRecovery'},{'stamina recovery','восстановление запаса сил','восст. запаса сил'}},

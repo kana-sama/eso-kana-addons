@@ -1,4 +1,4 @@
-KanaStatSources = {name='KanaStatSources', version='1.0.15', schemaVersion=1, Sources={}}
+KanaStatSources = {name='KanaStatSources', version='1.0.16', schemaVersion=1, Sources={}}
 local K=KanaStatSources
 K.Core={}
 function K.Core.Finite(v) return type(v)=='number' and v==v and v~=math.huge and v~=-math.huge end

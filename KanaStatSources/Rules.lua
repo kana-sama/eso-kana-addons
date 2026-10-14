@@ -100,6 +100,7 @@ for _,definition in ipairs({
     {184887,{'physicalPenetration','spellPenetration'},'flat'},
     {185036,{'healthRecovery','magickaRecovery','staminaRecovery'},'flat'},
     {45572,{'weaponDamage','spellDamage'},'percent'},
+    {45596,{'weaponDamage','spellDamage'},'percent'},
     {45565,{'staminaRecovery'},'percent'},
     {45531,{'physicalResistance','spellResistance'},'flat'},
     {45526,{'healthRecovery'},'percent'},

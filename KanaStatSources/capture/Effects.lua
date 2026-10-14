@@ -15,6 +15,48 @@ function K.CaptureEffects.ReadInfo(api,capabilities)
     end
     return effects,errors
 end
+-- Archive Visions/Verses are maintained separately from GetUnitBuffInfo.
+-- Keep their native IDs, stack counts and current descriptions in full dumps;
+-- absent historical data never establishes a contribution from the residual.
+function K.CaptureEffects.AuditArchive(api,capabilities)
+    local data={archiveBuffs={},archiveContext={}};local errors={}
+    local read=K.Core.Reader(api,errors,capabilities);local context=data.archiveContext
+    context.inDungeon=read('IsInstanceEndlessDungeon')
+    if context.inDungeon~=true then return data,errors end
+    context.started=read('IsEndlessDungeonStarted');context.completed=read('IsEndlessDungeonCompleted')
+    if context.started~=true or context.completed~=false then return data,errors end
+    local function valid(value,minimum,maximum)
+        return K.Core.Finite(value) and value==math.floor(value) and value>=minimum and value<=maximum
+    end
+    local seen={}
+    local function append(id,stacks,kind)
+        if not valid(id,1,2147483647) or not valid(stacks,1,1024) or seen[id] then
+            errors[#errors+1]={api=kind=='vision' and 'GetNextEndlessDungeonVisionAbilityAndStackCount' or 'GetEndlessDungeonActiveVerseAbility',reason='invalid or repeated active archive buff'}
+            return false
+        end
+        seen[id]=true
+        data.archiveBuffs[#data.archiveBuffs+1]={id=id,stacks=stacks,kind=kind,
+            name=read('GetAbilityName',id),icon=read('GetAbilityIcon',id),description=read('GetAbilityDescription',id,nil,'player')}
+        return true
+    end
+    local previous
+    for index=1,1025 do
+        local id,stacks=read('GetNextEndlessDungeonVisionAbilityAndStackCount',previous)
+        if id==nil then break end
+        if index==1025 then errors[#errors+1]={api='GetNextEndlessDungeonVisionAbilityAndStackCount',reason='archive buff iteration limit'};return data,errors end
+        if not append(id,stacks,'vision') then return data,errors end
+        previous=id
+    end
+    local count=read('GetNumEndlessDungeonActiveVerses')
+    if not valid(count,0,1024) then
+        errors[#errors+1]={api='GetNumEndlessDungeonActiveVerses',reason='invalid active verse count'}
+        return data,errors
+    end
+    for index=1,count do
+        if not append(read('GetEndlessDungeonActiveVerseAbility',index),1,'verse') then break end
+    end
+    return data,errors
+end
 function K.CaptureEffects.Read(api,capabilities)
     local effects,errors=K.CaptureEffects.ReadInfo(api,capabilities);local read=K.Core.Reader(api,errors,capabilities)
     local data={effects=effects,context={}}

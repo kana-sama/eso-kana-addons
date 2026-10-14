@@ -70,9 +70,9 @@ return {
  native_current_bonus_refreshes=function()
     local api=makeApi();local collector=K.Snapshot.New(api)
     collector:Capture(false)
-    collector.cache.build.data.skills={{id=45572,description='old'}}
-    api.GetAbilityDescription=function(id)return id==45572 and 'new' or 'effect'end
-    local s=collector:Capture(false);T.eq(s.skills[1].description,'new')
+    collector.cache.build.data.skills={{id=45572,description='old'},{id=45596,description='old'}}
+    api.GetAbilityDescription=function(id)return (id==45572 or id==45596) and 'new' or 'effect'end
+    local s=collector:Capture(false);T.eq(s.skills[1].description,'new');T.eq(s.skills[2].description,'new')
  end,
  private_globals_are_not_enumerated=function()
     local api=makeApi();api.ITEM_TRAIT_TYPE_WEAPON_PRECISE=4;api.EQUIP_SLOT_MAIN_HAND=4
