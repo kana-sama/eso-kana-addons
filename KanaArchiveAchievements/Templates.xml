@@ -1,0 +1,21 @@
+<GuiXml>
+    <Controls>
+        <Control name="KanaArchiveAchievementsCard" hidden="true" mouseEnabled="true" virtual="true">
+            <Dimensions x="565" y="88"/>
+            <Controls>
+                <Backdrop name="$(parent)BG" inherits="ZO_DefaultBackdrop">
+                    <Anchor point="TOPLEFT"/>
+                    <Anchor point="BOTTOMRIGHT" offsetY="4"/>
+                </Backdrop>
+                <Control name="$(parent)Achievement" inherits="ZO_AchievementBase">
+                    <Anchor point="TOPLEFT"/>
+                    <Controls>
+                        <Texture name="$(parent)Icon" override="true">
+                            <Anchor point="TOPLEFT" offsetX="10" offsetY="10"/>
+                        </Texture>
+                    </Controls>
+                </Control>
+            </Controls>
+        </Control>
+    </Controls>
+</GuiXml>

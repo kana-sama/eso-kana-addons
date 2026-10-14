@@ -1,0 +1,13 @@
+## Title: KanaArchiveAchievements
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## Description: Full achievement tooltips and native indicators for Infinite Archive choices.
+## DependsOn: ArchiveHelper>=1402
+
+Model.lua
+Templates.xml
+View.lua
+Controller.lua
+KanaArchiveAchievements.lua
