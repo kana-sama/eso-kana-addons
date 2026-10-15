@@ -1,0 +1,22 @@
+## Title: KanaArchiveAssist
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## Description: Learns personal Infinite Archive choices with contextual preference markers.
+## SavedVariables: KanaArchiveAssistSaved
+
+Config.lua
+Profiles.lua
+History.lua
+RunCapture.lua
+ChoiceButton.lua
+Features.lua
+ChoiceModel.lua
+ContextSupport.lua
+Grades.lua
+View.lua
+ProfileWindow.lua
+ESOAdapter.lua
+Controller.lua
+KanaArchiveAssist.lua
