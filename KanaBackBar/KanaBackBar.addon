@@ -1,0 +1,10 @@
+## Title: KanaBackBar
+## Author: Kana
+## Description: Persistent screen-edge glow and reticle brackets on your side weapon bar.
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050
+## SavedVariables: KanaBackBarSV
+## DependsOn: LibAddonMenu-2.0
+
+KanaBackBar.lua
