@@ -713,6 +713,49 @@ tests.native_use_and_bank_actions_keep_original_identity=modernTest(function(f)
     f.a.bankOpen=false;f:Event('EVENT_CLOSE_BANK');f:Reload();primary(BAG_BACKPACK)
     assert(f.used==2 and #f.a.requests==0 and #f.native.requests.skills==0 and f.native.attributeSends==0)
 end)
+local function bankCoreIntegration(f)
+ local a=f.a;a.bankOpen=true;a.GetBagSize=function()return 20 end
+ a.CallSecureProtected=function(name,bag,slot,destBag,destSlot,count)
+  assert(name=='RequestMoveItem' and count==1)
+  a.requests[#a.requests+1]={'move',bag,slot,destBag,destSlot}
+ end
+ local item=f:Add('bank-target',BAG_BACKPACK,1)
+ local preset=f:Preset({[EQUIP_SLOT_RING1]=item},'Bank target')
+ local activeItem=f:Add('active',BAG_WORN,EQUIP_SLOT_HEAD,EQUIP_TYPE_HEAD)
+ local active=f:Preset({[EQUIP_SLOT_HEAD]=activeItem},'Active')
+ f:Event('EVENT_OPEN_BANK')
+ local accepted,problem=f.r.bankTransfers:Start(active.id)
+ assert(not accepted and problem.code=='bankActivePreset' and #a.requests==0)
+ assert(f.r.bankTransfers:Start(preset.id))
+ f.clock:Advance(32)
+ assert(#a.requests==1 and f.r.bankTransfers:IsBusy(),'the bank transfer must not block its own readiness check')
+ accepted,problem=f.r.session:Apply(preset.id);assert(not accepted and (problem.code=='busy'or problem.code=='operationBusy'))
+ f:ApplyRequest(1);f.clock:Advance(5)
+ assert(not f.r.bankTransfers:IsBusy() and f.r.bankTransfers:GetView().status=='completed')
+ assert(f.r.inventory:Resolve(item.uid,false,false).bagId==BAG_BANK)
+ assert(a.bags[BAG_WORN][EQUIP_SLOT_HEAD].uid==activeItem.uid)
+ assert(#f.native.requests.skills==0 and f.native.attributeSends==0)
+ assert(f.r.bankTransfers:Start(preset.id));f.clock:Advance(32);assert(#a.requests==2)
+ a.bankOpen=false;f:Event('EVENT_CLOSE_BANK');f.clock:Advance(10000)
+ assert(not f.r.bankTransfers:IsBusy() and #a.requests==2)
+ assert(f.r.repo.character.bankTransferJournal.status=='interrupted')
+ f:Reload();assert(not f.r.bankTransfers:IsBusy() and #a.requests==2)
+end
+tests.bank_inventory_event_bursts_yield_and_reuse_one_identity_scan=modernTest(function(f)
+ f.a.bankOpen=true;f:Event('EVENT_OPEN_BANK');f.clock:Advance(2)
+ local captures=0;local capture=f.r.inventory.Capture
+ f.r.inventory.Capture=function(self,...)captures=captures+1;return capture(self,...)end
+ for _=1,20 do f:Event('EVENT_INVENTORY_SINGLE_SLOT_UPDATE')end
+ assert(captures==0,'bank slot callbacks must yield instead of repeatedly scanning bags in the same frame')
+ f.clock:Advance(40)
+ assert(captures==1,'the UI and protection must reuse the single published inventory snapshot: '..captures)
+end)
+tests.bank_transfers_use_the_real_core_without_applying_a_build_or_blocking_themselves=modernTest(bankCoreIntegration)
+tests.bank_transfers_are_exclusive_with_the_stepwise_runtime=function()
+ local f={modern=true,nativeModern=true,stepwise=true}
+ local ok,err=pcall(function()setup(f);bankCoreIntegration(f)end)
+ if f.Cleanup then f:Cleanup()end;assert(ok,err)
+end
 tests.native_actual_changes_refresh_shared_rows_with_domain_revisions_and_one_capture=modernTest(function(f)
     local skill=f.r.repo:NewDraft();skill.slots=nil;skill.abilities={skills={['10:active:51']={kind='active',purchased=true,morph=1}}}
     skill=assert(f.r.repo:Save(skill,0))

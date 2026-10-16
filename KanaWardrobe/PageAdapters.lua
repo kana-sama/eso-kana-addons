@@ -2,6 +2,7 @@ local KW=KanaWardrobe
 local P={};KW.PageAdapters=P
 local Pages={};Pages.__index=Pages
 local definitions={
+ bank={root='ZO_SharedRightPanelBackground',background='ZO_SharedRightPanelBackground',side='left'},
  collectionsBook={root='ZO_CollectionsBook_TopLevel',background='ZO_SharedRightBackground',side='left'},
  inventory={root='ZO_Character',background='ZO_SharedWideLeftPanelBackground',side='right'},
  skills={root='ZO_Skills',background='ZO_SharedRightBackground',side='left',manager='SKILLS_WINDOW',group='keybindStripDescriptor',key='UI_SHORTCUT_SECONDARY',domain='skills'},
@@ -12,7 +13,7 @@ function P.New(api)return setmetatable({api=api or _G,widths={},textureWidths={}
 function Pages:Get(page)
  local d=definitions[page];if not d then return nil end
  local a=self.api;local root,background=a[d.root],a[d.background]
- local artChild=(page=='skills' or page=='collectionsBook')and 'Left'or 'BG'
+ local artChild=(page=='skills' or page=='collectionsBook' or page=='bank')and 'Left'or 'BG'
  if page=='stats'then
   -- ESO replaces STATS_BG_FRAGMENT with RIGHT_BG_FRAGMENT while advanced
   -- stats are open. Extending the normal background then changes hidden art.
@@ -65,12 +66,13 @@ end
 -- image stretches that edge by different amounts (1024-wide main art vs the
 -- 256-wide tree tint). Keep 64 units of edge and the native remainder at 1:1;
 -- insert only a sampled flat column between them.
-function Pages:ExpandSkillArt(art,physicalDelta)
+function Pages:ExpandSkillArt(art,physicalDelta,physicalOffset)
  local texture=art.control
  local factor=scale(texture)
+ physicalOffset=physicalOffset or 0
  if physicalDelta<=0 then self:RestoreArt(art);return end
- if art.physicalDelta==physicalDelta and art.factor==factor then return end
- art.physicalDelta=physicalDelta;art.factor=factor
+ if art.physicalDelta==physicalDelta and art.physicalOffset==physicalOffset and art.factor==factor then return end
+ art.physicalDelta=physicalDelta;art.physicalOffset=physicalOffset;art.factor=factor
  if not art.slices then
   local coords={texture:GetTextureCoords()}
   local _,point,relative,relativePoint,x,y,constrain=texture:GetAnchor(0)
@@ -89,14 +91,14 @@ function Pages:ExpandSkillArt(art,physicalDelta)
   art.slices=slices
  end
  local a,uv,slices=art.anchor,art.coords,art.slices
- local cut=64;local delta=physicalDelta/scale(texture)
+ local cut=64;local delta=physicalDelta/factor;local offset=physicalOffset/factor
  local u=uv[1]+(uv[2]-uv[1])*cut/art.width
  local parent=texture:GetParent();local relativeScale=scale(texture)/scale(parent)
  local height=texture:GetHeight()/scale(texture)
  for _,c in pairs(slices)do c:SetScale(relativeScale);c:ClearAnchors();c:SetHidden(delta<=0)end
  slices.edge:SetDimensions(cut,height)
  slices.edge:SetTexture(texture:GetTextureFileName());slices.edge:SetTextureCoords(uv[1],u,uv[3],uv[4])
- slices.edge:SetAnchor(a.point,a.relative,a.relativePoint,a.x,a.y,a.constrain)
+ slices.edge:SetAnchor(a.point,a.relative,a.relativePoint,a.x+offset,a.y,a.constrain)
  slices.fill:SetDimensions(math.max(0,delta),height)
  slices.fill:SetTexture(texture:GetTextureFileName())
  -- Sample the center of one native column so the inserted region has no
@@ -105,11 +107,11 @@ function Pages:ExpandSkillArt(art,physicalDelta)
  slices.fill:SetTextureCoords(sample,sample,uv[3],uv[4])
  slices.fill:SetAnchor(self.api.TOPLEFT,slices.edge,self.api.TOPRIGHT,0,0)
  texture:ClearAnchors()
- texture:SetAnchor(a.point,a.relative,a.relativePoint,a.x+cut+delta,a.y,a.constrain)
+ texture:SetAnchor(a.point,a.relative,a.relativePoint,a.x+offset+cut+delta,a.y,a.constrain)
  texture:SetWidth(art.width-cut);texture:SetTextureCoords(u,uv[2],uv[3],uv[4])
 end
 function Pages:RestoreArt(art)
- art.physicalDelta=nil;art.factor=nil
+ art.physicalDelta=nil;art.physicalOffset=nil;art.factor=nil
  art.control:SetWidth(art.width)
  if art.slices then
   local a=art.anchor
@@ -135,9 +137,23 @@ function Pages:SetBackgroundExpanded(page,expanded)
  local bg=p.background;local factor=scale(bg)
  if self.backgrounds[page]and self.backgrounds[page]~=bg then self:SetBackgroundExpanded(page,false)end
  local b=self:Bounds(page);if not b then return end
- self.backgrounds[page]=bg;self.widths[bg]=self.widths[bg]or bg:GetWidth()/factor
+ self.backgrounds[page]=bg
  local gui=self.api.GuiRoot;local list=b.list
  local edge=(p.side=='right' and list.x+list.width or list.x)*list.scale+gui:GetLeft()
+ if page=='bank'then
+  -- Bank contents are anchored to the background owner, so leave that owner
+  -- untouched. Move only the native art's feather left and insert a flat
+  -- column; the remainder stays at its original screen position.
+  if not self.textureWidths[bg]then
+   local ok,texture=pcall(bg.GetNamedChild,bg,p.artChild)
+   if ok and texture then self.textureWidths[bg]={control=texture,width=texture:GetWidth()/scale(texture)}end
+  end
+  local art=self.textureWidths[bg]
+  local delta=math.max(0,bg:GetLeft()-edge)
+  if art then self:ExpandSkillArt(art,delta,-delta)end
+  return
+ end
+ self.widths[bg]=self.widths[bg]or bg:GetWidth()/factor
  local width=p.side=='right' and (edge-bg:GetLeft())/factor or (bg:GetRight()-edge)/factor
  local target=math.max(self.widths[bg],width)
  -- Right/Stats backgrounds have fixed-width art anchored to their left edge.

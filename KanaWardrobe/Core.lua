@@ -228,8 +228,23 @@ function KW.Core.Initialize(api)
     end
     runtime.preview = KW.SetPreview.New()
     runtime.pages=buildServices and KW.PageAdapters and KW.PageAdapters.New(api)
+    if KW.BankTransfers then
+        runtime.bankTransfers=KW.BankTransfers.New({repo=runtime.repo,inventory=runtime.inventory,events=events,
+            clock=runtime.clock,saved=runtime.repo.character,
+            active=function(snapshot)return runtime.ui:ActivePresets(snapshot)end,
+            canRun=function()
+                -- IsBusy/GetView includes this bank transfer via externalBusy.
+                -- Check the build's own work directly instead of blocking ourselves.
+                local operations=runtime.session.operations
+                local op=operations and operations.operation
+                local ready=operations and not runtime.session:IsEditorActive() and not (op and (op.status=='running' or op.status=='pausing'))
+                    or not operations and runtime.session:GetView().state=='idle'
+                return ready and not runtime.runner:IsBusy()
+                    and not (runtime.gearSuite and runtime.gearSuite.active)
+            end})
+    end
     runtime.ui = KW.UI.New(runtime.repo,runtime.session,runtime.preview,runtime.inventory,
-        {pages=runtime.pages,captureActual=runtime.captureDisplay,events=events,
+        {pages=runtime.pages,captureActual=runtime.captureDisplay,events=events,bank=runtime.bankTransfers,
         describeProblem=function(problem,action,args)
             if runtime.buildProbe then
                 local context
@@ -285,6 +300,15 @@ function KW.Core.Initialize(api)
             runtime.session.operations.externalBusy=function()return runtime.gearSuite.active==true end
         end
     end
+    if runtime.bankTransfers then
+        runtime.session.externalBusy=function()return runtime.bankTransfers:IsBusy()end
+    end
+    if runtime.bankTransfers and runtime.session.operations then
+        local otherBusy=runtime.session.operations.externalBusy
+        runtime.session.operations.externalBusy=function()
+            return runtime.bankTransfers:IsBusy() or otherBusy and otherBusy()
+        end
+    end
     KW.runtime = runtime
     local function report(problem)
         runtime.ui:Problem(problem)
@@ -298,6 +322,11 @@ function KW.Core.Initialize(api)
     for _,name in ipairs({"InventoryChanged","PresetsChanged","SessionChanged","PlayerStateChanged","BuildActualChanged"})do
         events:Subscribe(name,function()runtime.ui:ScheduleRefresh()end)
     end
+    events:Subscribe('BankTransferChanged',function(view)
+        if view.problem and view.status=='failed'then runtime.ui:Problem(view.problem)end
+        if runtime.ui.page=='bank'then runtime.ui:UpdateBankProgress(view)end
+        runtime.ui:ScheduleRefresh()
+    end)
     events:Subscribe("SessionFinished",function(payload)runtime.ui:OnSessionFinished(payload)end)
     runtime.filters:Attach(api,events,function()runtime.ui:RefreshToggles()end)
     for _,context in ipairs(runtime.filters:GetContexts())do
@@ -358,9 +387,24 @@ function KW.Core.Initialize(api)
         events:Subscribe('NativeSkillRespecResult',function()invalidate('abilities')end)
         events:Subscribe('NativeAttributeRespecResult',function()invalidate('attributes')end)
     end
-    local function refresh()runtime.inventory:Refresh()end
-    for _,name in ipairs({"EVENT_INVENTORY_SINGLE_SLOT_UPDATE","EVENT_INVENTORY_FULL_UPDATE","EVENT_OPEN_BANK",
-        "EVENT_CLOSE_BANK"})do register(name,refresh)end
+    local inventoryRefreshTimer
+    local function refresh()
+        if inventoryRefreshTimer then runtime.clock:Cancel(inventoryRefreshTimer);inventoryRefreshTimer=nil end
+        runtime.inventory:Refresh()
+    end
+    local function inventoryChanged()
+        if api.IsBankOpen() and api.GetBankingBag()==api.BAG_BANK then
+            -- Confirm moves with targeted slot reads. Coalesce the native
+            -- burst into one bag scan instead of scanning twice per item.
+            if runtime.bankTransfers then runtime.bankTransfers:Check()end
+            if not inventoryRefreshTimer then
+                inventoryRefreshTimer=runtime.clock:Schedule(32,function()inventoryRefreshTimer=nil;refresh()end)
+            end
+        else refresh()end
+    end
+    for _,name in ipairs({"EVENT_INVENTORY_SINGLE_SLOT_UPDATE","EVENT_INVENTORY_FULL_UPDATE"})do register(name,inventoryChanged)end
+    register('EVENT_OPEN_BANK',refresh)
+    register('EVENT_CLOSE_BANK',function()emit('BankClosed');refresh()end)
     register("EVENT_PLAYER_ACTIVATED",function()
         -- Native managers can be replaced on activation; never reuse handles.
         if invalidateActual then invalidateActual('abilities');invalidateActual('attributes');invalidateActual('appearance')end
@@ -393,6 +437,7 @@ function KW.Core.Initialize(api)
         -- Pause stops the runner, which removes its transient timers/listeners.
         -- UI restores native anchors and invalidates hover callbacks on hide.
         runtime.ui:OnSceneHidden()
+        emit('BankClosed')
         runtime.inventory:SetGuildBankReady(false)
         emit("PlayerStateChanged")
     end)

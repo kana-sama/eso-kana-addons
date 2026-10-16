@@ -171,6 +171,7 @@ function Instance:Fail(problem)
     self:Notify(); return nil,problem
 end
 function Instance:IdleRequired()
+    if self.externalBusy and self.externalBusy()then return nil,KW.Problem('busy')end
     if self.journal or self.invalidJournal or self.runner:IsBusy() or self.committing then return nil,KW.Problem("busy") end
     return true
 end
@@ -612,6 +613,7 @@ function B:CaptureComponent(component)
  return snapshot,catalogue
 end
 function B:IdleRequired(scope)
+ if self.externalBusy and self.externalBusy()then return nil,KW.Problem('busy')end
  if self.journal or self.invalidJournal or self.runner:IsBusy() or self.services.buildRunner:IsBusy() or self.committing then return nil,KW.Problem('busy')end
  if type(self.services.checkDrafts)~='function'then return nil,KW.Problem('buildCapabilityUnavailable')end
  return self.services.checkDrafts(scope)

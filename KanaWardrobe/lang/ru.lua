@@ -254,3 +254,18 @@ if GetCVar and GetCVar('language.2')=='ru'then
   appearanceWrongCategory='Сохранённый предмет относится к другой категории.',appearanceLocked='Сохранённый предмет ещё не открыт в коллекции.',
   appearanceBlocked='ESO сейчас не позволяет применить этот предмет.',appearanceUnconfirmed='ESO не применила изменение внешнего вида.'})do S.PROBLEMS[key]=value end
 end
+
+if GetCVar and GetCVar('language.2')=='ru'then
+ local S=KanaWardrobe.Strings
+ S.BANK_DEPOSIT_HELP='Убрать вещи пресета в банк. Общие вещи, нужные другим пресетам в сумке, останутся у персонажа.'
+ S.BANK_WITHDRAW_HELP='Забрать недостающие вещи пресета из банка в сумку. Пресет не будет надет или применён.'
+ S.BANK_DEPOSIT_PROGRESS='В банк';S.BANK_WITHDRAW_PROGRESS='Из банка'
+ S.BANK_SPACE_DETAILS='Нужно свободных ячеек: %d, доступно: %d.'
+ S.BANK_DESTINATION_BANK='банк';S.BANK_DESTINATION_BAG='сумку'
+ S.BANK_TIMEOUT_DETAILS='ESO не подтвердила перенос %s в %s. Повторный клик по пресету заново рассчитает перенос.'
+ for key,value in pairs({bankActivePreset='Активный пресет нельзя положить в банк.',
+  bankNoEquipment='В этом пресете нет экипировки для переноса.',bankSharedOnly='Все вещи этого пресета нужны другим пресетам в сумке. Переносить в банк нечего.',
+  bankItemsMissing='Этих вещей нет ни в сумке, ни в открытом банке:',bankClosed='Для переноса вещей открой личный банк.',
+  bankDestinationFull='Для всего переноса не хватает свободного места.',bankSlotChanged='Ячейка для переноса уже занята. Нажми на пресет, чтобы пересчитать перенос.',
+  bankMoveRejected='ESO отказалась переносить этот предмет.',bankMoveTimeout='ESO не подтвердила перенос предмета.'})do S.PROBLEMS[key]=value end
+end

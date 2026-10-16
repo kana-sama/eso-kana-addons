@@ -225,3 +225,18 @@ end
 for key,value in pairs({appearanceUnavailable='Could not read your current appearance.',appearanceCategoryUnavailable='This appearance category is unavailable.',
  appearanceWrongCategory='The saved collectible does not belong to this category.',appearanceLocked='The saved collectible is not unlocked.',
  appearanceBlocked='ESO cannot apply this collectible right now.',appearanceUnconfirmed='ESO has not applied this appearance change.'})do KanaWardrobe.Strings.PROBLEMS[key]=value end
+
+do
+ local S=KanaWardrobe.Strings
+ S.BANK_DEPOSIT_HELP='Move this preset to the bank. Shared items needed by other fully carried presets will stay with you.'
+ S.BANK_WITHDRAW_HELP='Take the missing items for this preset from the bank. This will not equip or apply the preset.'
+ S.BANK_DEPOSIT_PROGRESS='Moving to bank';S.BANK_WITHDRAW_PROGRESS='Taking from bank'
+ S.BANK_SPACE_DETAILS='Free slots needed: %d; available: %d.'
+ S.BANK_DESTINATION_BANK='bank';S.BANK_DESTINATION_BAG='backpack'
+ S.BANK_TIMEOUT_DETAILS='ESO has not confirmed moving %s to your %s. Click the preset to recalculate the transfer.'
+ for key,value in pairs({bankActivePreset='The active preset cannot be moved to the bank.',
+  bankNoEquipment='This preset has no equipment to move.',bankSharedOnly='All of these items are needed by other presets in your bags. Nothing needs to move.',
+  bankItemsMissing='These items are missing from both your bags and the open bank:',bankClosed='Open your personal bank to move preset items.',
+  bankDestinationFull='There is not enough room for the entire transfer.',bankSlotChanged='A reserved destination slot is now occupied. Click the preset to recalculate the transfer.',
+  bankMoveRejected='ESO refused to move this item.',bankMoveTimeout='ESO has not confirmed the item transfer.'})do S.PROBLEMS[key]=value end
+end

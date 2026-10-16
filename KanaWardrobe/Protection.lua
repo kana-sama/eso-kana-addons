@@ -75,12 +75,12 @@ end
 function Instance:EnsureBuild(build)
     return self:Ensure(KW.BuildModel.Equipment(build))
 end
-function Instance:RefreshAccessible()
+function Instance:RefreshAccessible(snapshot)
     if self.refreshing then return true end
     self.refreshing=true
     local firstProblem
     local ok,err=pcall(function()
-        local state=self.inventory:Capture(false)
+        local state=type(snapshot)=='table' and snapshot.byUid and snapshot or self.inventory:Capture(false)
         for uid,location in pairs(state.byUid) do
             if #self:Explain(uid)>0 then
                 local locked,problem=self:Lock(uid,location)
@@ -100,8 +100,7 @@ function Instance:Attach(events,onProblem)
     end
     self.events=events; self.notify=onProblem or self.notify
     self.handles={}
-    for _,name in ipairs({"PresetsChanged","InventoryChanged"}) do
-        self.handles[#self.handles+1]=events:Subscribe(name,function() self:RefreshAccessible() end)
-    end
+    self.handles[#self.handles+1]=events:Subscribe('PresetsChanged',function()self:RefreshAccessible()end)
+    self.handles[#self.handles+1]=events:Subscribe('InventoryChanged',function(snapshot)self:RefreshAccessible(snapshot)end)
     return self:RefreshAccessible()
 end

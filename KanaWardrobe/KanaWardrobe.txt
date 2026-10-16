@@ -17,6 +17,7 @@ Slots.lua
 BuildModel.lua
 Presets.lua
 Inventory.lua
+BankTransfers.lua
 GearProbe.lua
 EquipmentPlan.lua
 EquipmentRunner.lua

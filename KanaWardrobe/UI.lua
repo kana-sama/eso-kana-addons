@@ -104,6 +104,7 @@ function Instance:Command(method,...)
  self:Refresh();self.currentCommand=nil;self.currentCommandArgs=nil;return result,problem
 end
 function Instance:Readiness()
+ if self.services.bank and self.services.bank:IsBusy()then return KW.Problem('busy')end
  local api=self.inventory and self.inventory.api or _G
  if api.IsUnitInCombat and api.IsUnitInCombat("player")then return KW.Problem("inCombat")end
  if api.IsUnitDead and api.IsUnitDead("player")then return KW.Problem("dead")end
@@ -116,6 +117,21 @@ local function selectionCount(view)
   local v=view.selection or {};return count(v.skills)+count(v.bars and v.bars.front)+count(v.bars and v.bars.back)+count(v.bars and v.bars.werewolf)
  end
  return count(view.selected)
+end
+function Instance:ActivePresets(snapshot)
+ local actual,catalogue
+ if self.services.captureActual then actual,catalogue=self.services.captureActual()end
+ actual={equipment=snapshot.worn,abilities=actual and actual.abilities,
+  attributes=actual and actual.attributes,appearance=actual and actual.appearance}
+ local active={}
+ for _,preset in ipairs(self.repo:List())do
+  local matches=KW.BuildModel.Matches(actual,preset)
+  if matches and preset.abilities and KW.SkillState then
+   matches=KW.BuildModel.Matches(actual,{abilities=KW.SkillState.ExpandMasterySelection(preset.abilities,catalogue)})
+  end
+  if matches then active[preset.id]=true end
+ end
+ return active
 end
 function Instance:Model(snapshot,actual,catalogue,captureProblem)
  local view=self.session:GetView();local readiness=self:Readiness()
@@ -187,6 +203,23 @@ function Instance:Model(snapshot,actual,catalogue,captureProblem)
   model.canSave=editing and projected and unresolved==0
   model.canSaveAndApply=model.canSave;model.canCancel=editing
  end
+ if self.page=='bank'then
+  local bank=self.services.bank
+  model.bank=true;model.isEditor=false;model.canNew=false;model.canQuickSave=false;model.canQuickLoad=false
+  model.bankView=bank and bank:GetView()
+  for _,row in ipairs(model.rows)do
+   local presence=KW.BankTransfers and KW.BankTransfers.Presence(row.preset,snapshot,self.inventory.api)or {count=0,inBag=false}
+   row.inBag=presence.inBag;row.canTransfer=bank~=nil and idle and not readiness and not row.matches and presence.count>0 and not row.problem
+   local code=row.matches and 'bankActivePreset'or presence.count==0 and 'bankNoEquipment'or nil
+   row.reason=code and D.Problem(KW.Problem(code))or row.problem and D.Problem(row.problem)or not idle and text('BUSY')
+    or readiness and D.Problem(readiness)or text(row.inBag and 'BANK_DEPOSIT_HELP'or 'BANK_WITHDRAW_HELP')
+   local failed=model.bankView
+   if failed and failed.presetId==row.id and failed.status=='failed' and failed.problem then
+    local message=D.Problem(failed.problem)
+    if message~=row.reason then row.reason=message..'\n'..row.reason end
+   end
+  end
+ end
  return model
 end
 function Instance:Refresh()
@@ -237,6 +270,14 @@ function Instance:FindRow(id)
 end
 function Instance:RowClick(id,mouseButton)
  local row=self:FindRow(id);if not row then return end
+ if self.page=='bank'then
+  if mouseButton~=1 then return end
+  if not row.canTransfer then return self:Message(row.reason)end
+  self.reportedProblem=nil
+  local result,problem=self.services.bank:Start(id)
+  if not result then self:Problem(problem)end
+  self:Refresh();return result,problem
+ end
  if mouseButton==2 then return self:ContextMenu(row)end
  if mouseButton==1 then
   if row.canApply then self:Command("Apply",id)else self:Message(row.reason)end
@@ -292,7 +333,7 @@ function Instance:Hover(row,control)
  local function show()
   if self.hoverSerial~=serial or self.session:GetView().isEditor or not self.visible then return end
   if MouseIsOver and not MouseIsOver(control) then return end
-  if #row.missing>0 then tooltip(control,row.reason)end
+  if self.page~='bank' and #row.missing>0 then tooltip(control,row.reason)end
   self.preview:Show(control,self:Summary(row.preset),self.root)
  end
  if zo_callLater then zo_callLater(show,60)end
@@ -443,9 +484,24 @@ function Instance:ResolveMenu(slot,anchor)
 end
 -- A fixed footer track: progress never changes list/editor geometry.
 function Instance:CompleteProgress()
- if not self.progressOperation then return end
+ if not self.progressOperation or self.progressCompleting then return end
  self.progressStart=self.progressValue;self.progressTarget=1;self.progressElapsed=0
- self.progressCompleting=(self.progressTime or 0)+.6
+ self.progressCompleting=true;self.progressFinishElapsed=0;self.progressWaiting=false
+ self.progressStage:SetText(self.progressPhaseLabel)
+end
+function Instance:UpdateBankProgress(view)
+ local running=view.status=='running'
+ local completing=view.status=='completed' and self.bankProgressId==view.id and not self.bankProgressFinished
+ if running or completing then
+  if self.bankProgressId~=view.id then self.bankProgressFinished=nil end
+  self.bankProgressId=view.id
+  self:UpdateProgress({state='applying',progress={operationId=view.id,
+   phase=view.direction=='deposit' and 'bankDeposit'or 'bankWithdraw',
+   total=view.total,completed=view.completed,counted=true,waiting=running}})
+  if completing then self.bankProgressFinished=true;self:CompleteProgress()end
+ elseif view.status~='completed' or self.bankProgressId~=view.id then
+  self.progressCompleting=nil;self:UpdateProgress({state='idle'})
+ end
 end
 function Instance:UpdateProgress(view)
  if not self.progressTrack then return end
@@ -457,10 +513,11 @@ function Instance:UpdateProgress(view)
   self:CompleteProgress();return
  end
  self.progressTrack:SetHidden(not visible);self.progressLabel:SetHidden(not visible);self.progressStage:SetHidden(not visible)
- if not visible then self.progressFill:SetHidden(true);self.progressOperation=nil;return end
+ if not visible then self.progressFill:SetHidden(true);self.progressOperation=nil;self.progressWaiting=false;return end
  if self.progressOperation~=p.operationId then
   self.progressCompleting=nil
   self.progressOperation=p.operationId;self.progressValue=0;self.progressStart=0;self.progressTarget=0;self.progressElapsed=0;self.progressTime=nil
+  self.progressActivityElapsed=0
   self.progressTrack:SetAlpha(1);self.progressLabel:SetAlpha(1);self.progressStage:SetAlpha(1)
  end
  -- Only SessionFinished can award the final 100%, after whole-build checks.
@@ -468,25 +525,32 @@ function Instance:UpdateProgress(view)
  if target~=self.progressTarget then
   self.progressStart=self.progressValue;self.progressTarget=target;self.progressElapsed=0
  end
- local phases={skills='PROGRESS_SKILLS',attributes='PROGRESS_ATTRIBUTES',equipment='PROGRESS_EQUIPMENT'}
+ local phases={skills='PROGRESS_SKILLS',attributes='PROGRESS_ATTRIBUTES',equipment='PROGRESS_EQUIPMENT',
+  bankDeposit='BANK_DEPOSIT_PROGRESS',bankWithdraw='BANK_WITHDRAW_PROGRESS'}
  local phaseLabel=text(phases[p.phase]or 'PROGRESS_EQUIPMENT')
  if p.stage=='cooldown'then phaseLabel=phaseLabel..' · '..text('PROGRESS_COOLDOWN')end
+ self.progressPhaseLabel=phaseLabel;self.progressWaiting=p.waiting==true;self.progressCounted=p.counted==true
  self.progressStage:SetText(phaseLabel)
- self.progressLabel:SetText(tostring(math.floor(target*100+.5))..'%')
+ self.progressLabel:SetText(p.counted and tostring(p.completed or 0)..'/'..p.total or tostring(math.floor(target*100+.5))..'%')
 end
 function Instance:AnimateProgress(now)
  if not self.progressOperation then return end
  local dt=self.progressTime and math.max(0,now-self.progressTime)or 0;self.progressTime=now
- if self.progressCompleting and now>=self.progressCompleting then
+ if self.progressCompleting then self.progressFinishElapsed=self.progressFinishElapsed+dt end
+ if self.progressCompleting and self.progressFinishElapsed>=.6 then
   self.progressCompleting=nil;self.progressOperation=nil
   self.progressTrack:SetHidden(true);self.progressFill:SetHidden(true);self.progressLabel:SetHidden(true);self.progressStage:SetHidden(true);return
  end
  self.progressElapsed=(self.progressElapsed or 0)+dt
  local t=math.min(1,self.progressElapsed/.2);t=t*t*(3-2*t)
  self.progressValue=(self.progressStart or 0)+(self.progressTarget-(self.progressStart or 0))*t
- local alpha=self.progressCompleting and math.min(1,math.max(0,(self.progressCompleting-now)/.2))or 1
+ local alpha=self.progressCompleting and math.min(1,math.max(0,(.6-self.progressFinishElapsed)/.2))or 1
  self.progressTrack:SetAlpha(alpha);self.progressLabel:SetAlpha(alpha);self.progressStage:SetAlpha(alpha)
- if self.progressCompleting then self.progressLabel:SetText(tostring(math.floor(self.progressValue*100+.5))..'%')end
+ if self.progressWaiting then
+  self.progressActivityElapsed=self.progressActivityElapsed+dt
+  self.progressStage:SetText(self.progressPhaseLabel..string.rep('.',math.floor(self.progressActivityElapsed*3)%4))
+ end
+ if self.progressCompleting and not self.progressCounted then self.progressLabel:SetText(tostring(math.floor(self.progressValue*100+.5))..'%')end
  self.progressFill:SetHidden(self.progressValue<=0)
  self.progressFill:SetWidth(math.max(.01,self.progressTrack:GetWidth()/scale(self.progressTrack)*self.progressValue))
 end
@@ -577,7 +641,7 @@ function Instance:Build()
  ZO_CheckButton_SetToggleFunction(self.attributesCheck,function(_,checked)self:Command("SetAttributesEnabled",checked)end)
  self:BuildChecks()
  self.fragment=ZO_SimpleSceneFragment:New(self.root)
- for _,page in ipairs(self.pages and {"inventory","skills","stats","collectionsBook"}or {"inventory"})do
+ for _,page in ipairs(self.pages and {"inventory","skills","stats","collectionsBook","bank"}or {"inventory"})do
   local scene=SCENE_MANAGER:GetScene(page)
   if scene then
    scene:AddFragment(self.fragment)
@@ -694,6 +758,7 @@ function Instance:LayoutContent(model)
  local newTop=model.isEditor and maxNewTop or math.min(bodyTop+#model.rows*ROW_HEIGHT+8,maxNewTop)
  place(self.newButton,self.content,PAD,newTop,width,28)
  local bodyBottom=newTop-8
+ if model.bank then bodyBottom=quickTop-56 end
  if model.isEditor then
   place(self.footer,self.content,PAD,newTop-76,width,64)
   place(self.saveButton,self.footer,0,0,half,28);place(self.cancelButton,self.footer,half+12,0,half,28)
@@ -730,7 +795,7 @@ function Instance:LayoutContent(model)
  self.editor:SetDimensions(bodyWidth,math.max(1,y))
  for _,row in ipairs(self.rows)do
   row:SetWidth(bodyWidth)
-  local badgeWidth=row.row and #row.row.missing>0 and 70 or 0
+  local badgeWidth=not model.bank and row.row and #row.row.missing>0 and 70 or 0
   place(row.title,row,28,5,bodyWidth-32-badgeWidth)
   place(row.badge,row,bodyWidth-70,8,70)
   place(row.tick,row,4,8,20,20)
@@ -830,10 +895,11 @@ function Instance:Render(model)
  if not shown then self.geometryHiddenPage=nil;self:SetBackgroundExpanded(false)end
  self:SetEditorLayout(shown and model.isEditor)
  if model.isEditor or not shown then self:HideDescription()end
- self.list:SetHidden(model.isEditor or view.paused or view.state=="recovery")
- self.editorScroll:SetHidden(not model.isEditor and not view.paused and view.state~="recovery")
+ self.list:SetHidden(not model.bank and (model.isEditor or view.paused or view.state=="recovery"))
+ self.editorScroll:SetHidden(model.bank or not model.isEditor and not view.paused and view.state~="recovery")
  self.closeButton:SetHidden(not model.isEditor)
- self.newButton:SetHidden(false)
+ self.newButton:SetHidden(model.bank==true)
+ self.quickBar:SetHidden(model.bank==true)
  self.newButton:SetEnabled(model.canNew)
  self.quickSave:SetEnabled(model.canQuickSave)
  self.quickLoad:SetEnabled(model.canQuickLoad)
@@ -872,7 +938,9 @@ function Instance:Render(model)
  self.allButton:SetHidden(not model.isEditor or view.component=="attributes")
  self.noneButton:SetHidden(not model.isEditor or view.component=="attributes")
  self.footer:SetHidden(not model.isEditor)
- self:UpdateProgress(view)
+ if model.bank then
+  self:UpdateBankProgress(model.bankView or {})
+ else self:UpdateProgress(view)end
  for index,row in ipairs(model.rows)do
   local c=self.rows[index]
   if not c then
@@ -894,7 +962,10 @@ function Instance:Render(model)
   if c.rowIndex~=index then
    c.rowIndex=index;c:ClearAnchors();c:SetAnchor(TOPLEFT,self.listChild,TOPLEFT,0,(index-1)*ROW_HEIGHT)
   end
-  c.title:SetText(row.name);c.badge:SetText(#row.missing>0 and string.format(text("MISSING"),#row.missing)or"")
+  c:SetAlpha((not model.bank or row.inBag)and 1 or .45)
+  c.title:SetText(row.name)
+  c.title:SetColor(1,1,1,1)
+  c.badge:SetText(not model.bank and #row.missing>0 and string.format(text("MISSING"),#row.missing)or"")
   c.badge:SetMouseEnabled(false);c.tick:SetHidden(not row.matches)
   c.highlight:SetHidden(not MouseIsOver or not MouseIsOver(c))
   c:SetHandler("OnMouseUp",function(_,mouseButton,inside)if inside then self:RowClick(row.id,mouseButton)end end)

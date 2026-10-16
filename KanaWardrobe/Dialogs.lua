@@ -41,6 +41,20 @@ function D.Problem(problem)
  local known=(KW.Strings.PROBLEMS or {})[problem.code]
  local message=known or string.format(text("PROBLEM_UNRECOGNIZED"),D.Plain(problem.code))
  local details=problem.details or {}
+ if problem.code:match('^bank')then
+  local function itemName(item)
+   local name=GetItemLinkName and item.link and GetItemLinkName(item.link)
+   return D.Plain(name and name~='' and name or item.link or item.uid)
+  end
+  if problem.code=='bankItemsMissing'then
+   local names={};for _,item in ipairs(details.items or {})do names[#names+1]=itemName(item)end
+   return message..'\n'..table.concat(names,'\n')
+  elseif problem.code=='bankMoveTimeout'then
+   return string.format(text('BANK_TIMEOUT_DETAILS'),itemName(details),text(details.direction=='deposit' and 'BANK_DESTINATION_BANK'or 'BANK_DESTINATION_BAG'))
+  elseif problem.code=='bankDestinationFull'then
+   return message..' '..string.format(text('BANK_SPACE_DETAILS'),details.needed or 0,details.available or 0)
+  elseif details.link then message=message..' '..itemName(details)end
+ end
  if problem.code=='operationMismatch' and details.differences and #details.differences>0 then
   local lines={}
   for _,row in ipairs(details.differences)do lines[#lines+1]=D.Difference(row)end

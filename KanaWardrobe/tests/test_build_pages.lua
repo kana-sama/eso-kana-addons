@@ -1,11 +1,11 @@
 local Fake=dofile(ROOT..'/tests/support/fake_eso.lua')
 local G=dofile(ROOT..'/tests/support/geometry_controls.lua')
 local function load()
- return Fake.Load({'Core.lua','Slots.lua','BuildModel.lua','lang/en.lua','Presets.lua','Inventory.lua','SetModel.lua','Dialogs.lua','PageAdapters.lua','UI.lua'})
+ return Fake.Load({'Core.lua','SoftPanel.lua','Slots.lua','BuildModel.lua','lang/en.lua','Presets.lua','Inventory.lua','SetModel.lua','Dialogs.lua','PageAdapters.lua','UI.lua'})
 end
 local function native(f)
  local scenes={}
- for _,page in ipairs({'inventory','skills','stats','collectionsBook'})do
+ for _,page in ipairs({'inventory','skills','stats','collectionsBook','bank'})do
   local s={callbacks={},fragments={},state=SCENE_HIDDEN}
   function s:AddFragment(v)self.fragments[#self.fragments+1]=v end
   function s:RegisterCallback(_,cb)self.callbacks[#self.callbacks+1]=cb end
@@ -76,6 +76,114 @@ local function setup(kw)
  return repo,s,inv
 end
 return {
+ bank_list_shows_carried_state_and_never_applies_or_edits_a_preset=function()
+  G.With(1920,1080,1,function(f)
+   local kw=load();dofile(ROOT..'/BankTransfers.lua');local scenes=native(f);local repo,s,inv=setup(kw)
+   local inventoryFragment={RegisterCallback=function(self,_,fn)self.callback=fn end,IsShowing=function()return true end}
+   f:Put('INVENTORY_FRAGMENT',inventoryFragment)
+   for _,key in ipairs({'HIDDEN','HIDING','SHOWN','SHOWING'})do f:Put('SCENE_FRAGMENT_'..key,key)end
+   local A={kind='item',uid='A',link='A'};local B={kind='item',uid='B',link='B'};local C={kind='item',uid='C',link='C'}
+   inv.api.bags[BAG_WORN][0]={uid='A',link='A'};inv.api.bags[BAG_BACKPACK][0]={uid='B',link='B'}
+   inv.api.bags[BAG_BANK][0]={uid='C',link='C'};inv.api.bankOpen=true
+   local active=save(repo,{name='Active',equipment={[0]=A}})
+   local bag=save(repo,{name='Bag',equipment={[3]=B}});save(repo,{name='Bank',equipment={[6]=C}})
+   for i=1,24 do save(repo,{name='More '..i,equipment={[6]=C}})end
+   local bank={clicks={},GetView=function()return {status='idle'}end,IsBusy=function()return false end}
+   function bank:Start(id)self.clicks[#self.clicks+1]=id;return true end
+   local previews,helps=0,0
+   local ui=kw.UI.New(repo,s,{Hide=function()end,Show=function()previews=previews+1 end},inv,{pages=kw.PageAdapters.New(_G),bank=bank})
+   local nativeBank=f:Control('ZO_PlayerBank',nil,nil,565,600)
+   nativeBank:SetAnchor(TOPLEFT,ZO_SharedRightPanelBackground,TOPLEFT,0,45)
+   local originalLeft=nativeBank:GetLeft();local originalWidth=ZO_SharedRightPanelBackground:GetWidth()
+   scenes.bank:Fire(SCENE_SHOWN);ui:Refresh()
+   assert(ui.page=='bank' and ui.visible and not ui.content:IsHidden(),'bank scene must mount the preset panel')
+   assert(ui.model.rows[1].matches and ui.model.rows[1].inBag and ui.rows[1].alpha==1 and not ui.rows[1].tick:IsHidden())
+   assert(ui.model.rows[2].inBag and ui.rows[2].alpha==1)
+   assert(not ui.model.rows[3].inBag and ui.rows[3].alpha<1 and ui.rows[3].title.color[1]==1,
+    'fade the whole banked preset button, independently of the label color alpha')
+   f:Put('zo_callLater',function(fn)fn()end);f:Put('MouseIsOver',function()return true end)
+   f:Put('InitializeTooltip',function()helps=helps+1 end);f:Put('SetTooltipText',function()end)
+   ui:Hover(ui.model.rows[3],ui.rows[3]);assert(previews==1 and helps==0,'bank state must not add another tooltip')
+   assert(ui.rows[3].badge:GetText()=='','banked items must not be presented as an apply error')
+   assert(ui.rows[2].title:GetWidth()==ui.rows[3].title:GetWidth(),'banked preset names must not reserve space for an invisible error badge')
+   assert(ui.newButton:IsHidden() and ui.quickBar:IsHidden() and ui.footer:IsHidden() and not ui.list:IsHidden())
+   assert(ui.listChild:GetHeight()>ui.list:GetHeight(),'a long bank preset list must retain scrolling')
+   local listLeft=ui.root:GetLeft()
+   for _=1,20 do ui:LayoutPanel()end
+   assert(ui.root:GetLeft()==listLeft and nativeBank:GetLeft()==originalLeft
+    and ZO_SharedRightPanelBackground:GetWidth()==originalWidth,'bank layout must not resize its own native anchor or move the bank')
+   local art=assert(ui.pages.textureWidths[ZO_SharedRightPanelBackground],'bank list must extend native bank art')
+   assert(art.slices and not art.slices.edge:IsHidden())
+   assert(not ui.bankSurface or ui.bankSurface.tiles[1]:IsHidden(),'a separate rectangular surface must not cover the native gradient')
+   G.Disjoint(ui.root,nativeBank)
+   inventoryFragment.callback(nil,SCENE_FRAGMENT_SHOWN);inventoryFragment.callback(nil,SCENE_FRAGMENT_HIDDEN)
+   assert(ui.page=='bank' and ui.visible and not ui.content:IsHidden(),'native deposit/withdraw tabs must not hide the bank preset list')
+   ui:RowClick(active.id,1);ui:RowClick(bag.id,2);assert(#bank.clicks==0 and #s.calls==0)
+   ui:RowClick(bag.id,1);assert(#bank.clicks==1 and bank.clicks[1]==bag.id and #s.calls==0)
+   scenes.inventory:Fire(SCENE_SHOWN);ui:Refresh()
+   assert(not ui.newButton:IsHidden() and not ui.quickBar:IsHidden() and ui.rows[3].alpha==1,
+    'bank colors and hidden controls must not leak into the ordinary preset list')
+  end)
+ end,
+ bank_panel_keeps_screen_bounds_and_native_bank_geometry_at_different_scales=function()
+  for _,factor in ipairs({.75,1,2.5})do
+   G.With(1280*factor,720*factor,factor,function(f)
+    local kw=load();local scenes=native(f);local repo,s,inv=setup(kw)
+    local before=ZO_SharedRightPanelBackground:Rect()
+    local ui=kw.UI.New(repo,s,nil,inv,{pages=kw.PageAdapters.New(_G)})
+    scenes.bank:Fire(SCENE_SHOWN);ui:Refresh()
+    for _=1,10 do ui:LayoutPanel()end
+    G.Contained(ui.root,GuiRoot)
+    local after=ZO_SharedRightPanelBackground:Rect()
+    assert(before.l==after.l and before.r==after.r and before.t==after.t and before.b==after.b)
+    local art=assert(ui.pages.textureWidths[ZO_SharedRightPanelBackground])
+    assert(art.slices and not art.slices.edge:IsHidden())
+    scenes.skills:Fire(SCENE_SHOWN);ui:Refresh()
+    assert(art.slices.edge:IsHidden() and art.slices.fill:IsHidden(),'the bank extension must not cover other native pages')
+   end)
+  end
+ end,
+ bank_background_continues_native_art_without_moving_native_contents=function()
+  for _,factor in ipairs({.75,1,2.5})do
+   G.With(1920*factor,1080*factor,factor,function(f)
+    local kw=load();local scenes=native(f);local pages=kw.PageAdapters.New(_G)
+    local bg=ZO_SharedRightPanelBackground;local texture=bg:GetNamedChild('Left')
+    local original={width=texture:GetWidth(),height=texture:GetHeight(),top=texture:GetTop(),
+     uv={texture:GetTextureCoords()},anchor={texture:GetAnchor(0)}}
+    local bank=f:Control('NativeBankContents',nil,nil,565,600)
+    bank:SetAnchor(TOPLEFT,bg,TOPLEFT,0,45)
+    scenes.bank:Fire(SCENE_SHOWN);assert(pages:Mount('bank'))
+    for _,screenWidth in ipairs({1920,1280,1920})do
+     f.width=screenWidth*factor
+     local before=bg:Rect();local bankLeft=bank:GetLeft()
+     local nativeLeft=bg:GetLeft()-65*factor
+     for _=1,4 do pages:SetBackgroundExpanded('bank',true)end
+     local list=pages:Bounds('bank').list;local art=assert(pages.textureWidths[bg])
+     local slices=assert(art.slices,'native feathered edge must continue to the left of the preset list')
+     assert(slices.edge:GetLeft()<list.x*factor and slices.fill:GetRight()>=(list.x+list.width)*factor,
+      'native bank background must cover the full preset list')
+     assert(math.abs(slices.edge:GetRight()-slices.fill:GetLeft())<.01
+      and math.abs(slices.fill:GetRight()-texture:GetLeft())<.01,'native background pieces must meet without a seam or overlap')
+     assert(math.abs(texture:GetLeft()-nativeLeft-64*factor)<.01
+      and math.abs(texture:GetRight()-nativeLeft-original.width)<.01,'native bank pixels must not move or stretch')
+     for _,piece in ipairs({slices.edge,slices.fill,texture})do
+      local _,_,v0,v1=piece:GetTextureCoords()
+      assert(piece:GetTextureFileName()==texture:GetTextureFileName()and v0==original.uv[3]and v1==original.uv[4])
+      assert(piece:GetTop()==original.top and piece:GetHeight()==original.height,'native vertical feather changed')
+     end
+     local u0,u1=slices.fill:GetTextureCoords()
+     assert(u0==u1 and slices.edge:GetWidth()==64*factor,'only a flat native column may be extended; the edge must not stretch')
+     local after=bg:Rect()
+     assert(before.l==after.l and before.r==after.r and bank:GetLeft()==bankLeft,'background extension moved native bank contents')
+    end
+    local art=pages.textureWidths[bg];pages:Unmount('bank')
+    assert(texture:GetWidth()==original.width and texture:GetLeft()==bg:GetLeft()-65*factor)
+    local restored={texture:GetAnchor(0)};for i,value in ipairs(original.anchor)do assert(restored[i]==value)end
+    local uv={texture:GetTextureCoords()};for i,value in ipairs(original.uv)do assert(uv[i]==value)end
+    assert(art.slices.edge:IsHidden()and art.slices.fill:IsHidden(),'bank background leaked after closing')
+   end)
+  end
+ end,
  missing_skill_repair_rows_stay_inside_editor_and_expose_explicit_choices=function()
   G.With(1280,720,1,function(f)
    local kw=load();local scenes=native(f);local repo,s,inv=setup(kw);local pages=kw.PageAdapters.New(_G)

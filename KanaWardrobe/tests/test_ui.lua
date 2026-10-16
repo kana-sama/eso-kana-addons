@@ -126,6 +126,50 @@ return {
    for _,b in ipairs(ui.clearGroupButtons)do assert(b.hidden)end
   end)
  end,
+ bank_transfer_shows_actual_item_count_and_animates_while_waiting=function()
+  withNative(function()
+   local k,r,s,inv,_,preview=setup()
+   local view={status='running',id='bank:1',direction='deposit',completed=0,total=12}
+   local bank={GetView=function()return view end,IsBusy=function()return view.status=='running'end}
+   local ui=k.UI.New(r,s,preview,inv,{bank=bank});ui.page='bank';ui.visible=true;ui:Refresh()
+   local bottom=ui.list.anchors[2][6]
+   assert(not ui.progressTrack.hidden and ui.progressLabel.text=='0/12','show the number of confirmed items immediately')
+   ui:AnimateProgress(100);local waiting=ui.progressStage.text;ui:AnimateProgress(100.4)
+   assert(ui.progressStage.text~=waiting and ui.progressValue==0,'animate the wait without inventing completed items')
+   view.completed=5;ui:Refresh();ui:AnimateProgress(100.6)
+   assert(ui.progressLabel.text=='5/12' and math.abs(ui.progressValue-5/12)<.001)
+   assert(ui.list.anchors[2][6]==bottom,'progress must preserve the bank list scroll area')
+   view.direction='withdraw';view.id='bank:2';view.completed=0;ui:Refresh()
+   assert(ui.progressStage.text=='Taking from bank' and ui.progressLabel.text=='0/12')
+   view.status='failed';ui:Refresh();ui:AnimateProgress(101)
+   assert(ui.progressTrack.hidden and ui.progressStage.hidden and ui.progressLabel.hidden,'a failed transfer must not animate a successful finish')
+  end)
+ end,
+ a_fast_bank_transfer_remains_visible_until_its_completion_animation_finishes=function()
+  withNative(function()
+   local k,r,s,inv,_,preview=setup()
+   local view={status='running',id='bank:fast',direction='withdraw',completed=0,total=3}
+   local ui=k.UI.New(r,s,preview,inv,{bank={GetView=function()return view end,IsBusy=function()return view.status=='running'end}})
+   ui.page='bank';ui.visible=true
+   ui:UpdateBankProgress(view) -- The start event arrives before a scheduled UI refresh.
+   view.status='completed';view.completed=3;ui:UpdateBankProgress(view);ui:Refresh()
+   ui:AnimateProgress(900)
+   assert(not ui.progressTrack.hidden and ui.progressLabel.text=='3/3','even a transfer completed before the first frame must be visible')
+   ui:Refresh();ui:AnimateProgress(900.3)
+   assert(not ui.progressTrack.hidden and ui.progressValue==1 and ui.progressLabel.text=='3/3')
+   ui:Refresh();ui:AnimateProgress(900.7);assert(ui.progressTrack.hidden)
+   ui:Refresh();assert(ui.progressTrack.hidden,'refresh must not replay an old completion')
+  end)
+ end,
+ opening_the_bank_does_not_replay_a_saved_transfer_completion=function()
+  withNative(function()
+   local k,r,s,inv,_,preview=setup()
+   local view={status='completed',id='bank:old',direction='deposit',completed=3,total=3}
+   local ui=k.UI.New(r,s,preview,inv,{bank={GetView=function()return view end,IsBusy=function()return false end}})
+   ui.page='bank';ui.visible=true;ui:Refresh();ui:AnimateProgress(900)
+   assert(ui.progressTrack.hidden and ui.progressStage.hidden and ui.progressLabel.hidden)
+  end)
+ end,
  progress_colors_and_frame_driven_fill_do_not_use_nonexistent_vertex_mask=function()
   withNative(function(_,_,put)
    put('VERTEX_POINTS_ALL',nil)
