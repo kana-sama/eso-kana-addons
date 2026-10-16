@@ -165,15 +165,15 @@ assert(root.anchor[5] == 140 and KanaCooldownPanelSettings.y == 140, 'Migrate th
 KanaAurasSettings.mirrorY = 250
 events[EVENT_PLAYER_ACTIVATED]()
 assert(root.anchor[5] == 140, 'Do not overwrite a migrated or newly saved position')
-assert(root.height == 88 and label(1).text == '8.0' and label(6).text == '12',
+assert(root.height == 88 and label(1).text == '8' and label(6).text == '12',
     'Two rows: inactive above active, timers visible outside combat')
 assert(cell(8):IsHidden() and cell(10):IsHidden(), 'Missing uptime and empty slots skip outside combat')
 assert(isBlack(6) and white(6), 'Normal timer has black background and white text')
 
 bars[0][3][2] = 2000; refresh()
-assert(isBlack(6), 'Exactly two seconds does not warn')
+assert(isBlack(6) and label(6).text == '2', 'Exactly two seconds uses an integer and does not warn')
 bars[0][3][2] = 1999; refresh()
-assert(isOrange(6) and white(6), 'Below two seconds warns on background only')
+assert(isOrange(6) and white(6) and label(6).text == '2.0', 'Below two seconds uses tenths rounded up and warns on background only')
 combat = true; events[EVENT_PLAYER_COMBAT_STATE]()
 assert(isRed(8) and label(8).text == '!' and white(8), 'Missing important uptime warns immediately in combat')
 local alpha = cell(8).color[4]
@@ -202,16 +202,16 @@ open(5, 0); assert(menu[2].checked); menu[2].callback()
 assert(not cell(8):IsHidden(), 'Hidden skill can be restored from the native bar')
 
 activeBar = 1; refresh()
-assert(label(1).text == '6.0' and label(6).text == '8.0', 'Weapon swap moves the correct categories between rows')
+assert(label(1).text == '6' and label(6).text == '8', 'Weapon swap moves the correct categories between rows')
 for _, ringSlot in ipairs({EQUIP_SLOT_RING1, EQUIP_SLOT_RING2}) do
     rings[ringSlot] = 187658; refresh()
-    assert(root.height == 42 and label(1).text == '8.0' and cell(6):IsHidden(), 'Oakensoul in either ring slot: active row only')
+    assert(root.height == 42 and label(1).text == '8' and cell(6):IsHidden(), 'Oakensoul in either ring slot: active row only')
     for _, call in ipairs(calls) do assert(call[2] == 1, 'Never query inaccessible back bar timers') end
     rings[ringSlot] = nil
 end
 refresh(); assert(root.height == 88, 'Removing Oakensoul restores both rows')
 wolf, activeBar = true, 2; refresh()
-assert(root.height == 42 and label(1).text == '7.0', 'Werewolf shows its active bar only')
+assert(root.height == 42 and label(1).text == '7', 'Werewolf shows its active bar only')
 open(3, 2)
 assert(#menu == 2 and shownOwner.hotbarCategory == 2, 'Restricted werewolf slot still has preferences without remove action')
 menu[1].callback(); assert(cell(1):IsHidden(), 'Werewolf skill can be hidden')
@@ -289,32 +289,32 @@ for _, placement in ipairs({'top', 'bottom'}) do
     for _, category in ipairs({0, 1}) do
         activeBar = category; refresh()
         local front, back = placement == 'top' and 1 or 6, placement == 'top' and 6 or 1
-        assert(label(front).text == '10' and label(back).text == '8.0', 'Fixed rows retain weapon identities across swaps')
+        assert(label(front).text == '10' and label(back).text == '8', 'Fixed rows retain weapon identities across swaps')
     end
 end
 position.setFunc('top'); fixed.setFunc(false)
 assert(position.disabled(), 'Turning fixed mode off disables the dependent option again')
 activeBar = 0; refresh(); assert(label(6).text == '10', 'Inactive fixed placement is ignored in dynamic mode')
-activeBar = 1; refresh(); assert(label(6).text == '8.0', 'Dynamic mode still keeps the active bar below')
+activeBar = 1; refresh(); assert(label(6).text == '8', 'Dynamic mode still keeps the active bar below')
 for _, placement in ipairs({'top', 'bottom'}) do
     activePosition.setFunc(placement)
     for _, category in ipairs({0, 1}) do
         activeBar = category; refresh()
         local rowIndex = placement == 'top' and 1 or 6
-        assert(label(rowIndex).text == (category == 0 and '10' or '8.0'), 'Dynamic position follows the active category after swaps')
+        assert(label(rowIndex).text == (category == 0 and '10' or '8'), 'Dynamic position follows the active category after swaps')
     end
 end
 activePosition.setFunc('top')
 fixed.setFunc(true)
 activeBar = 1; refresh()
-assert(label(1).text == '10' and label(6).text == '8.0', 'Fixed ordering ignores saved dynamic position')
+assert(label(1).text == '10' and label(6).text == '8', 'Fixed ordering ignores saved dynamic position')
 for _, ringSlot in ipairs({EQUIP_SLOT_RING1, EQUIP_SLOT_RING2}) do
     rings[ringSlot] = 187658; refresh()
-    assert(label(1).text == '8.0' and cell(6):IsHidden(), 'Single active row overrides fixed positions with Oakensoul')
+    assert(label(1).text == '8' and cell(6):IsHidden(), 'Single active row overrides fixed positions with Oakensoul')
     rings[ringSlot] = nil
 end
 wolf, activeBar = true, 2; bars[2][3][2] = 7000; refresh()
-assert(label(1).text == '7.0' and cell(6):IsHidden(), 'Werewolf never displays a fixed weapon row')
+assert(label(1).text == '7' and cell(6):IsHidden(), 'Werewolf never displays a fixed weapon row')
 wolf, activeBar = false, 0; refresh()
 
 local function icon(i) return controls['KanaCooldownPanelIcon' .. i] end

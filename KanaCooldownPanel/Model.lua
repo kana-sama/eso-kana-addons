@@ -41,7 +41,7 @@ end
 
 function addon:FormatTime(milliseconds)
     local seconds = milliseconds / 1000
-    if seconds < 10 then return string.format('%.1f', math.ceil(seconds * 10) / 10) end
+    if seconds < 2 then return string.format('%.1f', math.ceil(seconds * 10) / 10) end
     return tostring(math.ceil(seconds))
 end
 
