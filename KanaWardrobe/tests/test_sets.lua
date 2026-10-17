@@ -580,6 +580,40 @@ return {
             assert(preview.control:IsHidden() and not preview.visible,'delayed UI Show reopened real native Close')
         end)
     end,
+    missing_item_table_has_a_header_bold_columns_and_wrapped_rows_without_changing_shared_tooltips=function()
+        local KW=setup()
+        previewEnvironment(function(root,_,control,install)
+            local shared=control('InformationTooltip',root);shared.width=350
+            install('InformationTooltip',shared)
+            install('InitializeTooltip',function(t,owner)t.owner=owner;t.hidden=false end)
+            install('ClearTooltipImmediately',function(t)t.owner=nil;t.hidden=true end)
+            dofile(ROOT..'/PreviewTooltips.lua')
+            local v=KW.PreviewTooltips.New();local owner=control('Missing row',root)
+            for _,factor in ipairs({.75,1,2})do
+                v:EnsureBody();v.breakdownTooltip:SetScale(factor)
+                v:Show(owner,{kind='table',title='Missing equipment',textValues=true,maxWidth=360,rows={
+                    {name='Main hand - first bar',value='|c3366FF'..string.rep('Long weapon name ',5)..'|r'},
+                    {name='Head',value='Hat'},
+                }})
+                local title,slot,item,nextSlot=v.labels[1],v.labels[2],v.labels[3],v.labels[4]
+                assert(title and title.text=='Missing equipment' and title.font=='ZoFontHeader' and title.color[1]==1)
+                assert(slot.font=='ZoFontHeader' and slot.color[1]==201/255 and item.font=='ZoFontHeader')
+                assert(slot.width>=slot:GetTextWidth(),'long item names must wrap in the item column instead of squeezing slot labels')
+                assert(item.text:find('|c3366FF',1,true) and item.align==TEXT_ALIGN_RIGHT
+                    and math.abs(item:GetRight()-v.child:GetRight())<.1,'item names must follow the right edge of their column')
+                assert(slot:GetTop()>=title:GetBottom()+8*factor and item:GetLeft()>slot:GetRight())
+                local rowBottom=math.max(slot:GetBottom(),item:GetBottom())
+                assert(nextSlot:GetTop()>=rowBottom and nextSlot:GetTop()-rowBottom<=2.1*factor,
+                    'rows must remain compact even when an item name wraps')
+                assert(v.body.width<=360 and shared.width==350 and not shared.body)
+            end
+            local rows={};for i=1,45 do rows[i]={name='Head',value='Hat '..i}end
+            v:Show(owner,{kind='table',title='Missing equipment',rows=rows,textValues=true})
+            assert(not v.scroll:GetNamedChild('ScrollBar'):IsHidden() and v.child.height>v.body.height)
+            v:Show(owner,{kind='table',title='Missing equipment',rows={{name='Head',value='Hat'}},textValues=true})
+            assert(v.scroll:GetNamedChild('ScrollBar'):IsHidden() and v.labels[4]:IsHidden(),'reused tooltips must shed old rows and scrollbar space')
+        end)
+    end,
     source_breakdown_owns_tooltip_and_fits_bold_columns_without_changing_shared_tooltips=function()
         local KW=setup()
         previewEnvironment(function(root,_,control,install)
@@ -642,7 +676,7 @@ return {
             -- pool reuse. Row placement must measure text independently of it.
             for _,label in ipairs(v.labels)do label.GetHeight=function()return 500 end end
             v:Show(owner,{kind='breakdown',rows={{name='Hat',value='+1'},{name='Ring',value='+2'}}})
-            assert(v.labels[3].anchors[1].y==26 and v.body.height==46,
+            assert(v.labels[3].anchors[1].y==22 and v.body.height==42,
                 'stale visible label heights must not introduce random vertical gaps')
             root.width=260;root.height=220
             local rows={}
@@ -752,7 +786,8 @@ return {
                 }})
                 local name,value,nextName=v.tooltips.labels[1],v.tooltips.labels[2],v.tooltips.labels[3]
                 assert(name:GetRight()+16*name:GetScale()<=value:GetLeft()+.1,'item name collides with its effect column')
-                assert(nextName:GetTop()>=math.max(name:GetBottom(),value:GetBottom())+6*name:GetScale()-.1,'wrapped row collides with the next item')
+                local gap=nextName:GetTop()-math.max(name:GetBottom(),value:GetBottom())
+                assert(gap>=0 and gap<=2.1*name:GetScale(),'wrapped source rows must stay compact without colliding')
                 assert(value:GetRight()<=v.tooltips.child:GetRight()+.1)
                 assert(value:GetWidth()/value:GetScale()>=value:GetTextWidth(),'bar values should fit their measured column')
             end

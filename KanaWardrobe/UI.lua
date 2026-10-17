@@ -35,7 +35,13 @@ local function tooltip(control,value)
  if control:GetLeft()/scale(control)>=320 then
   InitializeTooltip(InformationTooltip,control,RIGHT,-8,0,LEFT)
  else InitializeTooltip(InformationTooltip,control,LEFT,8,0,RIGHT)end
- SetTooltipText(InformationTooltip,value)
+ local title,body
+ if type(value)=='string'then title,body=value:match('^([^\n]+)\n+(.+)$')end
+ if title then
+  InformationTooltip:AddLine(title,'ZoFontGameBold',1,1,1,TOPLEFT,MODIFY_TEXT_TYPE_NONE,TEXT_ALIGN_LEFT,true)
+  InformationTooltip:AddVerticalPadding(8)
+  InformationTooltip:AddLine(body,'ZoFontGame',201/255,195/255,164/255,TOPLEFT,MODIFY_TEXT_TYPE_NONE,TEXT_ALIGN_LEFT,true)
+ else SetTooltipText(InformationTooltip,value)end
 end
 local function clearTooltip()if ClearTooltip then ClearTooltip(InformationTooltip)end end
 local function label(parent,name,value,x,y,width,font)
@@ -329,19 +335,31 @@ function Instance:Summary(preset)
 end
 function Instance:Hover(row,control)
  if self.session:GetView().isEditor then return end
+ if self.helpTooltips then self.helpTooltips:Hide()end
  self.hoverSerial=self.hoverSerial+1;local serial=self.hoverSerial;self.hoverControl=control
  local function show()
   if self.hoverSerial~=serial or self.session:GetView().isEditor or not self.visible then return end
   if MouseIsOver and not MouseIsOver(control) then return end
-  if self.page~='bank' and #row.missing>0 then tooltip(control,row.reason)end
+  if self.page~='bank' and #row.missing>0 then
+   self.helpTooltips=self.helpTooltips or KW.PreviewTooltips.New()
+   local rows={}
+   for _,slot in ipairs(KW.Slots.Order)do
+    local ref=row.missingBySlot[slot]
+    if ref then rows[#rows+1]={name=D.SlotName(slot),value=ref.link or text('UNKNOWN_PROBLEM')}end
+   end
+   self.helpTooltips:Show(control,{kind='table',title=text('MISSING_HELP'):gsub(':$',''),
+    description=row.problem and D.Problem(row.problem),rows=rows,textValues=true,maxWidth=560})
+  end
   self.preview:Show(control,self:Summary(row.preset),self.root)
  end
  if zo_callLater then zo_callLater(show,60)end
 end
 function Instance:Leave()
  clearTooltip()
+ if self.helpTooltips then self.helpTooltips:Leave(self.helpTooltips.owner)end
 end
 function Instance:HideDescription()
+ if self.helpTooltips then self.helpTooltips:Hide()end
  self.hoverSerial=self.hoverSerial+1;self.hoverControl=nil
  if self.preview then self.preview:Hide()end
 end

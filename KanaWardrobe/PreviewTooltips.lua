@@ -3,7 +3,7 @@ local Tooltips={};KW.PreviewTooltips=Tooltips
 local Instance={};Instance.__index=Instance
 local nextId=0
 local unpack=unpack or table.unpack
-local FONT,GAP="ZoFontHeader",16
+local FONT,GAP,ROW_GAP="ZoFontHeader",16,2
 local YELLOW,WHITE={201/255,195/255,164/255,1},{1,1,1,1}
 function Tooltips.New()
     nextId=nextId+1
@@ -90,9 +90,10 @@ function Instance:EnsureBody()
         ZO_PostHookHandler(self.breakdownTooltip,"OnHide",hideBody)
     end
 end
-function Instance:Measure(value,width)
+function Instance:Measure(value,width,font)
     -- Measure text independently of the visible label's previous layout.
     -- GetTextDimensions and native control dimensions are logical UI units.
+    self.measure:SetFont(font or FONT)
     self.measure:SetDimensions(width or 0,10000);self.measure:SetText(value)
     local w,h=self.measure:GetTextDimensions()
     return math.ceil(w),math.ceil(h)
@@ -105,14 +106,15 @@ function Instance:Label(value,x,y,width,font,align,color)
         self.labels[self.used]=label;label:SetMouseEnabled(false)
     end
     label:SetHidden(false);label:ClearAnchors()
-    local _,height=self:Measure(value,width)
+    local _,height=self:Measure(value,width,font)
     label:SetFont(font or "ZoFontGame");label:SetDimensions(width,height)
     label:SetColor(unpack(color or WHITE))
     label:SetHorizontalAlignment(align or TEXT_ALIGN_LEFT);label:SetText(value)
     label:SetAnchor(TOPLEFT,self.child,TOPLEFT,x,y)
     return height
 end
-function Instance:ShowBreakdowns(owner,sections)
+function Instance:ShowBreakdowns(owner,sections,options)
+    options=options or {}
     self:EnsureBody()
     local tooltip=self.breakdownTooltip
     self:Open(tooltip,owner)
@@ -120,7 +122,7 @@ function Instance:ShowBreakdowns(owner,sections)
     for _,label in ipairs(self.labels)do label:SetHidden(true)end
     self.body:SetHidden(false)
     local paddingWidth,paddingHeight=tooltip:GetResizeToFitPadding()
-    local maxWidth=math.max(1,GuiRoot:GetWidth()-64-paddingWidth)
+    local maxWidth=math.max(1,math.min(options.maxWidth or math.huge,GuiRoot:GetWidth()-64-paddingWidth))
     local y=0
     -- Exactly two columns: item name and its contribution. Bar differences
     -- stay within the value cell, using the same format as the preset summary.
@@ -138,6 +140,7 @@ function Instance:ShowBreakdowns(owner,sections)
     -- A short table fills the body. Reserve scrollbar space only when its
     -- content actually exceeds the available height, then reflow once.
     local natural=nameWidth+GAP+valueWidth
+    if options.title then natural=math.max(natural,self:Measure(options.title))end
     local maxHeight=math.max(1,GuiRoot:GetHeight()-140-paddingHeight)
     local viewport=self.scroll:GetNamedChild("Scroll")
     local function layout(overflow)
@@ -154,7 +157,15 @@ function Instance:ShowBreakdowns(owner,sections)
         local inner=math.max(1,width-barWidth-padding)
         local valueCell=math.min(valueWidth,math.max(1,inner-GAP-1))
         local nameCell=math.max(1,inner-valueCell-GAP)
+        if options.textValues then
+            nameCell=math.min(nameWidth,math.max(1,inner-GAP-1))
+            valueCell=math.max(1,inner-nameCell-GAP)
+        end
         self.used=0;y=0
+        if options.title then y=self:Label(options.title,0,y,inner,FONT,TEXT_ALIGN_LEFT,WHITE)+8 end
+        if options.description then
+            y=y+self:Label(options.description,0,y,inner,'ZoFontGame',TEXT_ALIGN_LEFT,YELLOW)+8
+        end
         for _,entry in ipairs(rows)do
             local nameHeight=self:Label(entry.name,0,y,nameCell,FONT,TEXT_ALIGN_LEFT,YELLOW)
             local valueHeight=self:Label(entry.value,inner-valueCell,y,valueCell,FONT,TEXT_ALIGN_RIGHT,WHITE)
@@ -162,9 +173,9 @@ function Instance:ShowBreakdowns(owner,sections)
             valueLabel:ClearAnchors()
             valueLabel:SetAnchor(TOPRIGHT,self.child,TOPRIGHT,0,y)
             local h=math.max(nameHeight,valueHeight)
-            y=y+h+6
+            y=y+h+ROW_GAP
         end
-        y=math.max(0,y-6)
+        y=math.max(0,y-ROW_GAP)
         return width
     end
     local width=layout(false)
@@ -188,6 +199,7 @@ function Instance:Show(owner,data)
     self:Hide()
     if not data then return end
     if data.kind=="item" then self:ShowItem(owner,data)
+    elseif data.kind=='table' then self:ShowBreakdowns(owner,{data},data)
     elseif data.kind=="breakdown" then self:ShowBreakdowns(owner,{data})
     elseif data.kind=="breakdowns" and #data.sections>0 then self:ShowBreakdowns(owner,data.sections)end
 end

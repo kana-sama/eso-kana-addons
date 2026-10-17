@@ -126,6 +126,37 @@ return {
    for _,b in ipairs(ui.clearGroupButtons)do assert(b.hidden)end
   end)
  end,
+ missing_equipment_hover_uses_a_titled_table_and_keeps_the_item_colors_and_slot_order=function()
+  withNative(function(_,_,put)
+   local k,r,s,inv,_,preview=setup();local shown,help=0,nil
+   preview.Show=function()shown=shown+1 end
+   local p=add(r,'Missing',{[EQUIP_SLOT_HEAD]={kind='item',uid='hat',link='|c3366FFLong item name|r'},
+    [EQUIP_SLOT_CHEST]={kind='item',uid='coat',link='Coat'}})
+   local ui=k.UI.New(r,s,preview,inv);ui.visible=true;ui:Refresh()
+   local left=false
+   ui.helpTooltips={Show=function(_,_,data)help=data end,Hide=function()end,Leave=function()left=true end}
+   put('MouseIsOver',function()return true end)
+   put('zo_callLater',function(fn,delay)if delay==60 then fn()end end)
+   put('InitializeTooltip',function()end);put('SetTooltipText',function()end)
+   ui:Hover(ui:FindRow(p.id),ui.rows[1])
+   assert(help and help.kind=='table' and help.title=='Not in the backpack or worn slots','missing gear needs a heading and real table cells')
+   assert(#help.rows==2 and help.rows[1].name=='Head' and help.rows[2].name=='Chest')
+   assert(help.rows[1].value=='|c3366FFLong item name|r' and shown==1,'preserve rarity colors and the normal preset preview')
+   ui:Leave();assert(left,'keep long missing-item tables scrollable when the mouse enters the tooltip')
+  end)
+ end,
+ multiline_help_separates_the_bold_title_from_the_description=function()
+  withNative(function(_,_,put)
+   local k,r,s,inv,_,preview=setup();s.view.name='Named preset'
+   local ui=k.UI.New(r,s,preview,inv);local lines,padding={},0
+   put('InformationTooltip',{AddLine=function(_,value,font)lines[#lines+1]={value=value,font=font}end,
+    AddVerticalPadding=function(_,height)padding=padding+height end})
+   put('InitializeTooltip',function()end);put('SetTooltipText',function()end)
+   ui.nameButton.handlers.OnMouseEnter()
+   assert(#lines==2 and lines[1].value=='Named preset' and lines[1].font=='ZoFontGameBold')
+   assert(lines[2].font=='ZoFontGame' and lines[2].value==k.Strings.EDIT_HELP and padding>0)
+  end)
+ end,
  bank_transfer_shows_actual_item_count_and_animates_while_waiting=function()
   withNative(function()
    local k,r,s,inv,_,preview=setup()
