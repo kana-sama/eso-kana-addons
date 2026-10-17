@@ -241,4 +241,21 @@ T.test('clearing native history cannot turn one empty line into the entire viewp
     assert(v:JumpTo(1));centered(a,v,1)
     assert(#v.eventControls>1);assert(v.markerControls[1]:GetHeight()<=v.measure:GetFontHeight()+1)
 end)
+T.test('native scroll sentinels are invisible while event labels and native scrolling remain usable',function()
+    local a,v=setup(100,{49})
+    local b=a.controls.buffer
+    for _,jump in ipairs({false,true}) do
+        if jump then assert(v:JumpTo(1));centered(a,v,1) end
+        assert(b:GetNumHistoryLines()>a.visible)
+        T.eq(b:GetMessageAlpha(),0)
+        assert(not b:IsHidden(),'the buffer must still receive mouse wheel input')
+        assert(not v.eventControls[1]:IsHidden());T.eq(v.eventControls[1]:GetAlpha(),1)
+        local position=b:GetScrollPosition()
+        b:GetHandler('OnMouseWheel')(b,-1)
+        T.eq(b:GetScrollPosition(),position-1)
+    end
+    a.fight={combatstart=0,log={{4,1}}};a.controls.panel:Update()
+    T.eq(b:GetMessageAlpha(),1)
+    assert(v.markerLayer:IsHidden());T.eq(a.nativeUpdates,1)
+end)
 T.finish()

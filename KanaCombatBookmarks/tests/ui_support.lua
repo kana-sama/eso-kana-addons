@@ -31,6 +31,8 @@ return function()
     function C:SetMouseEnabled(v) self.mouse=v end
     function C:SetAlpha(v) self.alpha=v end
     function C:GetAlpha() return self.alpha or 1 end
+    function C:SetLinesInheritAlpha(v) self.linesInheritAlpha=v end
+    function C:GetMessageAlpha() return self.linesInheritAlpha and self:GetAlpha() or 1 end
     function C:SetFont(v) self.font=v end
     function C:SetColor(...) self.color={...} end
     function C:SetCenterColor(...) self.centerColor={...} end

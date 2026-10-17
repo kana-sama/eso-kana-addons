@@ -203,6 +203,9 @@ function View:Layout(enabled)
     end
     -- The buffer supplies native scrolling only. Its nonempty sentinel messages
     -- must not be painted over the separately measured event/marker controls.
+    -- TextBuffer lines otherwise ignore SetAlpha. Restore CMX's default when
+    -- returning to a fight without bookmarks.
+    self.buffer:SetLinesInheritAlpha(enabled)
     self.buffer:SetAlpha(enabled and 0 or self.originalBufferAlpha)
     self.sidebar:SetHidden(not enabled)
     if not enabled then return end
