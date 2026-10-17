@@ -19,6 +19,59 @@ T.test('native scene opening captures the offer before its fragment unhides the 
  state='hiding';s:OnHiding();s:RefreshBuffs()
  assert(not c.offer);assert(button:IsHidden())
 end)
+T.test('cached markers survive native close and reopen before the scene fragment becomes visible',function()
+ local a=T.api();a.inside=true;a.started=true;local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD;local state='shown'
+ s.IsShowing=function()return state=='showing'or state=='shown'end
+ for _,b in ipairs(s.buffControls)do b.IsHidden=function(self)return self.hidden or s.control:IsHidden()end end
+ s.RefreshBuffs=function(self)for i,b in ipairs(self.buffControls)do b.abilityId=i;b:SetHidden(false)end end
+ s.OnShowing=function(self)self:RefreshBuffs()end
+ s.OnHiding=function(self)for _,b in ipairs(self.buffControls)do b.abilityId=nil;b:SetHidden(true)end end
+ local p=KanaArchiveAssist.Profiles.New({},'EU','one');p:GetActive().history={T.observation(1,1)};local c=C.Install(a,p)
+ s:OnShowing();for _=1,8 do c:Tick()end
+ local mark=c.view.marks[s.buffControls[1]];assert(mark and not mark:IsHidden(),'first shown offer must have a marker')
+ state='hiding';s:OnHiding();s.control:SetHidden(true);state='hidden';assert(mark:IsHidden())
+ state='showing';s:OnShowing();s.control:SetHidden(false);state='shown'
+ for _=1,8 do c:Tick()end
+ assert(not mark:IsHidden(),'cached marker was skipped while its parent scene was hidden')
+ T.eq(mark.abilityId,1);assert(not mark.textures[1]:IsHidden());T.eq(#p:GetActive().history,1)
+end)
+T.test('closing and reopening resumes the same unfinished fit and publishes its result',function()
+ local a=T.api();local p=KanaArchiveAssist.Profiles.New({},'EU','one');p:GetActive().history={T.observation(1,1)};local c=C.Install(a,p)
+ local offer=T.observation(2,1);offer.offerId='same';c:OnOfferChanged(offer);local job=c.fitJob;assert(job)
+ c:OnOfferChanged(nil);c:OnOfferChanged(offer);T.eq(c.fitJob,job)
+ for _=1,8 do c:Tick()end
+ assert(c.currentPrediction and c.currentPrediction.byId[1].grade~=nil)
+end)
+T.test('active profile models are prepared without an open selector and refreshed after a choice',function()
+ local a=T.api();local p=KanaArchiveAssist.Profiles.New({},'EU','one');local verse=T.observation(1,1);local vision=T.observation(2,1);vision.buffType=1
+ p:GetActive().history={verse,vision};local c=C.Install(a,p);local id=p:GetActive().id
+ for _=1,8 do c:Tick()end
+ assert(c.snapshots[id..':0']and c.snapshots[id..':1'],'both model types must be prepared before opening a selector')
+ assert(not c.offer and not c.currentPrediction)
+ a.inside=true;a.started=true;local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD;s:OnShowing();assert(not c.fitJob)
+ c:Tick();assert(c.currentPrediction and c.currentPrediction.byId[1].grade~=nil)
+ s.selectedBuffControl=s.buffControls[1];s:CommitChoice();a.ENDLESS_DUNGEON_MANAGER.callbacks.BuffStackCountChanged(0,1,1,0,false)
+ assert(not c.offer);for _=1,8 do c:Tick()end
+ T.eq(c.snapshots[id..':0'].historyRevision,2);assert(not c.currentPrediction)
+end)
+T.test('a fit finishing for the previous profile cannot publish into a profile with no history',function()
+ local a=T.api();local p=KanaArchiveAssist.Profiles.New({},'EU','one');p:GetActive().history={T.observation(1,1)};local c=C.Install(a,p)
+ local offer=T.observation(2,1);offer.offerId='old-profile';c:OnOfferChanged(offer)
+ p:Create('Other');c:OnProfileChanged();for _=1,8 do c:Tick()end
+ assert(not c.currentPrediction);assert(not next(c.view.marks))
+end)
+T.test('a failed background fit is retried only after new history arrives',function()
+ local K=KanaArchiveAssist;local original=K.ChoiceModel.NewFitJob;local limit=K.Config.maxFit;local fits=0
+ K.Config.maxFit=0;K.ChoiceModel.NewFitJob=function(...)fits=fits+1;return original(...)end
+ local ok,err=pcall(function()
+  local a=T.api();local p=K.Profiles.New({},'EU','one');p:GetActive().history={T.observation(1,1)};local c=C.Install(a,p)
+  for _=1,8 do c:Tick()end;T.eq(fits,1)
+  local offer=T.observation(2,1);offer.offerId='failed-fit';c:OnOfferChanged(offer)
+  assert(a.messages[#a.messages]:find('не сошлось',1,true));T.eq(fits,1)
+  c:OnObservation(T.observation(2,1));for _=1,8 do c:Tick()end;T.eq(fits,2)
+ end)
+ K.ChoiceModel.NewFitJob=original;K.Config.maxFit=limit;assert(ok,err)
+end)
 T.test('adapter captures full offer before confirmation and ignores hovering',function()
  local a=T.api();a.inside=true;a.started=true;local p=KanaArchiveAssist.Profiles.New({},'EU','one');local rows={}
  local r=KanaArchiveAssist.RunCapture.New(function(o)rows[#rows+1]=o end,function()return 100 end)

@@ -39,7 +39,7 @@ function V:Show(selector,offer,prediction,profileName,stats)
  self:Hide();self.selector,self.offer,self.profileName,self.stats=selector,offer,profileName,stats
  for _,buff in ipairs(selector.buffControls or {})do
   local item=prediction.byId[buff.abilityId];local grade=item and item.grade
-  if grade~=nil and not buff:IsHidden()then
+  if grade~=nil then
    local mark=self.marks[buff]or self:CreateMark(buff);mark.grade=grade;mark.stats=stats and stats.byId[buff.abilityId];mark.abilityId=buff.abilityId
    mark:SetHidden(false);mark:SetMouseEnabled(mark.stats~=nil and mark.stats.total>0)
    local color=grade>0 and colors.positive or grade<0 and colors.negative or colors.neutral
