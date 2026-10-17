@@ -171,10 +171,15 @@ function View:Layout(enabled)
     local rowFont = self.font .. 'soft-shadow-thin'
     self.title:SetFont(rowFont)
     self.title:SetText('Закладки')
-    self.measure:SetFont(rowFont)
-    local contentWidth = self.measure:GetStringWidth('Закладки')
-    for _, entry in ipairs(entries) do contentWidth = math.max(contentWidth, self.measure:GetStringWidth(entry.name)) end
-    self.measure:SetFont(self.font)
+    -- GetStringWidth returns native pixels; control dimensions need UI units.
+    -- Keep this label unconstrained, separate from the wrapped log measurer.
+    self.nameMeasure:SetFont(rowFont)
+    self.nameMeasure:SetText('Закладки')
+    local contentWidth = self.nameMeasure:GetTextWidth()
+    for _, entry in ipairs(entries) do
+        self.nameMeasure:SetText(entry.name)
+        contentWidth = math.max(contentWidth, self.nameMeasure:GetTextWidth())
+    end
     contentWidth = math.ceil(contentWidth + 4 * scale)
     local contentHeight = math.max(0, #entries * (rowHeight + gap) - gap)
     local scrollHeight = math.max(1, self.window:GetHeight() - rowHeight - gap)
@@ -188,7 +193,7 @@ function View:Layout(enabled)
             control:ClearAnchors()
             for _, anchor in ipairs(saved) do
                 local x, y = anchor[4] * scale / self.initialScale, anchor[5] * scale / self.initialScale
-                if enabled and anchor[1] == a.BOTTOMRIGHT then x = x - width - 8 * scale end
+                if enabled and anchor[1] == a.BOTTOMRIGHT then x = x - width end
                 control:SetAnchor(anchor[1], anchor[2], anchor[3], x, y)
             end
         end
@@ -201,9 +206,11 @@ function View:Layout(enabled)
     self.buffer:SetAlpha(enabled and 0 or self.originalBufferAlpha)
     self.sidebar:SetHidden(not enabled)
     if not enabled then return end
-    self.sidebar:SetAnchor(a.TOPLEFT, self.window, a.TOPRIGHT, 8 * scale, 0)
+    -- The native log window already reserves space after its scrollbar.
+    self.sidebar:SetAnchor(a.TOPLEFT, self.window, a.TOPRIGHT, 0, 0)
     self.sidebar:SetDimensions(width, self.window:GetHeight())
-    self.title:SetWidth(width)
+    self.title:SetAnchor(a.TOPLEFT, self.sidebar, a.TOPLEFT, 2 * scale, 0)
+    self.title:SetWidth(contentWidth - 4 * scale)
     self.scroll:SetAnchor(a.TOPLEFT, self.sidebar, a.TOPLEFT, 0, rowHeight + gap)
     self.scroll:SetDimensions(width, scrollHeight)
     local viewport = self.scroll:GetNamedChild('Scroll')
@@ -468,6 +475,8 @@ function View:Install()
     self.child:SetHandler('OnMouseWheel', function(_, delta) a.ZO_Scroll_OnMouseWheel(self.scroll, delta) end)
     self.measure = wm:CreateControl(nil, self.sidebar, a.CT_LABEL)
     self.measure:SetHidden(true)
+    self.nameMeasure = wm:CreateControl(nil, self.sidebar, a.CT_LABEL)
+    self.nameMeasure:SetHidden(true)
     self.markerLayer = wm:CreateControl('KanaCombatBookmarksMarkerLayer', window, a.CT_SCROLL)
     self.markerLayer:SetAnchorFill(buffer)
     self.markerLayer:SetMouseEnabled(false)

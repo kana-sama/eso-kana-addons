@@ -54,8 +54,9 @@ return function()
     function C:GetFontHeight() return tonumber((self.font or ''):match('|([%d.]+)|')) or 14 end
     function C:SetText(v) self.text=v end
     function C:GetText() return self.text end
-    function C:GetStringWidth(text) return #(text or '')*4*self:GetFontHeight()/14 end
-    function C:GetTextWidth() return self:GetStringWidth(self.text) end
+    local function textWidth(control,text) return #(text or '')*4*control:GetFontHeight()/14 end
+    function C:GetStringWidth(text) return textWidth(self,text)*(a.nativeTextScale or 1) end
+    function C:GetTextWidth() return textWidth(self,self.text) end
     function C:GetTextHeight()
         local lines=(self.text or ''):find('wrapped',1,true) and (self.width<300 and 4 or 3) or 1
         if (self.text or ''):find('\n') then lines=lines+1 end

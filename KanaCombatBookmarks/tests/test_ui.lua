@@ -159,16 +159,24 @@ T.test('log markers use solid gold bands with centered white labels and follow n
 end)
 T.test('sidebar fits the longest name or title and recalculates when names or scale change',function()
     local a,v=setup(10,{2,5})
+    -- ESO's native text pixels can differ from the UI units used by controls.
+    a.nativeTextScale=2
     for _,scale in ipairs({1,1.5}) do
         a.CMX.db.FightReport.scale=scale
         for _,name in ipairs({'Джинн','Сингулярность · 12','Око'}) do
             a.fight.kanaCombatBookmarks.entries[1].name=name
             a.controls.panel:Update();a:flush()
-            local expected=math.ceil(math.max(v.measure:GetStringWidth('Закладки'),v.measure:GetStringWidth(name),
-                v.measure:GetStringWidth('Кракен 2'))+4*scale)
+            local expected=math.ceil(math.max(v.title:GetTextWidth(),v.buttons[1].label:GetTextWidth(),
+                v.buttons[2].label:GetTextWidth())+4*scale)
             T.eq(v.sidebar:GetWidth(),expected);T.eq(v.buttons[1]:GetWidth(),expected)
             local _,_,_,_,x=a.controls.window:GetAnchor(1)
-            T.eq(x,-4*scale-expected-8*scale)
+            T.eq(x,-4*scale-expected)
+            local _,_,relative,_,sidebarX=v.sidebar:GetAnchor(0)
+            T.eq(relative,a.controls.window);T.eq(sidebarX,0)
+            local _,_,_,_,titleX=v.title:GetAnchor(0)
+            local _,_,_,_,labelX=v.buttons[1].label:GetAnchor(0)
+            T.eq(titleX,labelX)
+            T.eq(v.title:GetWidth(),v.buttons[1]:GetWidth()-2*labelX)
         end
     end
 end)
