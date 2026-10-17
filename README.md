@@ -30,6 +30,9 @@
 ## Combat Metrics <sup>[esoui](https://www.esoui.com/downloads/info1360-CombatMetrics.html)</sup>
 Анализ/логи боев, дпс-метр.
 
+### [KanaCombatBookmarks](KanaCombatBookmarks/README.md)
+Закладки биндом с запоминающимися именами, угловым уведомлением и щелчком. Переход к яркому разделителю в центре лога.
+
 ## Combat Metronome <sup>[esoui](https://www.esoui.com/downloads/info2373-CombatMetronomeGCDTracker.html)</sup>
 Рисует GCD шкалу с учетом пинга.
 

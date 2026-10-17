@@ -1,0 +1,14 @@
+## Title: KanaCombatBookmarks
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## Description: Named combat bookmarks, centered log navigation and click feedback for Combat Metrics.
+## DependsOn: CombatMetrics>=10708 CombatMetricsFightData>=22 LibCombat>=89
+
+Names.lua
+Model.lua
+Integration.lua
+LogView.lua
+KanaCombatBookmarks.lua
+Bindings.xml
