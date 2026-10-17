@@ -38,7 +38,15 @@ T.test('controller registers only kaa and suppresses stale result after profile 
  local controller=C.Install(a,p,nil,nil,view);assert(a.SLASH_COMMANDS['/kaa']);assert(not a.SLASH_COMMANDS['/kaa pause'])
  local o=T.observation(1,1);o.offerId='one';controller:OnOfferChanged(o)
  local token=controller.generation;p:Create('Other');controller:OnProfileChanged();assert(controller.generation>token);assert(not controller.currentPrediction)
- T.eq(#a.messages,2)
+ T.eq(#a.messages,3)
+end)
+T.test('profile announcements use one chat line on entry and profile changes without center-screen alerts',function()
+ local a=T.api();a.CENTER_SCREEN_ANNOUNCE.CreateMessageParams=function()error('profile must not create a center-screen alert')end
+ local p=KanaArchiveAssist.Profiles.New({},'EU','one');local c=C.Install(a,p)
+ a.inside=true;c.adapter:Presence();T.eq(#a.messages,1);assert(a.messages[1]:find('default',1,true))
+ c.adapter:Presence();T.eq(#a.messages,1)
+ p:Create('Танк');c:OnProfileChanged();T.eq(#a.messages,2);assert(a.messages[2]:find('Танк',1,true))
+ for _,message in ipairs(a.messages)do assert(message:find('/kaa',1,true));assert(not message:find('[\r\n]'))end
 end)
 T.test('completed choice ends offer lifecycle before identical later proposal',function()
  local a=T.api();a.inside=true;a.started=true;local time,stage=1000,1;a.GetTimeStamp=function()return time end;a.ENDLESS_DUNGEON_MANAGER.GetProgression=function()return stage,1,1 end

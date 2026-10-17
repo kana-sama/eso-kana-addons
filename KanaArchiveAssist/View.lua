@@ -136,9 +136,7 @@ function V:ShowTooltip(mark)
  tip:SetAnchor(a.TOPLEFT,a.GuiRoot,a.TOPLEFT,left,top);tip:SetHidden(false);tip:BringWindowToTop()
 end
 function V:AnnounceProfile(name)
- local a=self.api;local params=a.CENTER_SCREEN_ANNOUNCE:CreateMessageParams(a.CSA_CATEGORY_LARGE_TEXT)
- params:SetCSAType(a.CENTER_SCREEN_ANNOUNCE_TYPE_SYSTEM_BROADCAST);params:SetText('KanaArchiveAssist: профиль «'..name..'»','Профили: /kaa');params:SetLifespanMS(5000)
- a.CENTER_SCREEN_ANNOUNCE:AddMessageWithParams(params)
+ self.api.d('KAA: профиль «'..name..'» · /kaa')
 end
 function V:ReportUnavailable(_,_,reason)
  local text={insufficient_history='для этих перков ещё нет истории выбора.',calculating='модель ещё рассчитывается.',numerical_failure='расчёт не завершён; подсказки скрыты.',not_converged='обучение модели ещё не сошлось.'}
