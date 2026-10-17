@@ -252,27 +252,37 @@ function View:UpdateMarkers(force)
     local a, b = self.api, self.buffer
     local total, position = b:GetNumHistoryLines(), b:GetScrollPosition()
     local width, height = b:GetWidth(), b:GetHeight()
+    -- CMX's frame uses 2 of 16 texture pixels at edgeSize 8: one UI unit.
+    local bandLeft = self.panel:GetLeft() + 1
+    local textInset = b:GetLeft() - bandLeft
+    local bandRight = self.slider:GetLeft()
+    local bandWidth = math.max(0, bandRight - bandLeft)
     local lineHeight = self.slotHeight
     if not force and (self.renderWidth ~= width or self.renderHeight ~= height) then
         self:Render(self.jumpId and self.indices[self.jumpId])
         return
     end
     if not force and self.markerTotal == total and self.markerPosition == position
-        and self.markerWidth == width and self.markerHeight == height and self.markerLineHeight == lineHeight then return end
+        and self.markerWidth == width and self.markerHeight == height and self.markerLineHeight == lineHeight
+        and self.markerTextInset == textInset and self.markerBandWidth == bandWidth then return end
     self.markerTotal, self.markerPosition = total, position
     self.markerWidth, self.markerHeight, self.markerLineHeight = width, height, lineHeight
+    self.markerTextInset, self.markerBandWidth = textInset, bandWidth
+    -- Fill the text margins while clipping to the usable log area.
+    self.markerLayer:ClearAnchors()
+    self.markerLayer:SetAnchor(a.TOPLEFT, b, a.TOPLEFT, -textInset, 0)
+    self.markerLayer:SetDimensions(bandWidth, height)
     for i, marker in ipairs(self.renderedMarkers) do
         local band = self.markerControls[i]
         if not band then
-            band = a.WINDOW_MANAGER:CreateControl(nil, self.markerLayer, a.CT_BACKDROP)
+            -- Keep the fill outside Scroll's clipping group, alongside the
+            -- native scrollbar, so their draw layers can be ordered directly.
+            band = a.WINDOW_MANAGER:CreateControl(nil, self.window, a.CT_TEXTURE)
             band:SetMouseEnabled(false)
-            band:SetDrawLayer(a.DL_OVERLAY)
+            band:SetDrawLayer(a.DL_BACKGROUND)
             band:SetDrawLevel(1)
-            band:SetCenterColor(0.58, 0.38, 0.065, 1)
-            band:SetEdgeTexture('', 1, 1, 1)
-            band:SetEdgeColor(1, 0.78, 0.28, 1)
-            band.label = singleLineLabel(a, band)
-            band.label:SetAnchorFill(band)
+            band:SetColor(0.58, 0.38, 0.065, 1)
+            band.label = singleLineLabel(a, self.markerLayer)
             band.label:SetDrawLayer(a.DL_OVERLAY)
             band.label:SetDrawLevel(2)
             self.markerControls[i] = band
@@ -280,15 +290,26 @@ function View:UpdateMarkers(force)
         -- Every buffer message is one invisible slot. Visible text is drawn in
         -- measured labels, so native wrapping cannot shift a band onto an event.
         local y = height - (total - position - marker.span.before) * lineHeight
-        band:ClearAnchors()
-        band:SetAnchor(a.TOPLEFT, self.markerLayer, a.TOPLEFT, 0, y)
         local bandHeight = (marker.span.after - marker.span.before) * lineHeight
-        band:SetDimensions(width, bandHeight)
+        local top, bottom = math.max(0, y), math.min(height, y + bandHeight)
+        local hidden = bottom <= top
+        band:ClearAnchors()
+        band:SetAnchor(a.TOPLEFT, self.markerLayer, a.TOPLEFT, 0, top)
+        -- The flat fill is outside the clipping container, so clip its bounds
+        -- explicitly. The label retains its full row position inside it.
+        band:SetDimensions(bandWidth, math.max(0, bottom - top))
+        band.label:ClearAnchors()
+        band.label:SetAnchor(a.TOPLEFT, self.markerLayer, a.TOPLEFT, 0, y)
+        band.label:SetDimensions(bandWidth, bandHeight)
         band.label:SetFont(self.font)
         band.label:SetText(marker.entry.name)
-        band:SetHidden(y >= height or y + bandHeight <= 0)
+        band.label:SetHidden(hidden)
+        band:SetHidden(hidden)
     end
-    for i = #self.renderedMarkers + 1, #self.markerControls do self.markerControls[i]:SetHidden(true) end
+    for i = #self.renderedMarkers + 1, #self.markerControls do
+        self.markerControls[i]:SetHidden(true)
+        self.markerControls[i].label:SetHidden(true)
+    end
     local used = 0
     for _, event in ipairs(self.renderedEvents) do
         local y = height - (total - position - event.span.before) * lineHeight
@@ -302,7 +323,7 @@ function View:UpdateMarkers(force)
                 self.eventControls[used] = label
             end
             label:ClearAnchors()
-            label:SetAnchor(a.TOPLEFT, self.markerLayer, a.TOPLEFT, 0, y)
+            label:SetAnchor(a.TOPLEFT, self.markerLayer, a.TOPLEFT, textInset, y)
             label:SetDimensions(width, eventHeight)
             label:SetFont(self.font)
             label:SetColor(event.color[1], event.color[2], event.color[3], 1)
@@ -406,6 +427,7 @@ function View:Refresh()
     if not fight or #addon.Model.Entries(fight) == 0 then
         if self.active then self:Layout(false) end
         self.markerLayer:SetHidden(true)
+        for _, band in ipairs(self.markerControls) do band:SetHidden(true) end
         self.renderGeneration = (self.renderGeneration or 0) + 1
         self.active, self.fight, self.jumpId, self.page = false, nil, nil, 1
         return false

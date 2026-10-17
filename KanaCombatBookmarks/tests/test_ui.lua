@@ -103,10 +103,10 @@ T.test('layout settles before final measurement and stale deferred renders canno
     b.GetWidth=function()return width end
     a.controls.panel.width=600
     a.controls.panel:Update();v:JumpTo(1)
-    local initial=v.markerControls[1]:GetWidth()
+    local initial=v.eventControls[1]:GetWidth()
     width=240 -- ESO resolves anchors between frames.
     a:flush()
-    assert(v.markerControls[1]:GetWidth()~=initial,'separator still uses stale buffer width')
+    assert(v.eventControls[1]:GetWidth()~=initial,'event text still uses stale buffer width')
     centered(a,v,1)
     local nativeAnchor=a.controls.window.SetAnchor;local writes=0
     a.controls.window.SetAnchor=function(self,...)writes=writes+1;return nativeAnchor(self,...)end
@@ -144,10 +144,12 @@ T.test('log markers use solid gold bands with centered white labels and follow n
     local a,v=setup(100,{49});v:JumpTo(1)
     local band=assert(v.markerControls[1]);local b=a.controls.buffer
     T.eq(v.markerLayer.controlType,a.CT_SCROLL);T.eq(v.markerLayer.mouse,false)
-    T.eq(band.centerColor[1],0.58);T.eq(band.label.color[1],1);T.eq(band.label.color[2],1);T.eq(band.label.color[3],1)
+    T.eq(band.controlType,a.CT_TEXTURE) -- A flat fill has no border or inner inset.
+    T.eq(band.color[1],0.58);T.eq(band.label.color[1],1);T.eq(band.label.color[2],1);T.eq(band.label.color[3],1)
     T.eq(band.label:GetText(),'Кракен 1');T.eq(band.label.horizontalAlignment,a.TEXT_ALIGN_CENTER)
-    T.eq(band:GetWidth(),b:GetWidth());assert(not band:IsHidden());assert(not band.mouse)
-    local _,_,_,_,_,y=band:GetAnchor(0)
+    T.eq(band:GetWidth(),503)
+    assert(not band:IsHidden());assert(not band.mouse)
+    local _,_,_,_,x,y=band:GetAnchor(0);T.eq(x,0)
     assert(math.abs(y+band:GetHeight()/2-b:GetHeight()/2)<=v.measure:GetFontHeight()/2)
     b:GetHandler('OnMouseWheel')(b,1);v.markerLayer:GetHandler('OnUpdate')()
     local _,_,_,_,_,moved=band:GetAnchor(0);T.eq(moved-y,v.measure:GetFontHeight())
@@ -156,6 +158,54 @@ T.test('log markers use solid gold bands with centered white labels and follow n
     a.controls.window:SetHidden(true);T.eq(v.markerLayer:IsHidden(),true)
     a.controls.window:SetHidden(false);a.fight={combatstart=0,log={{4,1}}};a.controls.panel:Update()
     assert(v.markerLayer:IsHidden())
+end)
+T.test('bookmark fill ends at the left edge of the scrollbar at every report scale',function()
+    local a,v=setup(100,{49})
+    local panel,window,b=a.controls.panel,a.controls.window,a.controls.buffer
+    for _,scale in ipairs({0.75,1,1.31,2,1.5}) do
+        panel.left=100
+        b.left=100+4*scale;b.width=240*scale
+        window.left=b.left;window.width=b.width+12*scale
+        a.controls.slider.width=8*scale
+        panel.width=window.width+150
+        a.CMX.db.FightReport.scale=scale
+        panel:Update();a:flush();v:JumpTo(1)
+        local band=v.markerControls[1]
+        assert(math.abs(band:GetWidth()-(244*scale-1))<0.00001)
+        T.eq(v.markerLayer:GetWidth(),band:GetWidth())
+        local _,_,relative,_,offset=v.markerLayer:GetAnchor(0)
+        T.eq(relative,b);assert(math.abs(offset-(1-4*scale))<0.00001)
+        local left=b:GetLeft()+offset
+        T.eq(left,panel:GetLeft()+1)
+        assert(math.abs(left+band:GetWidth()-a.controls.slider:GetLeft())<0.00001)
+        T.eq(band:GetParent(),window)
+        T.eq(band.label:GetParent(),v.markerLayer)
+        T.eq(band.drawLayer,a.DL_BACKGROUND)
+        assert(not band.mouse and not v.markerLayer.mouse)
+        for _,label in ipairs(v.eventControls) do
+            if not label:IsHidden() then
+                local _,_,_,_,textOffset=label:GetAnchor(0)
+                assert(math.abs(textOffset-(4*scale-1))<0.00001);T.eq(label:GetWidth(),b:GetWidth())
+            end
+        end
+        local _,_,_,_,_,y=band:GetAnchor(0)
+        assert(math.abs(y+band:GetHeight()/2-b:GetHeight()/2)<=v.slotHeight/2+0.00001)
+    end
+    -- An outer edge can move without changing the text buffer dimensions.
+    panel.left=panel.left-3
+    v:UpdateMarkers()
+    T.eq(v.markerControls[1]:GetWidth(),368)
+    window.width=window.width-2
+    v:UpdateMarkers()
+    T.eq(v.markerControls[1]:GetWidth(),368)
+    a.controls.slider.width=a.controls.slider.width-2
+    v:UpdateMarkers()
+    T.eq(v.markerControls[1]:GetWidth(),368)
+    a.controls.slider.left=a.controls.slider:GetLeft()-2
+    v:UpdateMarkers()
+    T.eq(v.markerControls[1]:GetWidth(),366)
+    a.fight={combatstart=0,log={{4,1}}};panel:Update()
+    assert(v.markerControls[1]:IsHidden(),'detached fill survived the switch to an unmarked fight')
 end)
 T.test('sidebar fits the longest name or title and recalculates when names or scale change',function()
     local a,v=setup(10,{2,5})

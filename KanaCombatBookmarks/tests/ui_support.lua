@@ -51,6 +51,8 @@ return function()
     function C:SetHeight(v) self.height=v end
     function C:SetDimensions(w,h) self.width,self.height=w,h end
     function C:GetWidth() return self.width end
+    function C:GetLeft() return self.left or 0 end
+    function C:GetRight() return self:GetLeft()+self:GetWidth() end
     function C:GetHeight() if self.name and self.name:match('CombatLogWindowBuffer$') then return a.visible*14 end;if self.name and self.name:match('CombatLogWindow$') then return self.parent.height-28 end;return self.height end
     function C:SetResizeToFitDescendents(v) self.resizeToFit=v end
     function C:GetFontHeight() return tonumber((self.font or ''):match('|([%d.]+)|')) or 14 end
@@ -111,6 +113,7 @@ return function()
     a.CombatMetrics_Report=report
     report.Update=function()end
     local panel=new('CombatMetrics_Report_MainPanelCombatLog',report)
+    panel.left=-4 -- The native text area starts four UI units inside its frame.
     a.CombatMetrics_Report_MainPanelCombatLog=panel
     local header=child(panel,'Header');local pages=child(header,'PageButtonRow')
     panel.children.HeaderPageButtonRow=pages
@@ -122,6 +125,8 @@ return function()
         c:SetHandler('OnMouseUp',function()a.nativeNavigation=(a.nativeNavigation or 0)+1 end)
     end
     local window=child(panel,'Window');local buffer=child(window,'Buffer');local slider=child(window,'Slider')
+    slider.width=8
+    function slider:GetLeft() return self.left or buffer:GetRight() end
     local copy=child(panel,'CopyPasteBox');copy.hidden=true
     child(panel,'Sep')
     local copyButton=child(header,'CopyPaste');panel.children.HeaderFilterButtonRowCopyPaste=copyButton
