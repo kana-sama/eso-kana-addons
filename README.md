@@ -67,8 +67,8 @@
 ## Harven's Improved Skills Window <sup>[esoui](https://www.esoui.com/downloads/info489-HarvensImprovedSkillsWindow.html)</sup>
 Позволяет видеть все морфы на панели навыков.
 
-### KanaSkillTranslations
-Добавляет английские названия морфов через NameLanguageNinja.
+### [Kana Harven's Improved Skills Window: translations](KanaSkillTranslations/README.md)
+Показывает переводы названий и описаний навыков в подсказках сравнения морфов.
 
 ## HarvestMap <sup>[esoui](https://www.esoui.com/downloads/info57-HarvestMap.html)</sup>
 Метки известных точек спавна ресурсов на карте и в мире. Так же стоит поставить [HarvestMap-Data](https://www.esoui.com/downloads/info3034-HarvestMap-Data.html) в котором уже база данных меток. ESO Addon Manager умеет эти данные обновлять.
@@ -85,11 +85,14 @@
 ## Reminderz <sup>[esoui](https://www.esoui.com/downloads/info3248-Reminderz-Onscreenremindersforfood....html)</sup>
 Кричит что забыл поесть, показывает в чатике прогресс достижений.
 
+### [Kana Reminderz: progress filter](KanaReminderz/README.md)
+Показывает прогресс только последней ступени серии достижений.
+
 ## SkillExp <sup>[esoui](https://www.esoui.com/downloads/info4445-SkillExp.html)</sup>
 Трекер прокачки навыков.
 
-### KanaSkillExp
-Позволяет указывать в контекстном меню какие конкретные навыки я хочу трекать.
+### [Kana SkillExp: manual tracker](KanaSkillExp/README.md)
+Позволяет выбирать навыки для отслеживания через контекстное меню.
 
 ## Rare Fish Tracker <sup>[esoui](https://www.esoui.com/downloads/info665-RareFishTracker.html)</sup>
 Показывает каких рыбов осталось словить в локации на ачивку. KanaZoneGoals использует данные отсюда.
@@ -103,8 +106,8 @@
 ## Tamriel Trade Centre <sup>[esoui](https://www.esoui.com/downloads/info1245-TamrielTradeCentre.html)</sup>
 Показывает аукционные цены.
 
-### KanaTTC
-Отдельная компактная таблица в тултипе: нижняя рекомендованная цена, средняя цена продажи, число продаж и предложений. Не зависит от настроек TTC. Цены сокращаются до тысяч, счётчики остаются полными.
+### [Kana Tamriel Trade Centre: price summary](KanaTTC/README.md)
+Показывает компактную таблицу цен и продаж в подсказке предмета.
 
 ## The Questing Guide
 Показывает список сюжетных квестов по дополнениям. Используется как зависимость в ряде аддонов.
@@ -192,17 +195,17 @@
 ## Kana Dialogue: slow text
 Плавно раскрывает текст реплик в диалогах ESO.
 
-## KanaWardrobe
-Переключение пресетов шмоток+аттрибутов+навыков.
+## [Kana Wardrobe](KanaWardrobe/README.md)
+Управляет пресетами экипировки, навыков, атрибутов и внешнего вида.
 
-## KanaStatSources
-Таблица источников основных характеристик в штатных тултипах. Показывает рейтинг и формулу критического шанса, добавляет «Неизвестно» для остатка. `/kanastats dump` сохраняет данные персонажа для анализа.
+## [Kana Stat Sources](KanaStatSources/README.md)
+Показывает источники характеристик персонажа.
 
-## KanaWritRecipes
-Помечает рецепты, нужные для дейиков.
+## [Kana Trifecta Tracker](KanaTrifecta/README.md)
+Показывает время, смерти группы и боссов при попытке трифекты.
 
-## KanaZoneGoals
-Добавляет кучу новых целей на карте.
+## [Kana Daily Writ Recipes](KanaWritRecipes/README.md)
+Помечает рецепты для ежедневных заказов снабжения.
 
-## KanaWaypointBeam
-Рисует луч света там где метка.
+## [Kana Zone Completion](KanaZoneGoals/README.md)
+Добавляет на карту дополнительные цели для исследования области.

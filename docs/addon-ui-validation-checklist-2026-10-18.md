@@ -1,32 +1,22 @@
-# Игровая проверка интерфейса после аудита аддонов
+# Проверка изменений в ESO
 
-По одному короткому пункту на изменённый интерфейс. Передать пользователю в конце задачи.
+Только то, что изменило поведение или точку управления аддоном при этом аудите.
 
-- [ ] Kana Dialogue: slow text — проверить контекстное меню в диалогах.
-- [ ] Kana AetherChat Patch — проверить собственные переключатели и работу чата.
-- [ ] Kana Archive Helper: achievement hints — проверить значки, подсказки и их переключатели.
-- [ ] Kana Archive Assist — проверить профили и историю в настройках.
-- [ ] Kana Blade of Woe: no protection — проверить название и переключатель в настройках.
-- [ ] Kana HUD: Arcanist — проверить индикатор Знаков у прицела.
-- [ ] Kana HUD: Dragonknight — проверить индикаторы у прицела.
-- [ ] Kana HUD: Werewolf — проверить панель и её перетаскивание.
-- [ ] Kana World Map Colors — проверить цвета на карте мира.
-- [ ] Kana CombatMetrics: bookmarks — проверить закладки и переключатели в настройках.
-- [ ] Kana CombatMetronome: radial cooldown — проверить кольцо и его собственные настройки.
-- [ ] Kana Cooldown Panel — проверить панель таймеров.
-- [ ] Kana Craftable Set Collection — проверить крафтовые сеты в коллекции.
-- [ ] Kana CurrentlyEquipped: visibility fix — проверить переключатель и показ панели в инвентаре.
-- [ ] Kana Effects — проверить открытие редактора кнопкой в настройках.
-- [ ] Kana Enemy Markers — проверить стрелки над врагами.
-- [ ] Kana Widgets — проверить контекстное меню панели и кнопку редактора в настройках.
-- [ ] Kana Treasure Launder Guard — проверить подтверждение отмывания сокровища.
-- [ ] Kana Lazy Set Crafter: auto hide — проверить автоскрытие, кнопку у станка и оба переключателя.
-- [ ] Kana LeadList: search tools — проверить фильтры, список и отдельные переключатели надстройки.
-- [ ] Kana Litany of Blood — проверить зачёркивание целей в книге.
-- [ ] Kana Dialogue: no repeat — проверить отсутствие кнопки «Повторить».
-- [ ] Kana Outfit Sets — проверить категорию сетов в коллекции.
-- [ ] Kana Player Ping — проверить кольца вокруг значка на карте.
-- [ ] Kana QuestMap: quest details — проверить подсказки, метки, журнал и отдельные переключатели.
-- [ ] Kana LibQuestData: quest fixes — проверить три переключателя и точки заданий на карте.
-- [ ] KanaReadBook — проверить, что аддон и команда `/readbook` исчезли.
-- [ ] Kana Season One Travel — проверить вкладку карты и отсутствие `/kstdebug`.
+- [ ] Kana Dialogue: slow text — контекстное меню в диалоге.
+- [ ] Kana AetherChat Patch — переключатели надстройки и работа чата.
+- [ ] Kana Archive Helper: achievement hints — подсказки достижений и их переключатели.
+- [ ] Kana Archive Assist — кнопка в настройках открывает прежнее окно профилей и истории.
+- [ ] Kana HUD: Arcanist / Dragonknight / Werewolf — индикаторы после разделения аддона; панель вервольфа перетаскивается.
+- [ ] Kana World Map Colors — карта раскрашивается при включённом аддоне без `/kcm`.
+- [ ] Kana CombatMetrics: bookmarks — закладки и новые переключатели надстройки.
+- [ ] Kana CombatMetronome: radial cooldown — кольцо и его перенесённые настройки.
+- [ ] Kana CurrentlyEquipped: visibility fix — показ панели в инвентаре и переключатель надстройки.
+- [ ] Kana Effects — редактор открывается из настроек без `/ke`.
+- [ ] Kana Lazy Set Crafter: auto hide — автоскрытие, кнопка у станка и переключатели.
+- [ ] Kana LeadList: search tools — фильтры и переключатели надстройки.
+- [ ] Kana QuestMap: quest details / Kana LibQuestData: quest fixes — метки заданий и новые переключатели обеих надстроек.
+- [ ] Kana SkillExp: manual tracker — выбор навыков в контекстном меню и собственные переключатели.
+- [ ] Kana Harven's Improved Skills Window: translations / Kana Tamriel Trade Centre: price summary — подсказки и переключатели обеих надстроек.
+- [ ] Kana Trifecta Tracker — управление временем боссов и диагностикой в настройках вместо `/ktri`.
+- [ ] Kana Wardrobe — диагностика в настройках вместо команд `/kw`.
+- [ ] Kana Reminderz: progress filter — фильтр прогресса и его переключатель.

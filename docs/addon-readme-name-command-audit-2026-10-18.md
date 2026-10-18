@@ -22,7 +22,7 @@
 
 ## Инвентаризация
 
-Обнаружено 42 папки с основным манифестом `.addon` или `.txt` после разделения KanaAuras на три аддона. `KanaReminderz` сейчас создаётся параллельно; не трогать его незавершённые файлы до стабилизации. `[ ]` означает, что полный цикл не завершён.
+Обнаружено 42 папки с основным манифестом `.addon` или `.txt` после разделения KanaAuras на три аддона. `[ ]` означает, что полный цикл не завершён.
 
 - [x] KanaAetherChat
 - [x] KanaArchiveAchievements
@@ -54,18 +54,18 @@
 - [x] KanaQuestMap
 - [x] KanaQuestZoneFix
 - [x] KanaReadBook (удалён по прямому запросу)
-- [ ] KanaReminderz (дождаться окончания параллельной разработки)
+- [x] KanaReminderz
 - [x] KanaSeasonOneTravel
-- [ ] KanaSkillExp
-- [ ] KanaSkillTranslations
+- [x] KanaSkillExp
+- [x] KanaSkillTranslations
 - [x] KanaSlowAddon (пилот)
-- [ ] KanaStatSources
-- [ ] KanaTTC
-- [ ] KanaTrifecta
-- [ ] KanaWardrobe
-- [ ] KanaWaypointBeam
-- [ ] KanaWritRecipes
-- [ ] KanaZoneGoals
+- [x] KanaStatSources
+- [x] KanaTTC
+- [x] KanaTrifecta
+- [x] KanaWardrobe
+- [x] KanaWaypointBeam (удалён по прямому запросу)
+- [x] KanaWritRecipes
+- [x] KanaZoneGoals
 
 ## Прогресс
 
@@ -74,7 +74,7 @@
 - [x] Получены ответы по README, имени и команде пилота через встроенный UI.
 - [x] Пилот реализован; локально прошли 5 поведенческих сценариев, синтаксис 5 Lua-файлов и проверка пробелов в diff.
 - [ ] Пользователь проверил пилот в клиенте ESO по общему UI-чек-листу и оценил флоу вопросов.
-- [ ] Остальные аддоны обработаны пакетами.
+- [x] Остальные аддоны обработаны пакетами.
 
 ### Отправленный пилотный пакет вопросов
 
@@ -167,3 +167,26 @@ README: «В диалоговом окне ESO текст реплик появ�
 - `KanaSeasonOneTravel`: пользователь выбрал **Kana Season One Travel** и попросил удалить единственную диагностическую `/kstdebug`. README кратко описывает вкладку карты, прогресс и переход к святилищам. Прежняя `KanaSeasonOneTravelSaved` и её схема не изменены.
 
 Локальные тесты QuestMap (Lua и Python), KanaQuestZoneFix (с установленными библиотеками в отдельном временном окружении) и KanaSeasonOneTravel прошли; синтаксис изменённых Lua-файлов проверен. Отрисовка и взаимодействия остаются в коротком общем игровом чек-листе.
+
+## Пакеты 8–10: утверждённые решения
+
+- `KanaSkillExp` — **Kana SkillExp: manual tracker**, синим **SkillExp**. Короткий README перечисляет ручной выбор навыков, ручной режим и фон штатной полосы. В собственной панели три переключателя. Прежний `KanaSkillExp_Data`, версия 1 и данные выбора сохранены; `/skillexp` принадлежит оригиналу.
+- `KanaSkillTranslations` — **Kana Harven's Improved Skills Window: translations**, синим точное имя оригинала. README перечисляет переводы морфов и языки Name Language Ninja. Диагностическая `/kst` удалена, собственная правка отключается отдельным чекбоксом; новая account-wide `KanaSkillTranslationsSaved` версии 1.
+- `KanaStatSources` — **Kana Stat Sources**. README одной фразой сообщает об источниках характеристик; `/kanastats dump` оставлена по выбору пользователя. Прежний `KanaStatSourcesSaved` не переименован.
+- `KanaTTC` — **Kana Tamriel Trade Centre: price summary**, синим полное имя **Tamriel Trade Centre**. README пунктами сообщает о компактной таблице цен и возможности отключить её независимо от TTC. У надстройки собственный чекбокс в новой account-wide `KanaTTCSaved` версии 1; команд нет.
+- `KanaTrifecta` — **Kana Trifecta Tracker**. README одной фразой описывает попытку трифекты. `/ktri` удалена: показ времени боссов и диагностические действия перенесены в собственные настройки. Существующие SavedVariables и ключ `showBossKillTimes` не менялись.
+- `KanaWardrobe` — **Kana Wardrobe**. README кратко описывает пресеты билда. Окно операции и отчёт доступны из интерфейса пресетов; статус, производительность и возможности API — кнопками собственных настроек. `/kw operation`, `operation report`, `status`, `perf`, `capabilities` удалены; `/kw probe …` оставлена для разработческих проверок. `KanaWardrobeSaved` и структура не менялись.
+- `KanaWaypointBeam` пользователь попросил удалить целиком. Папка удалена; команд и SavedVariables не было.
+- `KanaWritRecipes` — **Kana Daily Writ Recipes**. Краткий README о рецептах ежедневных заказов. Команд и SavedVariables нет.
+- `KanaZoneGoals` — **Kana Zone Completion**. Краткий README о дополнительных целях области. `/kzg` удалена, настройки остаются в меню дополнений. Прежний `KanaZoneGoalsSavedVariables` сохранён.
+
+Предыдущие подробные README перенесены в `DEVELOPMENT.md`. Названия каталогов и технические идентификаторы аддонов не менялись. Для новых панелей/переключателей требуется проверка в клиенте ESO по общему короткому чек-листу.
+
+## Последняя надстройка: Reminderz
+
+- `KanaReminderz`: пользователь выбрал **Kana Reminderz: progress filter**, синим **Reminderz**. README кратким списком описывает фильтр прогресса последней ступени серии и возможность отключить его отдельно от Reminderz. Собственных команд нет. Единственная собственная правка уже управляется чекбоксом в панели надстройки. Сохранено имя account-wide файла `KanaReminderzOptions` и версия 1; прежний ключ `onlyCurrentTier` переносится в `onlyHighestTier` с сохранением явного `false`.
+- Локальный поведенческий тест на Lua 5.4 и синтаксис прошли. Раннер Lua 5.1 требует отсутствующую в окружении библиотеку `lupa`; фактическую работу в ESO подтвердить по игровому чек-листу.
+
+## Исправление UX Archive Assist
+
+Пользователь отверг редактор профилей внутри LibAddonMenu и попросил вернуть прежнее оформленное окно, открываемое из настроек. Восстановлен `ProfileWindow.lua`; в панели настроек оставлена одна кнопка «Открыть профили и историю». Команда `/kaa` не возвращается. Хранение профилей и истории остаётся в прежнем `KanaArchiveAssistSaved`.
