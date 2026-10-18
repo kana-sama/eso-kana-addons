@@ -24,7 +24,7 @@ function K:ResetLabels()
 end
 
 function K:UpdateLabels(worldManager)
-    if not self.saved or not self.saved.enabled or not self.activeManager
+    if not self.activeManager
         or GetCurrentMapId() ~= TAMRIEL_MAP_ID then
         self:ResetLabels()
         return
@@ -90,7 +90,7 @@ end
 
 function K:Apply(manager)
     self:Reset()
-    if not self.saved or not self.saved.enabled or not manager or not KanaColorMapData
+    if not manager or not KanaColorMapData
         or GetCurrentMapId() ~= TAMRIEL_MAP_ID then return end
     local columns, rows = GetMapNumTiles()
     if columns ~= 4 or rows ~= 4 then return end
@@ -161,20 +161,6 @@ function K:Refresh()
     end
 end
 
-function K:Command(text)
-    local command = (text or ""):lower():match("^%s*(.-)%s*$")
-    if command == "on" or command == "off" then
-        self.saved.enabled = command == "on"
-        self:Refresh()
-    elseif command ~= "" and command ~= "status" then
-        d("KanaColorMap: /kcm on | off | status")
-        return
-    end
-    d("KanaColorMap: " .. (self.saved.enabled and "включено" or "выключено")
-        .. "; цветных зон: " .. tostring(self.visibleZones or 0)
-        .. "; названий: " .. tostring(self.visibleNames or 0))
-end
-
 local function OnLoaded(_, addonName)
     if addonName ~= NAME or K.initialized then return end
     K.initialized = true
@@ -192,7 +178,6 @@ local function OnLoaded(_, addonName)
             K:UpdateLabels(manager)
         end)
     end
-    SLASH_COMMANDS["/kcm"] = function(text) K:Command(text) end
     K:Refresh()
 end
 

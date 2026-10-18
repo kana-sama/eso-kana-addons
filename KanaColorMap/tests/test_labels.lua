@@ -19,7 +19,7 @@ EVENT_MANAGER = {
     RegisterForEvent=function(_, _, _, callback) init=callback end,
     UnregisterForEvent=function() end,
 }
-ZO_SavedVars = {NewAccountWide=function() return {enabled=true} end}
+ZO_SavedVars = {NewAccountWide=function() return {enabled=false} end}
 function ZO_PostHook(target, method, callback)
     local original = target[method]
     target[method] = function(self, ...)

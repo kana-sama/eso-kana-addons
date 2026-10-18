@@ -10,8 +10,11 @@ EVENT_MANAGER = {
  RegisterForEvent=function(_,name,_,fn) events[name]=fn end,
  UnregisterForEvent=function(_,name) events[name]=nil end,
 }
-local saved = {enabled=true}
-ZO_SavedVars = {NewAccountWide=function() return saved end}
+local saved = {enabled=false}
+ZO_SavedVars = {NewAccountWide=function(_,name,version,namespace)
+ assert(name=='KanaColorMapSV' and version==1 and namespace==nil)
+ return saved
+end}
 function GetCurrentMapId() return currentMap end
 function GetMapNumTiles() return columns, rows end
 function GetMapTileTexture(i)
@@ -109,6 +112,8 @@ local function assertRestored()
  for _,c in ipairs(created) do assert(c.hidden,'no region overlay on a detailed map/disabled addon') end
 end
 assertNativeBackground()
+assert(not SLASH_COMMANDS['/kcm'],'the addon must not add a slash command')
+assert(saved.enabled==false,'legacy saved values are retained without controlling visibility')
 assert(#created==2,'only real exported and currently recognized zones may be colored')
 for i,z in ipairs(KanaColorMapData.zones) do
  local c=created[i]
@@ -124,8 +129,8 @@ manager:LayoutTiles()
 assert(created[1].w==KanaColorMapData.zones[1].width*1200,'resize region with native map')
 currentMap=61;manager:UpdateTextures();assertRestored()
 currentMap=27;manager:UpdateTextures();assertNativeBackground()
-SLASH_COMMANDS['/kcm']('off');assert(saved.enabled==false);assertRestored()
-SLASH_COMMANDS['/kcm']('on');assertNativeBackground()
+KanaColorMap:Reset();assertRestored()
+KanaColorMap:Refresh();assertNativeBackground()
 columns,rows=2,2;manager:UpdateTextures();assertRestored()
 columns,rows=4,4;foreignTile=16;manager:UpdateTextures();assertRestored()
 foreignTile=nil;changedBlob=667;manager:UpdateTextures();assertNativeBackground()
@@ -135,13 +140,13 @@ for i=1,16 do tiles[i].texture=GetMapTileTexture(i) end
 tiles[16].texture='OtherMap/override.dds'
 KanaColorMap:Apply(manager)
 for _,c in ipairs(created) do assert(c.hidden) end
-WORLD_MAP_TILES_MANAGER=nil;SLASH_COMMANDS['/kcm']('off');assert(saved.enabled==false)
-WORLD_MAP_TILES_MANAGER=manager;manager:UpdateTextures();assertRestored()
-SLASH_COMMANDS['/kcm']('status');assert(#messages>0)
+manager:UpdateTextures()
+WORLD_MAP_TILES_MANAGER=nil;KanaColorMap:Refresh();assertRestored()
+WORLD_MAP_TILES_MANAGER=manager;manager:UpdateTextures();assertNativeBackground()
 dofile(root..'/Zones.lua')
 -- A fresh activation using the real dataset, independent of the two-zone fixture.
-KanaColorMap.overlays={}
-SLASH_COMMANDS['/kcm']('on')
+KanaColorMap:Reset();KanaColorMap.overlays={}
+KanaColorMap:Refresh()
 assert(KanaColorMap.overlays[7] and not KanaColorMap.overlays[7].control.hidden,
  'Stonefalls must use the mainland probe confirmed by the live client')
 assert(KanaColorMap.visibleZones==#KanaColorMapData.zones,'all packaged zones must pass validation')
@@ -163,5 +168,5 @@ end
 changedBlob=1887;manager:UpdateTextures()
 assert(KanaColorMap.overlays[1887].border.hidden,'hide border when zone validation fails')
 changedBlob=nil;manager:UpdateTextures()
-SLASH_COMMANDS['/kcm']('off');assertRestored()
-print('PASS: original parchment background, native zone masks, region layout, map isolation, restore/toggle, compatibility')
+KanaColorMap:Reset();assertRestored()
+print('PASS: original parchment background, native zone masks, region layout, map isolation, restore, compatibility')
