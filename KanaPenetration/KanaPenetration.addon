@@ -1,0 +1,14 @@
+## Title: |cFF0000Kana|r Armor Penetration Bar
+## Author: Kana
+## Description: Estimated personal penetration versus current PvE target resistance.
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101051
+## SavedVariables: KanaPenetrationSV
+## DependsOn: LibAddonMenu-2.0
+
+Model.lua
+Observer.lua
+View.lua
+Settings.lua
+Core.lua
