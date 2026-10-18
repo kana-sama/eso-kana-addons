@@ -4,7 +4,7 @@
 ; States and/or other countries. All rights reserved.
 ; You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
 
-## Title: Kana Audible Fish Bite
+## Title: |cFF0000Kana|r |cFFFFFFFishing Bite Alert|r
 ## APIVersion: 101048 101049 101050
 ## Version: 1.0.1
 ## SavedVariables: KanaAudibleFishBite_Settings
