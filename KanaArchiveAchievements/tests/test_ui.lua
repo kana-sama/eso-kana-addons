@@ -9,14 +9,23 @@ local function test(name,fn)
     local ok,error=pcall(fn)
     if ok then passed=passed+1 else failed=failed+1;print('FAIL: '..name..': '..tostring(error)) end
 end
-local function fixture()
+local function fixture(settings)
     local a,c,e=S.New();local v=KanaArchiveAchievements.View.New(a)
     a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD=a:Selector('Keyboard')
     a.ENDLESS_DUNGEON_BUFF_SELECTOR_GAMEPAD=a:Selector('Gamepad');a.ENDLESS_DUNGEON_BUFF_SELECTOR_GAMEPAD.control:SetHidden(true)
     local model={GetGoals=function(_,id)if id==1 then return {101,102,103} elseif id==2 then return {102} else return {} end end}
-    local controller=KanaArchiveAchievements.Controller.Install(a,model,v)
+    local controller=KanaArchiveAchievements.Controller.Install(a,model,v,settings)
     return a,v,a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD,controller,e
 end
+test('achievement markers and tooltips can be disabled independently',function()
+    local a,v,s=fixture({indicators=false,tooltips=true})
+    s:OnShowing();s:SelectBuff(s.buffControls[1])
+    assert(s.buffControls[1].kanaArchiveIndicator==nil and #a.nativeInstances==3)
+
+    a,v,s=fixture({indicators=true,tooltips=false})
+    s:OnShowing();s:SelectBuff(s.buffControls[1])
+    assert(s.buffControls[1].kanaArchiveIndicator and #a.nativeInstances==0 and v.root:IsHidden())
+end)
 test('complete native goal instances own independent pools',function()
     local a,v,s=fixture();s:OnShowing();s:SelectBuff(s.buffControls[1])
     assert(#a.nativeInstances==3 and a.nativeInstances[1].id==101 and a.nativeInstances[3].id==103)
@@ -159,6 +168,13 @@ test('UI settings reflow a hidden tooltip area',function()
 end)
 test('bootstrap ignores other addons and installs exactly once',function()
     local a,c,e=S.New();KanaArchiveAchievements.controller=nil
+    local saved
+    a.ZO_SavedVars={NewAccountWide=function(_,name,version,scope,defaults)
+        assert(name=='KanaArchiveAchievementsSavedVariables' and version==1 and scope==nil)
+        saved=saved or defaults
+        return saved
+    end}
+    a.LibAddonMenu2={RegisterAddonPanel=function()end,RegisterOptionControls=function(_,_,options)a.options=options end}
     a.ArchiveHelper={ABILITIES={},GENERAL={},AVATAR={},CLASSES={}}
     a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD=a:Selector('Keyboard');a.ENDLESS_DUNGEON_BUFF_SELECTOR_GAMEPAD=a:Selector('Gamepad')
     S.Load('KanaArchiveAchievements/KanaArchiveAchievements.lua',a)
@@ -166,6 +182,8 @@ test('bootstrap ignores other addons and installs exactly once',function()
     callback(a.EVENT_ADD_ON_LOADED,'OtherAddon');assert(KanaArchiveAchievements.controller==nil)
     callback(a.EVENT_ADD_ON_LOADED,'KanaArchiveAchievements');local first=KanaArchiveAchievements.controller
     assert(first and e[a.EVENT_ADD_ON_LOADED]==nil)
+    assert(#a.options==2 and a.options[1].getFunc() and a.options[2].getFunc())
+    a.options[1].setFunc(false);assert(not saved.indicators and saved.tooltips)
     callback(a.EVENT_ADD_ON_LOADED,'KanaArchiveAchievements');assert(KanaArchiveAchievements.controller==first)
     a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD:OnShowing();assert(a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD.calls.OnShowing==1)
     KanaArchiveAchievements.controller=nil

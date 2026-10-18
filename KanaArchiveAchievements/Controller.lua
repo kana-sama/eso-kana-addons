@@ -2,12 +2,14 @@ local K = KanaArchiveAchievements
 local C = {}
 K.Controller = C
 
-function C.Install(api, model, view)
-    local self = setmetatable({api = api, model = model, view = view}, {__index = C})
+function C.Install(api, model, view, settings)
+    local self = setmetatable({api = api, model = model, view = view, settings = settings or {
+        indicators = true, tooltips = true,
+    }}, {__index = C})
     for _, selector in ipairs({api.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD, api.ENDLESS_DUNGEON_BUFF_SELECTOR_GAMEPAD}) do
         api.SecurePostHook(selector, 'OnShowing', function(object)
             self.active = object
-            view:UpdateIndicators(object, model)
+            if self.settings.indicators then view:UpdateIndicators(object, model) end
             if object.selectedBuffControl then self:Highlight(object, object.selectedBuffControl) end
         end)
         api.SecurePostHook(selector, 'SelectBuff', function(object, buff) self:Highlight(object, buff) end)
@@ -15,7 +17,7 @@ function C.Install(api, model, view)
             if self.active ~= object then return end
             self.abilityId, self.bucketType = nil, nil
             view:Hide()
-            view:UpdateIndicators(object, model)
+            if self.settings.indicators then view:UpdateIndicators(object, model) end
             if api.IsInGamepadPreferredMode() and object.selectedBuffControl then self:Highlight(object, object.selectedBuffControl) end
         end)
         api.SecurePostHook(selector, 'SetIsRerolling', function(object, rerolling)
@@ -30,8 +32,10 @@ function C.Install(api, model, view)
     local function refresh()
         local selector = self.active
         if not selector or selector.control:IsHidden() or selector.isRerolling then return end
-        view:UpdateIndicators(selector, model)
-        if self.abilityId then view:Show(selector, model:GetGoals(self.abilityId, self.bucketType), false) end
+        if self.settings.indicators then view:UpdateIndicators(selector, model) end
+        if self.settings.tooltips and self.abilityId then
+            view:Show(selector, model:GetGoals(self.abilityId, self.bucketType), false)
+        end
     end
     api.EVENT_MANAGER:RegisterForEvent('KanaArchiveAchievements', api.EVENT_ACHIEVEMENT_UPDATED, refresh)
     api.EVENT_MANAGER:RegisterForEvent('KanaArchiveAchievements', api.EVENT_ACHIEVEMENT_AWARDED, refresh)
@@ -47,7 +51,9 @@ function C:Highlight(selector, buff)
     if not buff or selector.control:IsHidden() or selector.isRerolling then return end
     local changed = self.active ~= selector or self.abilityId ~= buff.abilityId or self.bucketType ~= buff.bucketType
     self.active, self.abilityId, self.bucketType = selector, buff.abilityId, buff.bucketType
-    self.view:Show(selector, self.model:GetGoals(buff.abilityId, buff.bucketType), changed)
+    if self.settings.tooltips then
+        self.view:Show(selector, self.model:GetGoals(buff.abilityId, buff.bucketType), changed)
+    end
 end
 
 function C:Clear(selector)

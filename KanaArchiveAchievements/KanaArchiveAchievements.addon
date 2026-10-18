@@ -1,10 +1,11 @@
-## Title: KanaArchiveAchievements
+## Title: |cFF0000Kana|r |c4488FFArchive Helper|r: |cFFFFFFachievement hints|r
 ## Author: Kana
 ## Version: 1.0.0
 ## AddOnVersion: 10000
 ## APIVersion: 101050 101051
 ## Description: Full achievement tooltips and native indicators for Infinite Archive choices.
-## DependsOn: ArchiveHelper>=1402
+## DependsOn: ArchiveHelper>=1402 LibAddonMenu-2.0
+## SavedVariables: KanaArchiveAchievementsSavedVariables
 
 Model.lua
 Templates.xml
