@@ -1,4 +1,4 @@
-## Title: KanaCraftedSetCollections
+## Title: |cFF0000Kana|r |cFFFFFFCraftable Set Collection|r
 ## Description: Crafted sets in the keyboard Item Set Collections book
 ## Author: Kana
 ## Version: 0.1.0
