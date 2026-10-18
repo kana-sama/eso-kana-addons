@@ -1,0 +1,10 @@
+## Title: |cFF0000Kana|r Target Effects Inspect
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101051
+## Description: Keep the last target's native buff and debuff icons available for inspection in cursor mode.
+
+Native.lua
+View.lua
+Core.lua
