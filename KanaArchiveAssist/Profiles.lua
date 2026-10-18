@@ -9,7 +9,6 @@ function P.New(saved,world,character,lower)
  end
  w.characters[character]=w.characters[character] or {activeId=w.defaultId}
  self.character=w.characters[character]
- self.character.learningEnabled=nil -- Retired persistent pause; exclusions belong to offers.
  if not w.profiles[self.character.activeId] then self.character.activeId=w.defaultId end
  return self
 end

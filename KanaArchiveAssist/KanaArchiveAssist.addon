@@ -1,10 +1,11 @@
-## Title: |cFF0000Kana|r Archive Assist
+## Title: |cFF0000Kana|r |cFFFFFFArchive Assist|r
 ## Author: Kana
 ## Version: 1.0.0
 ## AddOnVersion: 10000
 ## APIVersion: 101050 101051
 ## Description: Learns personal Infinite Archive choices with contextual preference markers.
 ## SavedVariables: KanaArchiveAssistSaved
+## DependsOn: LibAddonMenu-2.0
 
 Config.lua
 Profiles.lua
@@ -17,6 +18,7 @@ ContextSupport.lua
 Grades.lua
 View.lua
 ProfileWindow.lua
+ProfileSettings.lua
 ESOAdapter.lua
 Controller.lua
 KanaArchiveAssist.lua

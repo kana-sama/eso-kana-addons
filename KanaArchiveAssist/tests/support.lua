@@ -64,6 +64,33 @@ function S.api()
   return c
  end,BringWindowToTop=function(_,c)c.raised=true end}
  api.GuiRoot=api.control('GuiRoot');api.GuiRoot.width=1920;api.GuiRoot.height=1080
+ api.LibAddonMenu2={}
+ function api.LibAddonMenu2:RegisterAddonPanel(id,data)
+  api.settingsPanel={id=id,data=data};return api.settingsPanel
+ end
+ function api.LibAddonMenu2:RegisterOptionControls(id,options)
+  assert(api.settingsPanel.id==id)
+  api.settingsOptions=options
+  for _,data in ipairs(options)do
+   if data.reference then
+    local control={data=data}
+    function control:UpdateValue()
+     if data.type=='description' then self.text=data.text()
+     elseif data.type=='editbox' then self.editbox:SetText(data.getFunc())
+     elseif data.type=='dropdown' then self.value=data.getFunc() end
+    end
+    function control:UpdateChoices(choices,values)
+     self.choices={};self.values={}
+     for i=1,#choices do self.choices[i]=choices[i];self.values[i]=values[i]end
+    end
+    function control:UpdateDisabled()self.disabled=data.disabled()end
+    if data.type=='editbox' then control.editbox=api.control('ProfileName') end
+    api[data.reference]=control
+    if data.type=='dropdown' then control:UpdateChoices(data.choices,data.choicesValues)end
+    control:UpdateValue()
+   end
+  end
+ end
  api.ENDLESS_DUNGEON_BUFF_TYPE_VERSE=0
  api.ZO_COMBOBOX_SUPPRESS_UPDATE=2
  api.GetTimeString=function()return '12:34:56'end;api.GetDateStringFromTimestamp=function()return '15.10.2026'end

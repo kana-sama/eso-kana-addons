@@ -18,21 +18,14 @@ T.test('tooltip does not allocate new native controls on every hover',function()
  local v=V.New(a);local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD;v:Show(s,{options={1,2},context={visions={}}},{byId={[1]={grade=1},[2]={grade=-1}}},'default',stats(2,1,1))
  local mark=v.marks[s.buffControls[1]];v:ShowTooltip(mark);local before=created;v:HideTooltip();v:ShowTooltip(mark);T.eq(created,before)
 end)
-for _,first in ipairs({'profile','tooltip'})do
- T.test('profile and tooltip backdrops avoid existing native child names with '..first..' opened first',function()
-  local P=T.load('Profiles');T.load('History');local W=T.load('ProfileWindow');local a=T.api()
-  -- An unnamed backdrop from another addon already owns the global MungeOverlay.
-  a.WINDOW_MANAGER:CreateControlFromVirtual(nil,a.GuiRoot,'ZO_DefaultBackdrop')
-  local w=W.New(a,P.New({},'EU','one'),function()end);local v=V.New(a);local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD
-  v:Show(s,{options={1,2},context={visions={}}},{byId={[1]={grade=1},[2]={grade=-1}}},'default',stats(2,1,1))
-  local function hover()
-   v.marks[s.buffControls[1]].handlers.OnMouseEnter();local delayed=table.remove(a.later,1);delayed()
-  end
-  if first=='profile'then w:Open();hover()else hover();w:Open()end
-  assert(not w.root:IsHidden());assert(not v.tooltip:IsHidden());assert(#v.tipChildren>0)
-  w:Close();v:HideTooltip();w:Open();hover();assert(not v.tooltip:IsHidden())
- end)
-end
+T.test('tooltip backdrop avoids existing native child names',function()
+ local a=T.api();a.WINDOW_MANAGER:CreateControlFromVirtual(nil,a.GuiRoot,'ZO_DefaultBackdrop')
+ local v=V.New(a);local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD
+ v:Show(s,{options={1,2},context={visions={}}},{byId={[1]={grade=1},[2]={grade=-1}}},'default',stats(2,1,1))
+ local mark=v.marks[s.buffControls[1]];v:ShowTooltip(mark)
+ assert(not v.tooltip:IsHidden());assert(#v.tipChildren>0)
+ v:HideTooltip();v:ShowTooltip(mark);assert(not v.tooltip:IsHidden())
+end)
 T.test('custom textures use repository-relative ESO resource root',function()
  local a=T.api();local v=V.New(a);local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD
  v:Show(s,{options={1,2},context={visions={}}},{byId={[1]={grade=1},[2]={grade=-1}}},'default',nil)

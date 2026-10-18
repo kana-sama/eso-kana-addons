@@ -1,8 +1,10 @@
 local T=KAATest;T.load('Config');local P=T.load('Profiles');local H=T.load('History')
 T.test('default stable across rename and characters',function()
  local sv={};local p=P.New(sv,'EU','one',string.lower);local id=p:GetActive().id
+ p.character.learningEnabled=false
  assert(p:Rename(id,' Tank '));local q=P.New(sv,'EU','two',string.lower)
  T.eq(q:GetActive().id,id);T.eq(q:GetActive().name,'Tank');T.eq(#q:List(),1)
+ T.eq(P.New(sv,'EU','one',string.lower).character.learningEnabled,false)
  T.eq(P.New(sv,'NA','one',string.lower):GetActive().name,'default')
 end)
 T.test('name errors and profile switches preserve history',function()

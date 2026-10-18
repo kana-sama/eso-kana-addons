@@ -1,4 +1,4 @@
-local T=KAATest;T.load('Config');local P=T.load('Profiles');T.load('History');T.load('View');local W=T.load('ProfileWindow')
+local T=KAATest;T.load('Config');local P=T.load('Profiles');T.load('History');T.load('View');local W=T.load('ProfileWindow');local S=T.load('ProfileSettings')
 T.test('window highlights separately, creates and renames without data loss',function()
  local a=T.api();local p=P.New({},'EU','one');local changed=0;local w=W.New(a,p,function()changed=changed+1 end)
  local original=p:GetActive().id;w:Open();assert(w.form:IsHidden());w:BeginEdit('create');w.name:SetText('Healer');w:SaveEdit();local new=p:GetActive().id;assert(new~=original)
@@ -61,8 +61,24 @@ T.test('short narrow window with long profile keeps positive native viewport bou
  local top=anchors[1][5];local bottom=w.root:GetHeight()+anchors[2][5];assert(bottom-top>=36,'native scroll anchors overlap')
  assert(w.child:GetHeight()>w.viewport:GetHeight());assert(w.combo.height<=220)
 end)
-T.test('repeated kaa raises the same window without discarding an edit',function()
- local a=T.api();local w=W.New(a,P.New({},'EU','one'),function()end);w:Open();local root=w.root;w:BeginEdit('rename');w.name:SetText('Unfinished edit');w:Open();T.eq(w.root,root);T.eq(w.name:GetText(),'Unfinished edit');T.eq(w.mode,'rename')
+T.test('settings button reopens the original window without discarding an edit',function()
+ local a=T.api();local w=W.New(a,P.New({},'EU','one'),function()end);S.New(a,w)
+ T.eq(a.settingsPanel.id,'KanaArchiveAssistSettings');T.eq(#a.settingsOptions,1);assert(not a.SLASH_COMMANDS['/kaa'])
+ local button=a.settingsOptions[1];T.eq(button.type,'button');button.func()
+ local root=w.root;assert(root and not root:IsHidden() and w.scroll.template=='ZO_ScrollContainer')
+ w:BeginEdit('rename');w.name:SetText('Unfinished edit');button.func()
+ T.eq(w.root,root);T.eq(w.name:GetText(),'Unfinished edit');T.eq(w.mode,'rename')
+end)
+T.test('settings button uses native top-level scene lifecycle',function()
+ local a=T.api();local registered,shown,hidden
+ a.SCENE_MANAGER={
+  RegisterTopLevel=function(_,root)registered=root end,
+  ShowTopLevel=function(_,root)shown=root;root:SetHidden(false)end,
+  HideTopLevel=function(_,root)hidden=root;root:SetHidden(true)end,
+ }
+ local w=W.New(a,P.New({},'EU','one'),function()end);S.New(a,w)
+ a.settingsOptions[1].func();T.eq(registered,w.root);T.eq(shown,w.root);assert(not w.root:IsHidden())
+ w:Close();T.eq(hidden,w.root);assert(w.root:IsHidden())
 end)
 T.test('profile forms cancel cleanly and preserve a draft on live history updates',function()
  local a=T.api();local p=P.New({},'EU','one');local w=W.New(a,p,function()end);w:Open();w:BeginEdit('create');w.name:SetText('Draft');w:RefreshState();T.eq(w.name:GetText(),'Draft')

@@ -1,5 +1,5 @@
 local T=KAATest
-for _,n in ipairs({'Config','Profiles','History','RunCapture','ChoiceButton','Features','ChoiceModel','ContextSupport','Grades','View','ProfileWindow'})do T.load(n)end
+for _,n in ipairs({'Config','Profiles','History','RunCapture','ChoiceButton','Features','ChoiceModel','ContextSupport','Grades','View','ProfileWindow','ProfileSettings'})do T.load(n)end
 local A=T.load('ESOAdapter');local C=T.load('Controller')
 T.test('native scene opening captures the offer before its fragment unhides the control',function()
  local a=T.api();a.inside=true;a.started=true;local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD
@@ -86,9 +86,10 @@ T.test('restoring active run preserves identity and genuine completion creates n
  local adapter=install();local id=adapter:RunId();adapter:Initialized();T.eq(adapter:RunId(),id)
  adapter:Completed();adapter:Started();assert(adapter:RunId()~=id)
 end)
-T.test('controller registers only kaa and suppresses stale result after profile changes',function()
+T.test('controller opens the original window from settings without a slash command and suppresses stale results',function()
  local a=T.api();local p=KanaArchiveAssist.Profiles.New({},'EU','one');local view=KanaArchiveAssist.View.New(a)
- local controller=C.Install(a,p,nil,nil,view);assert(a.SLASH_COMMANDS['/kaa']);assert(not a.SLASH_COMMANDS['/kaa pause'])
+ local controller=C.Install(a,p,nil,nil,view);assert(not a.SLASH_COMMANDS['/kaa']);T.eq(a.settingsPanel.id,'KanaArchiveAssistSettings')
+ T.eq(#a.settingsOptions,1);a.settingsOptions[1].func();assert(controller.window.root and not controller.window.root:IsHidden())
  local o=T.observation(1,1);o.offerId='one';controller:OnOfferChanged(o)
  local token=controller.generation;p:Create('Other');controller:OnProfileChanged();assert(controller.generation>token);assert(not controller.currentPrediction)
  T.eq(#a.messages,3)
@@ -99,7 +100,7 @@ T.test('profile announcements use one chat line on entry and profile changes wit
  a.inside=true;c.adapter:Presence();T.eq(#a.messages,1);assert(a.messages[1]:find('default',1,true))
  c.adapter:Presence();T.eq(#a.messages,1)
  p:Create('Танк');c:OnProfileChanged();T.eq(#a.messages,2);assert(a.messages[2]:find('Танк',1,true))
- for _,message in ipairs(a.messages)do assert(message:find('/kaa',1,true));assert(not message:find('[\r\n]'))end
+ for _,message in ipairs(a.messages)do assert(not message:find('/kaa',1,true));assert(not message:find('[\r\n]'))end
 end)
 T.test('completed choice ends offer lifecycle before identical later proposal',function()
  local a=T.api();a.inside=true;a.started=true;local time,stage=1000,1;a.GetTimeStamp=function()return time end;a.ENDLESS_DUNGEON_MANAGER.GetProgression=function()return stage,1,1 end
@@ -168,15 +169,17 @@ T.test('missing or invalid offers are reported without interrupting native selec
  a.GetEndlessDungeonBuffSelectorBucketTypeChoice=function(bucket)return bucket<2 and bucket+1 or 0 end;s:OnShowing();s.selectedBuffControl.abilityId=99;s:CommitChoice()
  T.eq(c:ProfileState(p:GetActive().id).flow.reason,'invalid_selection');T.eq(#p:GetActive().history,0)
 end)
-T.test('open profile window follows confirmed and excluded choices without reopening',function()
+T.test('restored window follows confirmed and excluded choices without reopening',function()
  local a=T.api();a.inside=true;a.started=true;local p=KanaArchiveAssist.Profiles.New({},'EU','one');local c=C.Install(a,p)
- a.SLASH_COMMANDS['/kaa']();local w=c.window;local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD
+ a.settingsOptions[1].func();local w=c.window;local root=w.root;local s=a.ENDLESS_DUNGEON_BUFF_SELECTOR_KEYBOARD
  T.eq(w.total:GetText(),'0');s:OnShowing();s.selectedBuffControl=s.buffControls[1];s:CommitChoice()
  T.eq(w.total:GetText(),'0');assert(w.status:GetText():find('подтверждения',1,true))
  a.ENDLESS_DUNGEON_MANAGER.callbacks.BuffStackCountChanged(0,1,1,0,false)
- T.eq(w.total:GetText(),'1');T.eq(w.runCount:GetText(),'+1 в этом ране');T.eq(w.lastName:GetText(),'Ability 1');assert(w.lastTime:GetText():find('12:34:56',1,true))
+ T.eq(w.total:GetText(),'1');assert(w.runCount:GetText():find('+1 в этом ране',1,true))
+ T.eq(w.lastName:GetText(),'Ability 1');assert(w.lastTime:GetText():find('12:34:56',1,true))
  assert(w.status:GetText():find('учтён',1,true))
  s:OnShowing();a.ZO_CheckButton_OnClicked(c.choiceButton.check);s:CommitChoice()
  a.ENDLESS_DUNGEON_MANAGER.callbacks.BuffStackCountChanged(0,1,1,0,false)
  T.eq(w.total:GetText(),'1');assert(w.status:GetText():find('исключён',1,true));T.eq(#p:GetActive().history,1)
+ T.eq(w.root,root)
 end)

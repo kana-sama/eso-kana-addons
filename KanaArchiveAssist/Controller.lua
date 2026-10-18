@@ -5,7 +5,7 @@ function C.Install(api,profiles,historyProvider,adapter,view,window)
  self.historyProvider=historyProvider
  self.clock=function()return api.GetGameTimeMilliseconds()end
  self.window=window or K.ProfileWindow.New(api,profiles,function()self:OnProfileChanged()end,function(id)return self:ProfileState(id)end)
- api.SLASH_COMMANDS['/kaa']=function()self.window:Open()end
+ self.settingsPanel=K.ProfileSettings.New(api,self.window)
  self.capture=K.RunCapture.New(function(o)return self:OnObservation(o)end,function()return api.GetFrameTimeSeconds()end,function()
   local ch=profiles.character;ch.attemptSerial=(ch.attemptSerial or 0)+1;return tostring(profiles.characterId)..':'..ch.attemptSerial
  end,function(status)self:OnCaptureState(status)end)
@@ -37,7 +37,7 @@ function C:OnCaptureState(status)
  if status.state=='recorded'or status.state=='excluded'or status.state=='failed'then
   profile.activity=Cfg.Copy(status);profile.activity.at=self.api.GetTimeStamp()
  end
- if self.window.RefreshState then self.window:RefreshState()end
+ self.window:RefreshState()
 end
 function C:OnProfileChanged()
  self:Announce();self:OnOfferChanged(self.offer,true)
@@ -75,7 +75,7 @@ function C:OnObservation(observation)
  observation.recordedAt=self.api.GetTimeStamp();observation.recordedTime=self.api.GetTimeString();observation.recordedDate=self.api.GetDateStringFromTimestamp(observation.recordedAt)
  local history=self:History(observation.profileId)
  if not history:Append(observation)then return false end
- if self.window.RefreshState then self.window:RefreshState()end
+ self.window:RefreshState()
  if observation.profileId==self.profiles:GetActive().id and self.offer then self:OnOfferChanged(self.offer,true)end
  return true
 end
