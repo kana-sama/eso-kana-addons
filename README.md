@@ -51,6 +51,12 @@
 ### KanaCurrentlyEquipped
 Панель рисуется теперь только в инвентаре.
 
+## Dolgubon's Lazy Set Crafter <sup>[esoui](https://www.esoui.com/downloads/info1697-DolgubonsLazySetCrafter.html)</sup>
+Создание снаряжения по очереди.
+
+### [Kana Lazy Set Crafter Auto Hide](KanaLazySetCrafterAutoHide/README.md)
+При входе на станок открывает окно только с непустой очередью. Кнопка снизу позволяет вручную показать или скрыть его в любой момент.
+
 ## Dolgubon's Lazy Writ Crafter <sup>[esoui](https://www.esoui.com/downloads/info1346-DolgubonsLazyWritCrafter.html)</sup>
 Автоматически берет, делает и сдает ремесленные дейлики.
 

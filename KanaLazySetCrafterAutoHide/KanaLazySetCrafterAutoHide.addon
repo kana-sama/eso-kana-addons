@@ -1,0 +1,9 @@
+## Title: |cFF0000Kana|r |c4488FFLazy Set Crafter|r Auto Hide
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101050 101051
+## Description: Queue-aware station window and a bottom-bar toggle for Dolgubon's Lazy Set Crafter.
+## DependsOn: DolgubonsLazySetCrafter>=3080
+
+KanaLazySetCrafterAutoHide.lua
