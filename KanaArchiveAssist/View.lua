@@ -136,9 +136,9 @@ function V:ShowTooltip(mark)
  tip:SetAnchor(a.TOPLEFT,a.GuiRoot,a.TOPLEFT,left,top);tip:SetHidden(false);tip:BringWindowToTop()
 end
 function V:AnnounceProfile(name)
- self.api.d('KAA: профиль «'..name..'» · /kaa')
+ self.api.d(K.displayName..': профиль «'..name..'» · /kaa')
 end
 function V:ReportUnavailable(_,_,reason)
  local text={insufficient_history='для этих перков ещё нет истории выбора.',calculating='модель ещё рассчитывается.',numerical_failure='расчёт не завершён; подсказки скрыты.',not_converged='обучение модели ещё не сошлось.'}
- self.api.d('KanaArchiveAssist: '..(text[reason]or 'пока недостаточно данных для подсказки.'))
+ self.api.d(K.displayName..': '..(text[reason]or 'пока недостаточно данных для подсказки.'))
 end

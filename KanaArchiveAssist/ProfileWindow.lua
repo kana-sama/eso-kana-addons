@@ -34,7 +34,7 @@ function W:Build()
  local a=self.api;local wm=a.WINDOW_MANAGER
  self.root=wm:CreateTopLevelWindow('KanaArchiveAssistProfiles');self.root:SetAnchor(a.CENTER,a.GuiRoot,a.CENTER);self.root:SetMouseEnabled(true);self.root:SetDrawTier(a.DT_HIGH)
  local bg=wm:CreateControlFromVirtual('KanaArchiveAssistProfilesBackdrop',self.root,'ZO_DefaultBackdrop');bg:SetAnchorFill()
- self.title=K.View.Label(a,self.root,'KanaArchiveAssist','ZoFontWinH2');self.title:SetAnchor(a.TOPLEFT,self.root,a.TOPLEFT,24,18)
+ self.title=K.View.Label(a,self.root,K.displayName,'ZoFontWinH2');self.title:SetAnchor(a.TOPLEFT,self.root,a.TOPLEFT,24,18)
  self.subtitle=K.View.Label(a,self.root,'Профили и история','ZoFontGameSmall');self.subtitle:SetAnchor(a.TOPLEFT,self.root,a.TOPLEFT,24,54);self.subtitle:SetColor(unpack(quiet))
  self.closeButton=wm:CreateControlFromVirtual(nil,self.root,'ZO_CloseButton');self.closeButton:ClearAnchors();self.closeButton:SetAnchor(a.TOPRIGHT,self.root,a.TOPRIGHT,-16,16);self.closeButton:SetHandler('OnClicked',function()self:Close()end)
  self.scroll=wm:CreateControlFromVirtual('KanaArchiveAssistProfileScroll',self.root,'ZO_ScrollContainer')

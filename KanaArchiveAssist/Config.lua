@@ -1,5 +1,6 @@
 KanaArchiveAssist=KanaArchiveAssist or {}
 local K=KanaArchiveAssist
+K.displayName='|cFF0000Kana|r Archive Assist'
 local C={version=3,window=2000,halfLife=30,fitTolerance=1e-6,maxFit=500,frameMs=2,lambdaA=2,lambdaB=16,lambdaC=2,secondLevelEvidence=8,thirdLevelEvidence=24,debugCapture=false}
 K.Config=C
 function C.Copy(t)
