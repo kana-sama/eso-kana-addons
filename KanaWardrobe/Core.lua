@@ -442,17 +442,7 @@ function KW.Core.Initialize(api)
         emit("PlayerStateChanged")
     end)
     api.SLASH_COMMANDS["/kw"]=function(command)
-        if (command or ''):match('^%s*operation%s+report%s*$') and runtime.session.operations then
-            KW.OperationJournal.ShowReport(runtime.repo.character)
-        elseif (command or ''):match('^%s*operation%s*$') and runtime.session.operations then
-            runtime.session.operations:SetVisible(true)
-        elseif (command or ""):match("^%s*perf%s*$") then
-            KW.ProbeReport.Show(runtime.repo.character.performanceReport or 'No page timing recorded yet.')
-        elseif (command or ""):match("^%s*status%s*$") then
-            if api.d then api.d(KW.Core.Status(runtime)) end
-        elseif (command or ""):match("^%s*capabilities%s*$") then
-            if api.d then api.d(KW.Core.BuildCapabilitiesStatus(runtime)) end
-        elseif (command or ""):match("^%s*probe%s+") then
+        if (command or ""):match("^%s*probe%s+") then
             local action = command:match("^%s*probe%s+(%S+)%s*$")
             local ok, problem
             if runtime.gearSuite and (action=='gearsuite' or action=='gearsuitereport' or action=='gearsuiterestore' or action=='gearsuitestop')then
@@ -461,8 +451,9 @@ function KW.Core.Initialize(api)
                 ok,problem=runtime.gearProbe:Run(action)
             elseif runtime.buildProbe then ok, problem = runtime.buildProbe:Run(action) end
             if not ok and api.d then api.d("KanaWardrobe probe: "..tostring(problem and problem.details.reason or "helper unavailable")) end
-        elseif api.d then api.d("/kw operation | /kw operation report | /kw status | /kw perf | /kw capabilities | /kw probe attributes|skills|restore|status|batch|reset|gearbatch|gearrestore|gearreport|gearsuite|gearsuitereport|gearsuiterestore|gearsuitestop") end
+        elseif api.d then api.d("/kw probe attributes|skills|restore|status|batch|reset|gearbatch|gearrestore|gearreport|gearsuite|gearsuitereport|gearsuiterestore|gearsuitestop") end
     end
+    if KW.Settings then KW.Settings.Register(runtime) end
     if KW.PerformanceProbe then KW.PerformanceProbe.Attach(runtime)end
     runtime.ui:ScheduleRefresh()
     emit("Initialized", runtime)

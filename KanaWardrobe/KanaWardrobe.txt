@@ -1,13 +1,14 @@
-## Title: KanaWardrobe
+## Title: |cFF0000Kana|r |cFFFFFFWardrobe|r
 ## Author: Kana
 ## Version: 0.1.0
 ## APIVersion: 101048 101049 101050 101051
 ## SavedVariables: KanaWardrobeSaved
-## OptionalDependsOn: LibFilters-3.0
+## OptionalDependsOn: LibFilters-3.0 LibAddonMenu-2.0
 
 UI.xml
 ProbeReport.lua
 Core.lua
+Settings.lua
 PerformanceProbe.lua
 BuildCapabilities.lua
 BuildProbe.lua
