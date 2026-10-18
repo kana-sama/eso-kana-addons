@@ -1,3 +1,5 @@
+KanaQuestZoneFix = KanaQuestZoneFix or {}
+
 -- Report by Antis3n1l (2026-09-02):
 -- https://forums.elderscrollsonline.com/en/discussion/698890/getquestzoneid-returns-wrong-zoneid-for-some-quests
 -- questId = {reported wrong zoneId, dungeon zoneId}
@@ -23,14 +25,17 @@ local corrections = {
     [7323] = {1502, 1552},
 }
 
--- Install during file loading, before addon initialization events build caches.
--- Keep the previous implementation so other wrappers and future fixes survive.
-local originalGetQuestZoneId = GetQuestZoneId
-function GetQuestZoneId(questId)
-    local zoneId = originalGetQuestZoneId(questId)
-    local correction = corrections[questId]
-    if correction and zoneId == correction[1] then
-        return correction[2]
+function KanaQuestZoneFix:InstallZoneCorrections()
+    if self.zoneCorrectionsInstalled or not self:FeatureEnabled("questZones") then return end
+    self.zoneCorrectionsInstalled = true
+    -- Preserve other wrappers and any future upstream corrections.
+    local originalGetQuestZoneId = GetQuestZoneId
+    function GetQuestZoneId(questId)
+        local zoneId = originalGetQuestZoneId(questId)
+        local correction = corrections[questId]
+        if correction and zoneId == correction[1] then
+            return correction[2]
+        end
+        return zoneId
     end
-    return zoneId
 end

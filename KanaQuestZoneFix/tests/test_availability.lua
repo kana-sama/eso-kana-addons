@@ -8,7 +8,15 @@ function HasCompletedQuest(id) return completed[id] == true end
 function HasQuest(id) return active[id] == true end
 local filters = LibQuestData_Internal
 local original = filters.show_breadcrumb_quest
-local function patch() dofile('KanaQuestZoneFix/LibQuestDataPatch.lua') end
+KanaQuestZoneFix = { settings = { alternateBranches = false } }
+function KanaQuestZoneFix:FeatureEnabled(key) return self.settings[key] ~= false end
+local function patch()
+    dofile('KanaQuestZoneFix/LibQuestDataPatch.lua')
+    KanaQuestZoneFix:InstallAlternativeBranchCorrection()
+end
+patch()
+assert(filters.show_breadcrumb_quest == original, 'disabled correction wraps availability filter')
+KanaQuestZoneFix.settings.alternateBranches = true
 patch()
 assert(filters:show_breadcrumb_quest(3595))
 assert(filters:show_breadcrumb_quest(3598))

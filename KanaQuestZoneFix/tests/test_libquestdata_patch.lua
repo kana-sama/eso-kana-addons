@@ -7,9 +7,17 @@ for zone, rows in pairs(locations) do
     originalRows[zone] = {}
     for _, row in ipairs(rows) do table.insert(originalRows[zone], row) end
 end
+KanaQuestZoneFix = { settings = { misplacedPin = false } }
+function KanaQuestZoneFix:FeatureEnabled(key) return self.settings[key] ~= false end
 local function patch()
-    if not os.getenv('BASELINE') then dofile('KanaQuestZoneFix/LibQuestDataPatch.lua') end
+    if not os.getenv('BASELINE') then
+        dofile('KanaQuestZoneFix/LibQuestDataPatch.lua')
+        KanaQuestZoneFix:InstallLocationCorrection()
+    end
 end
+patch()
+assert(#locations[map] == #originalRows[map], 'disabled correction changed the location data')
+KanaQuestZoneFix.settings.misplacedPin = true
 patch()
 for zone, rows in pairs(originalRows) do
     local index = 1

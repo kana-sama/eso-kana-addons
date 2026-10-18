@@ -1,10 +1,12 @@
-## Title: KanaQuestZoneFix
+## Title: |cFF0000Kana|r |c4488FFLibQuestData|r|cFFFFFF: quest fixes|r
 ## Description: Corrects quest zones, misplaced pins and alternative quest availability.
 ## Author: Kana
 ## Version: 1.2.0
 ## AddOnVersion: 10200
 ## APIVersion: 101050
-## OptionalDependsOn: LibQuestData
+## OptionalDependsOn: LibQuestData LibAddonMenu-2.0
+## SavedVariables: KanaQuestZoneFixSaved
 
 KanaQuestZoneFix.lua
 LibQuestDataPatch.lua
+Settings.lua

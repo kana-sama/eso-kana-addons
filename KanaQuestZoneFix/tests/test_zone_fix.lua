@@ -16,6 +16,8 @@ GetQuestZoneId = function(id) return zones[id] end
 -- BASELINE reproduces the bug with the original API result.
 if not os.getenv('BASELINE') then
     dofile('KanaQuestZoneFix/KanaQuestZoneFix.lua')
+    KanaQuestZoneFix.FeatureEnabled = function() return true end
+    KanaQuestZoneFix:InstallZoneCorrections()
 end
 for _, case in ipairs(cases) do
     assert(GetQuestZoneId(case[1]) == case[3], 'wrong dungeon for quest ' .. case[1])
