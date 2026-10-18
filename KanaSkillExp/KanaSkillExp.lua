@@ -261,15 +261,46 @@ function addon:Refresh()
 end
 
 function addon:Initialize()
-    if self.form then return end
+    if self.initialized then return end
+    self.initialized = true
     self.saved = ZO_SavedVars:NewCharacterIdSettings('KanaSkillExp_Data', 1, nil,
-        {entries = {}, manualOnly = false})
+        {entries = {}, manualOnly = false, manualTracker = true, nativeBarBackground = true})
+    if self.saved.manualTracker == nil then self.saved.manualTracker = true end
+    if self.saved.nativeBarBackground == nil then self.saved.nativeBarBackground = true end
+    if LibAddonMenu2 then
+        local panelId = NAME .. '_Options'
+        local visibleName = '|cFF0000Kana|r |c4488FFSkillExp|r|cFFFFFF: manual tracker|r'
+        LibAddonMenu2:RegisterAddonPanel(panelId, {
+            type = 'panel', name = visibleName, displayName = visibleName,
+            author = 'Kana', version = '1.1.0', registerForRefresh = true,
+        })
+        LibAddonMenu2:RegisterOptionControls(panelId, {
+            { type = 'checkbox', name = 'Ручной трекер навыков',
+              getFunc = function() return self.saved.manualTracker ~= false end,
+              setFunc = function(value) self.saved.manualTracker = value end,
+              default = true, requiresReload = true },
+            { type = 'checkbox', name = 'Только выбранные навыки',
+              getFunc = function() return self.saved.manualOnly == true end,
+              setFunc = function(value)
+                  self.saved.manualOnly = value
+                  if self.form then self:Refresh() end
+              end,
+              default = false },
+            { type = 'checkbox', name = 'Фон полосок обычного SkillExp',
+              getFunc = function() return self.saved.nativeBarBackground ~= false end,
+              setFunc = function(value) self.saved.nativeBarBackground = value end,
+              default = true, requiresReload = true },
+        })
+    end
+    if self.saved.nativeBarBackground then
+        for i = 1, SkillExp.skillsForm:GetNumChildren() do
+            local bar = SkillExp.skillsForm:GetChild(i):GetNamedChild('Bar')
+            if bar then AddBarBackground(bar) end
+        end
+    end
+    if self.saved.manualTracker == false then return end
     self.originalForm = SkillExp.skillsForm
     self.originalToggle = SkillExp_ToggleSkillsForm
-    for i = 1, self.originalForm:GetNumChildren() do
-        local bar = self.originalForm:GetChild(i):GetNamedChild('Bar')
-        if bar then AddBarBackground(bar) end
-    end
     self.form = WINDOW_MANAGER:CreateControl(NAME .. 'Form', SkillExpContainer, CT_CONTROL)
     self.form:SetDimensions(200, 48)
     self.form:SetMouseEnabled(true)
@@ -291,16 +322,6 @@ function addon:Initialize()
         SkillExp.config.formShown = not SkillExp.config.formShown
         self:Refresh()
     end
-    -- All original controls remain intact and continue driving the native list.
-    local modeToggle = SkillExpComponents.CreateToggle(NAME .. 'ManualOnly', SkillExp_Settings,
-        self.saved, 'manualOnly', ru and 'Только выбранные навыки' or 'Only selected skills',
-        ru and 'Выключено: обычный SkillExp и выбранные навыки ниже. Включено: только выбранные навыки в постоянном порядке.'
-            or 'Off: normal SkillExp with selected skills below. On: only selected skills in a fixed order.')
-    modeToggle:SetAnchor(TOPLEFT, SkillExpSettingsHideMaxed, BOTTOMLEFT, 0, 8)
-    modeToggle:SetHandler('OnMouseDown', function(control)
-        control:SetChecked(not self.saved.manualOnly)
-        self:Refresh()
-    end)
     self:InstallMenus()
     local pending = false
     local function RequestRefresh()
