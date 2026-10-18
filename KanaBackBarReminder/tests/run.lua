@@ -1,5 +1,5 @@
--- Run from the repository root: lua KanaBackBar/tests/run.lua
-local addonPath = (arg[0]:match('^(.*)/tests/[^/]+$') or '.') .. '/KanaBackBar.lua'
+-- Run from the repository root: lua KanaBackBarReminder/tests/run.lua
+local addonPath = (arg[0]:match('^(.*)/tests/[^/]+$') or '.') .. '/KanaBackBarReminder.lua'
 local passed = 0
 local function check(condition, message)
     assert(condition, message)
@@ -7,7 +7,7 @@ local function check(condition, message)
 end
 
 local entry = loadfile(addonPath)
-check(entry ~= nil, 'KanaBackBar entry point must exist')
+check(entry ~= nil, 'KanaBackBarReminder entry point must exist')
 
 local controls, events, fragments, options, panel
 local activeBar, character = 0, 'character-a'
@@ -66,7 +66,7 @@ end}
 HUD_SCENE = {AddFragment = function(_, fragment) fragments[#fragments + 1] = fragment end}
 HUD_UI_SCENE = {AddFragment = HUD_SCENE.AddFragment}
 ZO_SavedVars = {NewCharacterIdSettings = function(_, name, version, namespace, defaults)
-    assert(name == 'KanaBackBarSV' and version == 1 and namespace == nil)
+    assert(name == 'KanaBackBarReminderSV' and version == 1 and namespace == nil)
     if not saved[character] then
         saved[character] = {}
         for key, value in pairs(defaults) do saved[character][key] = value end
@@ -76,7 +76,7 @@ ZO_SavedVars = {NewCharacterIdSettings = function(_, name, version, namespace, d
 end}
 LibAddonMenu2 = {
     RegisterAddonPanel = function(_, name, data)
-        assert(name ~= 'KanaBackBarSV', 'Settings panel must not overwrite saved variables')
+        assert(name ~= 'KanaBackBarReminderSV', 'Settings panel must not overwrite saved variables')
         panel = data
         _G[name] = control(name)
     end,
@@ -91,8 +91,8 @@ local function reload()
     ZO_ReticleContainerReticle = control('Reticle', GuiRoot)
     assert(loadfile(addonPath))()
     events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'AnotherAddon')
-    check(not controls.KanaBackBarWindow, 'Ignore unrelated addon-loaded events')
-    events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'KanaBackBar')
+    check(not controls.KanaBackBarReminderWindow, 'Ignore unrelated addon-loaded events')
+    events[EVENT_ADD_ON_LOADED](EVENT_ADD_ON_LOADED, 'KanaBackBarReminder')
 end
 local function swap(bar)
     activeBar = bar
@@ -100,17 +100,19 @@ local function swap(bar)
 end
 local function visible(name) return not controls[name]:IsControlHidden() end
 local function signals(glow, brackets, message)
-    check(visible('KanaBackBarGlow') == glow and visible('KanaBackBarBrackets') == brackets, message)
+    check(visible('KanaBackBarReminderGlow') == glow and visible('KanaBackBarReminderBrackets') == brackets, message)
 end
 
 reload()
 check(events[EVENT_ADD_ON_LOADED] == nil, 'Unregister load handler after initialization')
 check(#fragments == 2 and fragments[1] == fragments[2], 'Attach one overlay to both gameplay HUD scenes')
-check(controls.KanaBackBarWindow.fill == GuiRoot, 'Overlay follows screen size and UI scale')
-check(controls.KanaBackBarGlow.fill == controls.KanaBackBarWindow, 'Glow covers all four screen edges')
-check(controls.KanaBackBarGlow.texture:match('EdgeGlow%.dds$'), 'Use the full-frame glow texture')
-check(controls.KanaBackBarBrackets.anchor[2] == ZO_ReticleContainerReticle, 'Brackets follow the actual reticle')
+check(controls.KanaBackBarReminderWindow.fill == GuiRoot, 'Overlay follows screen size and UI scale')
+check(controls.KanaBackBarReminderGlow.fill == controls.KanaBackBarReminderWindow, 'Glow covers all four screen edges')
+check(controls.KanaBackBarReminderGlow.texture:match('EdgeGlow%.dds$'), 'Use the full-frame glow texture')
+check(controls.KanaBackBarReminderBrackets.anchor[2] == ZO_ReticleContainerReticle, 'Brackets follow the actual reticle')
 check(panel.registerForRefresh and panel.registerForDefaults, 'Settings support refresh and defaults')
+check(panel.name == '|cFF0000Kana|r Back Bar Reminder' and panel.displayName == panel.name,
+    'Display the spaced addon name with only the Kana prefix red')
 check(#options == 3 and options[1].type == 'checkbox' and options[2].type == 'checkbox'
     and options[3].type == 'dropdown', 'Expose two independent effects and the main-bar choice')
 check(options[1].getFunc() and options[2].getFunc(), 'Both effects are enabled by default')
@@ -162,10 +164,10 @@ signals(false, false, 'An unavailable hotbar must not show a side-bar warning')
 
 ZO_ReticleContainerReticle = nil
 swap(0)
-check(controls.KanaBackBarBrackets.anchor[2] == GuiRoot, 'Missing reticle falls back to screen center')
+check(controls.KanaBackBarReminderBrackets.anchor[2] == GuiRoot, 'Missing reticle falls back to screen center')
 ZO_ReticleContainerReticle = control('LateReticle', GuiRoot)
 events[EVENT_PLAYER_ACTIVATED]()
-check(controls.KanaBackBarBrackets.anchor[2] == ZO_ReticleContainerReticle, 'Use a reticle that becomes available later')
+check(controls.KanaBackBarReminderBrackets.anchor[2] == ZO_ReticleContainerReticle, 'Use a reticle that becomes available later')
 
 options[1].setFunc(false)
 reload()
@@ -180,4 +182,4 @@ reload()
 check(options[1].getFunc() == true and options[2].getFunc() == false and options[3].getFunc() == 0,
     'Repair invalid settings while preserving a saved disabled effect')
 
-print(('PASS: %d KanaBackBar behavior checks'):format(passed))
+print(('PASS: %d KanaBackBarReminder behavior checks'):format(passed))

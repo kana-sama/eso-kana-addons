@@ -1,10 +1,13 @@
-# KanaBackBar
+# Kana Back Bar Reminder
+
+В списке аддонов и настройках: `|cFF0000Kana|r Back Bar Reminder` — только
+префикс Kana окрашен красным. Техническое имя: `KanaBackBarReminder`.
 
 Постоянный визуальный сигнал активной сайдовой панели оружия: мягкое
 бирюзовое свечение по всем четырём краям экрана и скобки возле прицела.
 На основной панели оба сигнала скрыты. Текста, звука и мигания нет.
 
-Требуется **LibAddonMenu-2.0**. В настройках `KanaBackBar` доступны:
+Требуется **LibAddonMenu-2.0**. В настройках `Kana Back Bar Reminder` доступны:
 
 - Независимое включение свечения по краям экрана.
 - Независимое включение скобок возле прицела.
@@ -20,9 +23,9 @@
 Из корня репозитория:
 
 ```sh
-lua KanaBackBar/tests/run.lua
-python3 KanaBackBar/tests/texture.py
-luac -p KanaBackBar/KanaBackBar.lua
+lua KanaBackBarReminder/tests/run.lua
+python3 KanaBackBarReminder/tests/texture.py
+luac -p KanaBackBarReminder/KanaBackBarReminder.lua
 ```
 
 Мок проверяет видимость, настройки и переходы сцен. Он не подтверждает
@@ -31,4 +34,4 @@ luac -p KanaBackBar/KanaBackBar.lua
 высоту окна/масштаб интерфейса. Если ESO уже запущена и не видит новый
 аддон, перезапустить клиент.
 
-Маска свечения: `python3 KanaBackBar/tools/build_edge_glow.py`.
+Маска свечения: `python3 KanaBackBarReminder/tools/build_edge_glow.py`.

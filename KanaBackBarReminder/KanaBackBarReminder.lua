@@ -1,4 +1,5 @@
-local NAME = 'KanaBackBar'
+local NAME = 'KanaBackBarReminder'
+local DISPLAY_NAME = '|cFF0000Kana|r Back Bar Reminder'
 local DEFAULTS = {showGlow = true, showBrackets = true, mainBar = HOTBAR_CATEGORY_PRIMARY}
 local RED, GREEN, BLUE = 0.4, 0.95, 0.8
 
@@ -6,7 +7,7 @@ local function Initialize(_, addonName)
     if addonName ~= NAME then return end
     EVENT_MANAGER:UnregisterForEvent(NAME, EVENT_ADD_ON_LOADED)
 
-    local saved = ZO_SavedVars:NewCharacterIdSettings('KanaBackBarSV', 1, nil, DEFAULTS)
+    local saved = ZO_SavedVars:NewCharacterIdSettings('KanaBackBarReminderSV', 1, nil, DEFAULTS)
     for _, key in ipairs({'showGlow', 'showBrackets'}) do
         if type(saved[key]) ~= 'boolean' then saved[key] = DEFAULTS[key] end
     end
@@ -22,7 +23,7 @@ local function Initialize(_, addonName)
 
     local glow = WINDOW_MANAGER:CreateControl(NAME .. 'Glow', root, CT_TEXTURE)
     glow:SetAnchorFill(root)
-    glow:SetTexture('eso-kana-addons/KanaBackBar/textures/EdgeGlow.dds')
+    glow:SetTexture('eso-kana-addons/KanaBackBarReminder/textures/EdgeGlow.dds')
     glow:SetColor(RED, GREEN, BLUE, 0.3)
     glow:SetBlendMode(TEX_BLEND_MODE_ADD)
     glow:SetDrawLayer(DL_OVERLAY)
@@ -68,7 +69,7 @@ local function Initialize(_, addonName)
     local russian = GetCVar('language.2') == 'ru'
     local panelName = NAME .. 'Options'
     LibAddonMenu2:RegisterAddonPanel(panelName, {
-        type = 'panel', name = NAME, displayName = NAME, author = 'Kana', version = '1.0.0',
+        type = 'panel', name = DISPLAY_NAME, displayName = DISPLAY_NAME, author = 'Kana', version = '1.0.1',
         registerForRefresh = true, registerForDefaults = true,
     })
     local function Getter(key)
