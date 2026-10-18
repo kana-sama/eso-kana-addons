@@ -1,5 +1,5 @@
 -- Ordinary provisioning writ recipe IDs; all ranks and alliances.
--- Sources and scope: README.md. Includes both Roast Pig recipe item variants.
+-- Sources and scope: DEVELOPMENT.md. Includes both Roast Pig recipe item variants.
 KanaWritRecipes = { recipeIds = {
     [45887] = true, -- Carrot Soup
     [45888] = true, -- Fishy Stick
