@@ -50,12 +50,12 @@
 - [x] KanaNoRepeat
 - [x] KanaOutfitBrowser
 - [x] KanaPenetration (видимое имя уже выбрано: Kana Armor Penetration Bar; команд нет)
-- [ ] KanaPlayerPing
-- [ ] KanaQuestMap
-- [ ] KanaQuestZoneFix
-- [ ] KanaReadBook
+- [x] KanaPlayerPing
+- [x] KanaQuestMap
+- [x] KanaQuestZoneFix
+- [x] KanaReadBook (удалён по прямому запросу)
 - [ ] KanaReminderz (дождаться окончания параллельной разработки)
-- [ ] KanaSeasonOneTravel
+- [x] KanaSeasonOneTravel
 - [ ] KanaSkillExp
 - [ ] KanaSkillTranslations
 - [x] KanaSlowAddon (пилот)
@@ -157,3 +157,13 @@ README: «В диалоговом окне ESO текст реплик появ�
 - По просьбе пользователя пилот `KanaSlowAddon` переименован в **Kana Dialogue: slow text**; технический ID, `KanaSlowAddon_SavedVariables`, контекстное меню и поведение прежние. Пять поведенческих сценариев и синтаксис прошли.
 
 Прежние подробные README сохранены в `DEVELOPMENT.md`; игровой чек-лист дополнен одной строкой на аддон.
+
+## Пакет 7: решения и реализация
+
+- `KanaPlayerPing`: пользователь выбрал **Kana Player Ping**. README: «Показывает пульсирующие кольца вокруг вашего значка на карте». Команд, настроек и SavedVariables нет.
+- `KanaQuestMap`: пользователь выбрал **Kana QuestMap: quest details**, синим **QuestMap**. README кратким списком описывает хронологию задания, скрытие заданий, исправление меток и отметку завершённого повторяемого задания. Собственных команд нет. В прежней `KanaQuestMap_SavedVariables` версии 6 добавлена ветка `features` с пятью отдельными чекбоксами: `chronology`, `blacklist`, `pinStates`, `invalidLocations`, `journalCompletion`. Все включены по умолчанию; прежние blacklist и настройки QuestMap остаются. Новая ветка не переносится в исходный QuestMap. Название файла пользовательского README приведено к `README.md`; прежние подробности сохранены в `DEVELOPMENT.md`, оригинальный README — в `UPSTREAM.md`.
+- `KanaQuestZoneFix`: пользователь уточнил, что это надстройка LibQuestData. В коде есть две правки данных/фильтра LibQuestData и отдельная правка штатного `GetQuestZoneId`; предложено разделить или оставить вместе. Пользователь выбрал **оставить вместе** под именем **Kana LibQuestData: quest fixes**, синим **LibQuestData**. README перечисляет все три исправления. Собственных команд и старых SavedVariables нет. Новая account-wide `KanaQuestZoneFixSaved` версии 1 хранит три независимых чекбокса, включённых по умолчанию; LibQuestData остаётся необязательной зависимостью, поэтому коррекция игрового API работает и без неё.
+- `KanaReadBook`: пользователь прямо попросил **удалить аддон целиком**. Папка и `/readbook` удалены, ссылка из общего индекса и упоминание интеграции в документации KanaLitanyOfBlood убраны. Настроек/SavedVariables аддон не имел; прежние ярлыки CShortcutPieMenu, которые вызывали команду, после удаления не сработают.
+- `KanaSeasonOneTravel`: пользователь выбрал **Kana Season One Travel** и попросил удалить единственную диагностическую `/kstdebug`. README кратко описывает вкладку карты, прогресс и переход к святилищам. Прежняя `KanaSeasonOneTravelSaved` и её схема не изменены.
+
+Локальные тесты QuestMap (Lua и Python), KanaQuestZoneFix (с установленными библиотеками в отдельном временном окружении) и KanaSeasonOneTravel прошли; синтаксис изменённых Lua-файлов проверен. Отрисовка и взаимодействия остаются в коротком общем игровом чек-листе.

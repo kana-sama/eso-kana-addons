@@ -25,3 +25,8 @@
 - [ ] Kana Litany of Blood — проверить зачёркивание целей в книге.
 - [ ] Kana Dialogue: no repeat — проверить отсутствие кнопки «Повторить».
 - [ ] Kana Outfit Sets — проверить категорию сетов в коллекции.
+- [ ] Kana Player Ping — проверить кольца вокруг значка на карте.
+- [ ] Kana QuestMap: quest details — проверить подсказки, метки, журнал и отдельные переключатели.
+- [ ] Kana LibQuestData: quest fixes — проверить три переключателя и точки заданий на карте.
+- [ ] KanaReadBook — проверить, что аддон и команда `/readbook` исчезли.
+- [ ] Kana Season One Travel — проверить вкладку карты и отсутствие `/kstdebug`.

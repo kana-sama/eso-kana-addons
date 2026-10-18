@@ -79,10 +79,8 @@
 ## Quest Map <sup>[esoui](https://www.esoui.com/downloads/info1022-QuestMap.html)</sup>
 Показывает метки квестов на карте.
 
-### KanaQuestMap
-- Показывает инфу о том, из какого дополнения квест.
-- Исправляет кучу багов.
-- Добавляет черный список квестов в настройки.
+### [Kana QuestMap: quest details](KanaQuestMap/README.md)
+Добавляет сведения о заданиях и исправления карты QuestMap.
 
 ## Reminderz <sup>[esoui](https://www.esoui.com/downloads/info3248-Reminderz-Onscreenremindersforfood....html)</sup>
 Кричит что забыл поесть, показывает в чатике прогресс достижений.
@@ -179,20 +177,17 @@
 ## [Kana Dialogue: no repeat](KanaNoRepeat/README.md)
 Скрывает кнопку «Повторить» в диалогах ESO.
 
-## KanaQuestZoneFix
-Это фиксы баз данных с квестами.
+## [Kana LibQuestData: quest fixes](KanaQuestZoneFix/README.md)
+Исправляет зоны, точки и доступность отдельных заданий.
 
-## KanaPlayerPing
-Рисует вечный пинг вокруг персонажа. Чтобы всегда было видно где я.
+## [Kana Player Ping](KanaPlayerPing/README.md)
+Показывает пульсирующие кольца вокруг вашего значка на карте.
 
 ## Kana Armor Penetration Bar
 Показывает под здоровьем цели шкалу вашего пробития относительно её сопротивления.
 
-## KanaReadBook
-Добавляет команду для чтения книги по названию.
-
-## KanaSeasonOneTravel
-Добавляет на карте вкладку с ключевыми точками первого сезона.
+## [Kana Season One Travel](KanaSeasonOneTravel/README.md)
+Добавляет на карту вкладку с событиями и переходом к ближайшим святилищам.
 
 ## Kana Dialogue: slow text
 Плавно раскрывает текст реплик в диалогах ESO.
