@@ -1,4 +1,4 @@
-## Title: KanaSeasonOneTravel
+## Title: |cFF0000Kana|r |cFFFFFFSeason One Travel|r
 ## Description: Season One map tab with encounter, Favor, event and Nowhere Vault travel and completion checks.
 ## Author: Kana
 ## Version: 1.4.2

@@ -57,6 +57,7 @@ assert(type(KanaSeasonOneTravel.InitializeTracking) == "function" or loadfile(".
 dofile("../Tracking.lua")
 local addon = KanaSeasonOneTravel
 addon.InitializeTracking()
+assert(SLASH_COMMANDS["/kstdebug"] == nil, "diagnostic slash command must not be registered")
 local function fire(event, ...) handlers[event](event, ...) end
 
 -- The Vault check tracks the final secret-seal/barrier achievement, not the

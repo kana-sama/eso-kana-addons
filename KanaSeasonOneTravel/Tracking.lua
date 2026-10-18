@@ -321,11 +321,6 @@ function addon.InitializeTracking()
     Register(EVENT_LOOT_UPDATED, ObserveLoot)
     Register(EVENT_LOOT_RECEIVED, LootReceived)
     Register(EVENT_LOOT_CLOSED, function() lootKey = nil end)
-    SLASH_COMMANDS["/kstdebug"] = function()
-        for index = math.max(1, #saved.diagnostics - 9), #saved.diagnostics do
-            d(saved.diagnostics[index])
-        end
-    end
     ScanJournal()
     RefreshPermanentFavors()
 end
