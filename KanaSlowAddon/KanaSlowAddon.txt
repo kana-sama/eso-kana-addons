@@ -1,8 +1,8 @@
-## Title: KanaSlowAddon
+## Title: |cFF0000Kana|r |cFFFFFFDialogue: slow text|r
 ## Author: Shinni; Kana (local patch)
 ## Version: 1.14-kana
 ## APIVersion: 101050 101051
-## Description: Personal SlowDialogs fork. /kslow toggles instant text for the current speaker.
+## Description: Gradually reveals dialogue text.
 ## SavedVariables: KanaSlowAddon_SavedVariables
 ## DependsOn: LibAddonMenu-2.0
 

@@ -3,6 +3,11 @@ zo_strlen=string.len; zo_floor=math.floor; zo_min=math.min
 CHATTER_START_BANK=1; CHATTER_START_SHOP=2; CHATTER_START_STABLE=3; CHATTER_START_TRADINGHOUSE=4
 EVENT_ADD_ON_LOADED=1; EVENT_CHATTER_END=2
 local now=100; local name='Мирри'; local hidden=false; local selected=0; local rendered={}; local updates={}; local events={}; local saved={}
+local menu={}; local menuShown=0
+MOUSE_BUTTON_INDEX_LEFT=1; MOUSE_BUTTON_INDEX_RIGHT=2
+function ClearMenu() menu={} end
+function AddMenuItem(label, callback) menu[#menu+1]={label=label, callback=callback} end
+function ShowMenu() menuShown=menuShown+1 end
 function GetFrameTimeMilliseconds() return now end
 function GetUnitName() return name end
 function GetCVar() return 'ru' end
@@ -18,7 +23,7 @@ function label:GetText() return self.text end
 function label:GetTextHeight() return 20 end
 function label:GetColor() return 1,1,1 end
 ZO_InteractWindowTargetAreaBodyText=label
-ZO_InteractWindowTargetAreaTitle={SetMouseEnabled=function() end,SetHandler=function() end}
+ZO_InteractWindowTargetAreaTitle={handlers={},SetMouseEnabled=function() end,SetHandler=function(self,event,handler) self.handlers[event]=handler end}
 INTERACTION={PopulateChatterOption=function(_,id,callback,text,kind) rendered[id]={callback=callback,text=text} end,ShowQuestRewards=function() return 'reward' end,SelectChatterOptionByIndex=function(_,id) if rendered[id] then selected=selected+1 end end}
 INTERACT_WINDOW={SelectChatterOptionByIndex=function(_,id) INTERACTION:SelectChatterOptionByIndex(id) end}
 function ZO_PreHook(object,key,fn) local old=object[key]; object[key]=function(...) if not fn(...) then return old(...) end end end
@@ -32,13 +37,25 @@ local function begin(text,kind)
 end
 if CASE=='toggle' then
  begin('Реплика')
- assert(type(SLASH_COMMANDS['/kslow'])=='function','missing no-argument toggle command')
- SLASH_COMMANDS['/kslow'](); assert(label.text=='Реплика','toggle must reveal current text')
+ assert(SLASH_COMMANDS['/kslow']==nil,'obsolete slash command is still registered')
+ local click=ZO_InteractWindowTargetAreaTitle.handlers.OnMouseUp
+ click(ZO_InteractWindowTargetAreaTitle,MOUSE_BUTTON_INDEX_RIGHT,true)
+ assert(menuShown==1 and #menu==1 and menu[1].label:find('Мгновенный',1,true),'right click must offer instant text')
+ assert(label.text~='Реплика','opening the menu must not finish the line')
+ menu[1].callback(); assert(label.text=='Реплика','menu toggle must reveal current text')
  begin('Следующая'); assert(label.text=='Следующая' and rendered[1],'remembered NPC must bypass delay')
  addon.OnAddonLoaded(nil,'KanaSlowAddon'); begin('После загрузки'); assert(label.text=='После загрузки','saved preference lost')
- SLASH_COMMANDS['/kslow'](); begin('Медленно'); assert(label.text~='Медленно','second toggle must restore slow text')
- name='Доска объявлений'; begin('Объявление'); SLASH_COMMANDS['/kslow'](); begin('Задание'); assert(label.text=='Задание','board name not remembered')
- hidden=true; name='Другой'; SLASH_COMMANDS['/kslow'](); hidden=false; begin('Другой текст'); assert(label.text~='Другой текст','outside dialogue must not toggle')
+ click(ZO_InteractWindowTargetAreaTitle,MOUSE_BUTTON_INDEX_RIGHT,true)
+ assert(menuShown==2 and menu[1].label:find('Постепенный',1,true),'menu must offer to restore gradual text')
+ menu[1].callback(); begin('Медленно'); assert(label.text~='Медленно','second toggle must restore slow text')
+ click(ZO_InteractWindowTargetAreaTitle,MOUSE_BUTTON_INDEX_LEFT,true)
+ assert(label.text=='Медленно','left click must still reveal the current line')
+ name='Доска объявлений'; begin('Объявление')
+ click(ZO_InteractWindowTargetAreaTitle,MOUSE_BUTTON_INDEX_RIGHT,true); menu[1].callback()
+ begin('Задание'); assert(label.text=='Задание','board name not remembered')
+ hidden=true; name='Другой'; click(ZO_InteractWindowTargetAreaTitle,MOUSE_BUTTON_INDEX_RIGHT,true)
+ assert(menuShown==3,'outside dialogue must not show menu')
+ hidden=false; begin('Другой текст'); assert(label.text~='Другой текст','outside dialogue must not toggle')
 elseif CASE=='action' then
  begin('Полная реплика')
  INTERACT_WINDOW:SelectChatterOptionByIndex(1)

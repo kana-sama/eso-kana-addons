@@ -1,8 +1,8 @@
 local SlowDialogs = KanaSlowAddonGlobal
 local panelData = {
 	type = "panel",
-	name = "KanaSlowAddon",
-	displayName = "KanaSlowAddon",
+	name = "Kana Dialogue: slow text",
+	displayName = "|cFF0000Kana|r |cFFFFFFDialogue: slow text|r",
 	author = "Shinni; Kana (local patch)",
 	version = "1.14-kana",
 	registerForRefresh = true,

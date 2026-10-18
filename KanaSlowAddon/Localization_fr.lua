@@ -1,7 +1,7 @@
 -- by lexo1000
 local SlowDialogs = KanaSlowAddonGlobal
 
-SlowDialogs.displayName = "KanaSlowAddon"
+SlowDialogs.displayName = "|cFF0000Kana|r |cFFFFFFDialogue: slow text|r"
 
 SlowDialogs.delayOption = "Délai"
 SlowDialogs.delayTooltip = "Délai entre deux caractères en millisecondes."

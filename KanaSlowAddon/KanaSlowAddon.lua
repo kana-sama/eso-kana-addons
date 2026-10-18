@@ -34,20 +34,25 @@ local function SpeakerKey()
     return GetCVar("language.2") .. ":" .. name, name
 end
 
-function KanaSlowAddon.ToggleSpeaker()
-    if ZO_InteractWindow:IsHidden() then
-        d("KanaSlowAddon: открой диалог, затем введи /kslow.")
-        return
-    end
-    local key, name = SpeakerKey()
-    if not key then
-        d("KanaSlowAddon: не удалось определить собеседника.")
-        return
-    end
+function KanaSlowAddon.ToggleSpeaker(key)
+    if ZO_InteractWindow:IsHidden() or SpeakerKey() ~= key then return end
     local fast = KanaSlowAddon.preferences.fastSpeakers
     fast[key] = not fast[key] or nil
     if fast[key] then KanaSlowAddon.Finish() end
-    d("KanaSlowAddon: " .. name .. (fast[key] and " — мгновенный текст." or " — медленный текст."))
+end
+
+function KanaSlowAddon.ShowSpeakerMenu(control)
+    if ZO_InteractWindow:IsHidden() or not KanaSlowAddon.preferences then return end
+    local key = SpeakerKey()
+    if not key then return end
+    local isRussian = GetCVar("language.2") == "ru"
+    local isFast = KanaSlowAddon.preferences.fastSpeakers[key]
+    local label = isRussian
+        and (isFast and "Постепенный текст" or "Мгновенный текст")
+        or (isFast and "Show text gradually" or "Show text instantly")
+    ClearMenu()
+    AddMenuItem(label, function() KanaSlowAddon.ToggleSpeaker(key) end)
+    ShowMenu(control)
 end
 
 function KanaSlowAddon.match_height()
@@ -190,9 +195,15 @@ end
 function KanaSlowAddon.Skip()
     return KanaSlowAddon.Finish()
 end
--- clicking on the name of the person you are talking to will skip the dialog animation
+-- Left click reveals the current line; right click changes this speaker's future lines.
 ZO_InteractWindowTargetAreaTitle:SetMouseEnabled(true)
-ZO_InteractWindowTargetAreaTitle:SetHandler("OnMouseUp", KanaSlowAddon.Skip )
+ZO_InteractWindowTargetAreaTitle:SetHandler("OnMouseUp", function(control, button, upInside)
+    if button == MOUSE_BUTTON_INDEX_RIGHT and upInside ~= false then
+        KanaSlowAddon.ShowSpeakerMenu(control)
+    elseif button == MOUSE_BUTTON_INDEX_LEFT then
+        KanaSlowAddon.Skip()
+    end
+end)
 
 function KanaSlowAddon.OnAddonLoaded( _, addon )
 	if addon ~= "KanaSlowAddon" then
@@ -236,7 +247,6 @@ function KanaSlowAddon.OnAddonLoaded( _, addon )
 	-- load saved settings
 	KanaSlowAddon.settings = ZO_SavedVars:New("KanaSlowAddon_SavedVariables", 2, "settings", {start_delay = 5, speed = 30, animation_length = 20})
     KanaSlowAddon.preferences = ZO_SavedVars:NewAccountWide("KanaSlowAddon_SavedVariables", 1, "preferences", {fastSpeakers = {}})
-    SLASH_COMMANDS["/kslow"] = KanaSlowAddon.ToggleSpeaker
     if not KanaSlowAddon.actionHooked then
         ZO_PreHook(INTERACT_WINDOW, "SelectChatterOptionByIndex", function(_, index)
             if index == 1 and not ZO_InteractWindow:IsHidden() then
