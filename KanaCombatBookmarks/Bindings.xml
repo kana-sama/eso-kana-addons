@@ -1,6 +1,6 @@
 <Bindings>
     <Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
-        <Category name="KanaCombatBookmarks">
+        <Category name="|cFF0000Kana|r |c4488FFCombatMetrics|r: |cFFFFFFbookmarks|r">
             <Action name="KANA_COMBAT_BOOKMARK">
                 <Up>KanaCombatBookmarks.Mark()</Up>
             </Action>

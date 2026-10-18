@@ -2,6 +2,9 @@ local addon = KanaCombatBookmarks
 local Integration = {}
 addon.Integration = Integration
 local GRACE_MS = 10000
+local function Enabled(api, key)
+    return not addon.Settings or addon.Settings.Enabled(key, api)
+end
 
 local function restoreLoadedUnitIds(fight, a)
     if not fight or not fight.log or not fight.unitConversion then return fight end
@@ -32,7 +35,7 @@ end
 function Integration:IsRecording()
     local a = self.api
     local db = a.CMX.db
-    if not db or db.lightmode then return false end
+    if not Enabled(a, 'bookmarks') or not db or db.lightmode then return false end
     local ava = a.IsPlayerInAvAWorld() or a.IsActiveWorldBattleground()
     return not (ava and (db.offincyrodil or db.lightmodeincyrodil))
 end
@@ -60,6 +63,7 @@ end
 
 function Integration:Mark()
     local a = self.api
+    if not Enabled(a, 'bookmarks') then return nil, 'disabled' end
     local now = a.GetGameTimeMilliseconds()
     local state = self.active
     local log = a.CMX.currentdata and a.CMX.currentdata.log
@@ -73,14 +77,18 @@ function Integration:Mark()
         if ending and now >= ending and now - ending <= GRACE_MS then state = self.byLog[fight.log] end
     end
     if not self:IsRecording() or not state or #state.log == 0 then
-        a.ZO_AlertNoSuppression(a.UI_ALERT_CATEGORY_ALERT, nil, 'Закладка не создана: нет записываемого боя CMX.')
+        if Enabled(a, 'alerts') then
+            a.ZO_AlertNoSuppression(a.UI_ALERT_CATEGORY_ALERT, nil, 'Закладка не создана: нет записываемого боя CMX.')
+        end
         return nil, 'no_fight'
     end
     state.names = state.names or addon.Names.New(nil, state.data.entries)
     local entry = addon.Model.Add(state.data.entries, now - state.startMs, state.names:Next())
-    a.PlaySound(a.SOUNDS.LOCKPICKING_CHAMBER_LOCKED)
-    a.ZO_AlertNoSuppression(a.UI_ALERT_CATEGORY_ALERT, nil,
-        'Закладка: |cFFD54F' .. entry.name .. '|r · ' .. addon.Model.Time(entry.offsetMs))
+    if Enabled(a, 'sound') then a.PlaySound(a.SOUNDS.LOCKPICKING_CHAMBER_LOCKED) end
+    if Enabled(a, 'alerts') then
+        a.ZO_AlertNoSuppression(a.UI_ALERT_CATEGORY_ALERT, nil,
+            'Закладка: |cFFD54F' .. entry.name .. '|r · ' .. addon.Model.Time(entry.offsetMs))
+    end
     if state.fight and self.onChanged then self.onChanged() end
     return entry
 end
@@ -125,7 +133,7 @@ function Integration.Install(api)
         return save(fight, ...)
     end
     local load = api.CombatMetricsFightData.Load
-    if type(load) == 'function' then
+    if Enabled(api, 'loadedLogRepair') and type(load) == 'function' then
         api.CombatMetricsFightData.Load = function(...)
             return restoreLoadedUnitIds(load(...), api)
         end

@@ -1,12 +1,21 @@
 local T=dofile('KanaCombatBookmarks/tests/support.lua')
-T.load('Names');T.load('Model');T.load('Integration');T.load('LogView')
+T.load('Names');T.load('Model');T.load('Settings');T.load('Integration');T.load('LogView')
 local makeApi=dofile('KanaCombatBookmarks/tests/ui_support.lua')
 local names={'DAMAGE_OUT','DAMAGE_IN','DAMAGE_SELF','HEAL_OUT','HEAL_IN','HEAL_SELF','EFFECTS_IN','EFFECTS_OUT','GROUPEFFECTS_IN','GROUPEFFECTS_OUT','PLAYERSTATS','RESOURCES','MESSAGES','DEATH','PLAYERSTATS_ADVANCED','SKILL_TIMINGS','BOSSHP','PERFORMANCE'}
 for i,name in ipairs(names) do _G['LIBCOMBAT_EVENT_'..name]=i+3 end
 local modules=KanaCombatBookmarks
 local function setup()
     local a=makeApi();a._G=a
-    a.KanaCombatBookmarks={Names=modules.Names,Model=modules.Model,Integration=modules.Integration,LogView=modules.LogView}
+    a.KanaCombatBookmarks={Names=modules.Names,Model=modules.Model,Settings=modules.Settings,
+        Integration=modules.Integration,LogView=modules.LogView}
+    a.ZO_SavedVars={NewAccountWide=function(_,name,version,namespace,defaults)
+        T.eq(name,'KanaCombatBookmarksSV');T.eq(version,1);T.eq(namespace,nil)
+        a.saved=a.saved or {}
+        for key,value in pairs(defaults) do if a.saved[key]==nil then a.saved[key]=value end end
+        return a.saved
+    end}
+    a.LibAddonMenu2={RegisterAddonPanel=function(_,id,panel) a.settingsPanel=panel end,
+        RegisterOptionControls=function(_,id,options) a.settingsOptions=options end}
     a.EVENT_ADD_ON_LOADED=1;a.events={};a.pending={};a.strings={}
     a.EVENT_MANAGER={RegisterForEvent=function(_,name,event,fn)assert(not a.events[event]);a.events[event]=fn end,
         UnregisterForEvent=function(_,name,event)a.events[event]=nil end}
@@ -49,5 +58,28 @@ T.test('missing UI leaves native code intact; unavailable dependencies fail safe
     assert(a.KanaCombatBookmarks.adapter);a.controls.panel:Update();T.eq(a.nativeUpdates,1)
     local b=setup();b.CombatMetricsFightData=nil;b:load();b.events[1](1,'KanaCombatBookmarks')
     assert(not b.KanaCombatBookmarks.adapter);assert(not b.KanaCombatBookmarks.Mark());T.eq(#b.sounds,0)
+end)
+T.test('settings preserve defaults and independently disable each patch',function()
+    local a=setup();a.saved={sound=false,alerts=false,log=false,loadedLogRepair=false}
+    a.CombatMetricsFightData.Load=function() return 'native' end
+    local nativeLoad=a.CombatMetricsFightData.Load
+    a:load();a.events[1](1,'KanaCombatBookmarks')
+    assert(a.KanaCombatBookmarks.adapter and not a.KanaCombatBookmarks.view)
+    assert(a.CombatMetricsFightData.Load==nativeLoad)
+    T.eq(#a.settingsOptions,5)
+    for _,option in ipairs(a.settingsOptions) do
+        assert(option.type=='checkbox' and option.default and option.requiresReload)
+    end
+    assert(not a.settingsOptions[2].getFunc())
+    a.settingsOptions[2].setFunc(true)
+    assert(a.settingsOptions[2].getFunc())
+    a.settingsOptions[2].setFunc(false)
+    a:start();assert(a.KanaCombatBookmarks.Mark());T.eq(#a.sounds,0);T.eq(#a.alerts,0)
+    assert(not a.KanaCombatBookmarks.adapter.onChanged)
+    a.saved.bookmarks=false
+    assert(not a.KanaCombatBookmarks.Mark())
+    a:stop(101000);a.fight=a:finish(100000,101000)
+    T.eq(#a.fight.kanaCombatBookmarks.entries,1)
+    assert(a.settingsPanel.displayName:find('|c4488FFCombatMetrics|r',1,true))
 end)
 T.finish()
