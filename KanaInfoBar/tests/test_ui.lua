@@ -1,6 +1,13 @@
 local H=dofile('KanaInfoBar/tests/ui_harness.lua')
 local A=H.load()
 local M=A.Model
+assert(SLASH_COMMANDS['/kanainfobar']==nil,'removed command must stay unregistered')
+assert(H.settingsPanel.name=='Kana Widgets','settings use the visible addon name')
+local editorButton
+for _,option in ipairs(H.settingsOptions) do
+    if option.type=='button' and option.name=='Редактировать панель' then editorButton=option end
+end
+assert(editorButton and type(editorButton.func)=='function','editor must remain accessible in settings')
 assert(not A.controls.messages:IsHidden() and A.controls.treasure:IsHidden())
 assert(A.currentWidths.messages==104,'three empty badges reserve their single-digit cells')
 for _,badge in ipairs(A.controls.messages.badges) do

@@ -39,9 +39,6 @@ function A:Initialize()
     self:InitializeInventoryAction()
     self:CreatePanel()
     self:InitializeSettings()
-    SLASH_COMMANDS['/kanainfobar']=function(args)
-        if args and args:lower():match('^%s*edit%s*$') then self:OpenEditor() else self:OpenSettings() end
-    end
     EVENT_MANAGER:RegisterForUpdate(self.name,250,function() self:Refresh() end)
     EVENT_MANAGER:RegisterForEvent(self.name,EVENT_PLAYER_ACTIVATED,function() self:Refresh(true) end)
     EVENT_MANAGER:RegisterForEvent(self.name,EVENT_SCREEN_RESIZED,function()

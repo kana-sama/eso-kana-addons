@@ -73,7 +73,8 @@ ZO_SavedVars={NewAccountWide=function(_,_,_,_,defaults)
     return setmetatable({}, {__index=defaults,__newindex=function(_,key,value) defaults[key]=value end})
 end}
 KEYBIND_STRIP={AddKeybindButtonGroup=function() end,RemoveKeybindButtonGroup=function() end}
-LibAddonMenu2={RegisterAddonPanel=function() return H.control() end,RegisterOptionControls=function() end,OpenToPanel=function() end}
+LibAddonMenu2={RegisterAddonPanel=function(_,_,panel) H.settingsPanel=panel; return H.control() end,
+    RegisterOptionControls=function(_,_,options) H.settingsOptions=options end,OpenToPanel=function() end}
 SLASH_COMMANDS={};InformationTooltip=H.control()
 function InitializeTooltip() end
 function ClearTooltip() end
