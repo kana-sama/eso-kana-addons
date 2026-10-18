@@ -35,8 +35,8 @@ local function RegisterSettings()
     local LAM = LibAddonMenu2
     LAM:RegisterAddonPanel(panelId, {
         type = "panel",
-        name = ADDON_NAME,
-        displayName = ADDON_NAME,
+        name = "Kana Blade of Woe: no protection",
+        displayName = "|cFF0000Kana|r |cFFFFFFBlade of Woe: no protection|r",
         author = "Kana",
         version = "1.0.0",
         registerForRefresh = true,
