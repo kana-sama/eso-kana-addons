@@ -47,6 +47,10 @@ SCENE_MANAGER={RegisterCallback=function(_,name,fn) scenes[#scenes+1]=fn end}
 function GetDisplayName() return '@test' end
 function GetCurrentCharacterId() return 'character1' end
 function d(msg) error(msg) end
+LibAddonMenu2 = {
+ RegisterAddonPanel = function(_,id,panel) assert(id=='KanaCooldownMetronome_Panel'); _G.extensionPanel=panel end,
+ RegisterOptionControls = function(_,id,options) assert(id=='KanaCooldownMetronome_Panel'); _G.extensionOptions=options end,
+}
 local cm=CombatMetronome
 cm.SV={global=true,Progressbar={width=300,height=30,backgroundColor={0,0,0,.5},makeItFancy=true}}
 CombatMetronomeSavedVars={Default={['@test']={
@@ -97,8 +101,9 @@ assert(a.settings.radialCooldown and a.settings.radialCenterX==700,'must migrate
 assert(KanaCooldownMetronomeSavedVars.profiles['@test'].character1.radialCenterX==222,'must migrate other characters')
 assert(cm.SV.Progressbar.radialCooldown==nil,'must not add settings to base SV')
 assert(cm.Progressbar.frame.w==120 and cm.Progressbar.frame.anchor[4]==700)
-assert(cm.menu.options.Progressbar[1].kanaCooldownMetronome)
-a:ExtendMenu();assert(#cm.menu.options.Progressbar==2,'duplicate menu entry')
+assert(extensionPanel and #extensionOptions==7)
+assert(#cm.menu.options.Progressbar==1,'must not change original addon settings')
+a:RegisterSettingsPanel();assert(#cm.menu.options.Progressbar==1,'duplicate settings panel')
 cm:Update();assert(updates==1 and linearCalls==0,'must use original updater and radial rendering')
 assert(cm.Progressbar.spellIcon.anchor[1]==BOTTOM)
 cm:HideFancy(false);assert(cm.Progressbar.bar.backgroundTexture.hidden)
@@ -107,7 +112,7 @@ cm.localPosition();for _,fn in ipairs(scenes) do fn() end
 assert(cm.Progressbar.frame.anchor[4]==700,'scene callback must restore ring position')
 cm.Progressbar.frame:GetHandler('OnMoveStop')()
 assert(moves==0 and a.settings.radialCenterX==70,'radial drag must not modify linear position')
-local options=cm.menu.options.Progressbar[1].controls
+local options=extensionOptions
 options[1].setFunc(false)
 assert(cm.Progressbar.frame.w==300 and cm.Progressbar.frame.h==30,'must restore linear size')
 assert(cm.Progressbar.spellIcon.anchor[1]==TOPLEFT,'must restore linear icon')
@@ -117,8 +122,8 @@ assert(moves==1 and resizes==1,'must preserve linear handlers')
 cm:Update();assert(updates==2 and linearCalls>=1)
 options[1].setFunc(true);a.settings.radialCenterX=888;a:LoadSettings()
 assert(a.settings.radialCenterX==888,'migration must not overwrite extension settings')
-cm:BuildMenu();assert(cm.menu.options.Progressbar[1].kanaCooldownMetronome,'menu rebuild must retain radial options')
+cm:BuildMenu();assert(#cm.menu.options.Progressbar==1,'menu rebuild must stay native')
 cm:ResetBarValues();assert(cm.Progressbar.bar.segments[2].progress==0)
 cm.SV.global=false;a:LoadSettings()
 assert(a.settings.radialCenterX==222 and not a.settings.radialCooldown,'must select character profile')
-print('PASS extension: late load, all-profile migration, independent persistence, menu, visibility, layout, drag, linear fallback')
+print('PASS extension: late load, all-profile migration, own settings, visibility, layout, drag, linear fallback')

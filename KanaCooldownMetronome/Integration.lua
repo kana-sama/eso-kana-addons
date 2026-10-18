@@ -58,20 +58,20 @@ function A:HideFancy(value)
     CM:HideFancy(value)
 end
 
-function A:ExtendMenu()
-    local options = CM.menu and CM.menu.options and CM.menu.options.Progressbar
-    if not options then return end
-    for _, option in ipairs(options) do
-        if option.kanaCooldownMetronome then return end
-    end
-    local option = self:RadialOptions()
-    option.kanaCooldownMetronome = true
-    local position = 1
-    for i, entry in ipairs(options) do
-        if entry.name == "Position / Size" then position = i; break end
-    end
-    -- LAM keeps this options table by reference and builds controls lazily.
-    table.insert(options, position, option)
+function A:RegisterSettingsPanel()
+    if self.settingsPanelRegistered then return end
+    self.settingsPanelRegistered = true
+    local panelId = 'KanaCooldownMetronome_Panel'
+    LibAddonMenu2:RegisterAddonPanel(panelId, {
+        type = 'panel',
+        name = 'Kana CombatMetronome: radial cooldown',
+        displayName = '|cFF0000Kana|r |c4488FFCombatMetronome|r: |cFFFFFFradial cooldown|r',
+        author = 'Kana',
+        version = '1.0.0',
+        registerForRefresh = true,
+        registerForDefaults = true,
+    })
+    LibAddonMenu2:RegisterOptionControls(panelId, self:RadialOptions().controls)
 end
 
 function A:AttachUI(ui)
@@ -120,24 +120,19 @@ end
 
 function A:Initialize()
     if self.initialized then return end
-    if not CM or not CM.Progressbar or not CM.Progressbar.UI or not CM.menu or not CM.menu.options then
+    if not CM or not CM.Progressbar or not CM.Progressbar.UI then
         d("KanaCooldownMetronome: Combat Metronome is not initialized; radial extension was not loaded.")
         return
     end
     self.initialized = true
     self:AttachUI(CM.Progressbar.UI)
-    self:ExtendMenu()
+    self:RegisterSettingsPanel()
     local buildUI = CM.BuildUI
     CM.BuildUI = function(owner, ...)
         local ui = buildUI(owner, ...)
         owner.Progressbar.kanaCooldownAttached = nil
         A:AttachUI(ui)
         return ui
-    end
-    local buildMenu = CM.BuildMenu
-    CM.BuildMenu = function(owner, ...)
-        buildMenu(owner, ...)
-        A:ExtendMenu()
     end
     local hideFancy = CM.HideFancy
     CM.HideFancy = function(owner, hidden)
