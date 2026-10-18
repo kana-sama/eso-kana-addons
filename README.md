@@ -10,10 +10,8 @@
 ## AetherChat <sup>[esoui](https://www.esoui.com/downloads/info4798-AetherChat.html)</sup>
 Чат аля мессенджер.
 
-### KanaAetherChat
-- ESC закрывает чат.
-- хоткей открытия чата (Enter например) открывает с инпутом в фокусе чтобы сразу писать.
-- Между сессиями сохраняется последний чат.
+### Kana AetherChat Patch
+Исправляет управление и отображение AetherChat; подробности — в [README надстройки](KanaAetherChat/README.md).
 
 ## BountyTimeDisplay <sup>[esoui](https://www.esoui.com/downloads/info2857-BountyTimeDisplay.html)</sup>
 Считает и показывает через какое время награда за голову будет полностью снята.
@@ -30,14 +28,14 @@
 ## Combat Metrics <sup>[esoui](https://www.esoui.com/downloads/info1360-CombatMetrics.html)</sup>
 Анализ/логи боев, дпс-метр.
 
-### [KanaCombatBookmarks](KanaCombatBookmarks/README.md)
-Закладки биндом с запоминающимися именами, угловым уведомлением и щелчком. Переход к яркому разделителю в центре лога.
+### [Kana CombatMetrics: bookmarks](KanaCombatBookmarks/README.md)
+Добавляет закладки в подробный боевой лог CombatMetrics.
 
 ## Combat Metronome <sup>[esoui](https://www.esoui.com/downloads/info2373-CombatMetronomeGCDTracker.html)</sup>
 Рисует GCD шкалу с учетом пинга.
 
-### KanaCooldownMetronome
-Позволяет делать шкалу радиальной, чтобы рисовать вокруг прицела.
+### [Kana CombatMetronome: radial cooldown](KanaCooldownMetronome/README.md)
+Показывает откат CombatMetronome кольцом вокруг прицела, включая зону пинга.
 
 ## CrutchAlerts <sup>[esoui](https://www.esoui.com/downloads/info3137-CrutchAlerts.html)</sup>
 Еще таймеры разных атак боссов.
@@ -48,13 +46,13 @@
 ## Currently Equipped <sup>[esoui](https://www.esoui.com/downloads/info3524-CurrentlyEquipped--EquippedSetDisplay.html)</sup>
 Позволяет рисовать панель
 
-### KanaCurrentlyEquipped
-Панель рисуется теперь только в инвентаре.
+### [Kana CurrentlyEquipped: visibility fix](KanaCurrentlyEquipped/README.md)
+Показывает панель CurrentlyEquipped только при открытом инвентаре.
 
 ## Dolgubon's Lazy Set Crafter <sup>[esoui](https://www.esoui.com/downloads/info1697-DolgubonsLazySetCrafter.html)</sup>
 Создание снаряжения по очереди.
 
-### [Kana Lazy Set Crafter Auto Hide](KanaLazySetCrafterAutoHide/README.md)
+### [Kana Lazy Set Crafter: auto hide](KanaLazySetCrafterAutoHide/README.md)
 При входе на станок открывает окно только с непустой очередью. Кнопка снизу позволяет вручную показать или скрыть его в любой момент.
 
 ## Dolgubon's Lazy Writ Crafter <sup>[esoui](https://www.esoui.com/downloads/info1346-DolgubonsLazyWritCrafter.html)</sup>
@@ -118,64 +116,68 @@
 
 # Мои аддоны или форки
 
-## KanaArchiveAchievements
-Штатные значки рядом со строфами и видениями, нужными для незакрытых достижений Бесконечного архива. При подсветке варианта показывает полные тултипы достижений под панелью выбора, с общей прокруткой. Требует Archive Helper.
+## Kana Archive Helper: achievement hints
+Помечает строфы и видения, которые продвигают незавершённые достижения Бесконечного архива.
 
-## KanaAudibleFishBite
-Упрощает рыбалку, проигрывает звук и показывает текст что нужно вытащить.
+## Kana Archive Assist
+Помечает строфы и видения в Бесконечном архиве на основе ваших прошлых выборов.
 
-Это форк AudibleFishBite, который обновлен под текущую версию ESO, заменяет звук и рисует текст.
+## Kana Back Bar Reminder
+Подсвечивает края экрана и прицел, когда активна запасная панель оружия.
 
-## KanaAuras
-Это мои кастомные ауры для арканиста (круг вокруг прицела заполняется) и оборотня (отдельная панель с голодом, яростью и зарядами).
+## Kana Fishing Bite Alert
+Предупреждает о поклёвке на рыбалке звуком и надписью.
 
-## KanaBladeOfWoe
+## [Kana HUD: Arcanist](KanaArcanistHUD/README.md)
+Показывает вокруг прицела накопленные Знаки арканиста.
+
+## [Kana HUD: Dragonknight](KanaDragonknightHUD/README.md)
+Показывает у прицела «Кипящую ярость» и стаки «Теплового шока» на цели.
+
+## [Kana HUD: Werewolf](KanaAuras/README.md)
+Показывает в форме вервольфа голод, ярость и запас формы.
+
+## Kana Blade of Woe: no protection
 Позволяет убивать Клинком Горя даже если включена защита от убийства мирных жителей.
 
 ## Kana Buff Panels
 Разносит штатные эффекты персонажа по отдельным панелям и скрывает ненужные, сохраняя привычные иконки и таймеры ESO.
 
-## KanaColorMap
-Делает зоны на карте мира цветными.
+## [Kana World Map Colors](KanaColorMap/README.md)
+Раскрашивает области на общей карте Тамриэля и подчёркивает их границы.
 
-## KanaCooldownPanel
-Дублирует таймеры с обоих панели, но в прозрачном не мешающем виде, чтобы можно было поставиь под курсор и все равно видеть персонажа. Так же показывает яркий сигнал что какой-то навык не на таймере. Добавляет контектное меню к навыкам панели чтобы настраивать для каких навыков нужны алерты.
+## [Kana Cooldown Panel](KanaCooldownPanel/README.md)
+Показывает таймеры навыков обеих панелей оружия и предупреждает о пропущенных важных эффектах.
 
-## KanaCraftedSetCollections
-Показывает крафтовые сеты в коллекции сетов, чтобы поиском искать какие сеты где можно скрафтить.
+## [Kana Craftable Set Collection](KanaCraftedSetCollections/README.md)
+Добавляет крафтовые сеты в коллекцию наборов ESO для поиска и просмотра бонусов.
 
-## KanaOutfitBrowser
-Группирует стили шмоток по сетам, а не по типу, чтобы можно было быстро применять сеты целиком.
+## [Kana Outfit Sets](KanaOutfitBrowser/README.md)
+Добавляет в коллекцию стилей нарядов список сетов, которые можно скрывать и отмечать любимыми.
 
-## KanaEffects
-Позволяет создавать свои панели бафов/дебафов с произвольными фильтрами и стилями.
+## [Kana Effects](KanaEffects/README.md)
+Позволяет собрать собственные панели эффектов для боя.
 
-## KanaEnemyMark
-Рисует метки над врагами, которые с тобой в бою. Иногда я не вижу каких-нибудь жуков в земле.
+## [Kana Enemy Markers](KanaEnemyMark/README.md)
+Помечает красными стрелками врагов, с которыми вы сражаетесь.
 
-## KanaLaunderGuard
-Блокирует отмывание сокровищ. Однажды я отмыл сокровик на несколько десятков тысяч.
+## [Kana Treasure Launder Guard](KanaLaunderGuard/README.md)
+Запрашивает подтверждение перед отмыванием краденых сокровищ.
 
-## KanaLitanyOfBlood
-Зачеркивает в «Литании крови» описания уже убитых целей по прогрессу достижения.
+## [Kana Litany of Blood](KanaLitanyOfBlood/README.md)
+Зачёркивает уже убитые цели в книге «Литания крови».
 
 ## Lead List <sup>[esoui](https://www.esoui.com/downloads/info4159-LeadList.html)</sup>
 Показывает список найденных зацепок c фильтрами.
 
-### KanaLeadList
-Дополнительные фильтры и настройки.
+### [Kana LeadList: search tools](KanaLeadList/README.md)
+Дополняет список зацепок фильтрами, подсказками наград и быстрым лоцированием.
 
-## KanaInfoBar
-Рисует панель на который можно поставить разные виджеты с информацией.
-- фпс и пинг
-- заполнение сумок
-- сколько денег можно заработать если продать все краденое
-- прочность снаряжения
-- дпс метр
-- личные сообщения от AetherChat
+## [Kana Widgets](KanaInfoBar/README.md)
+Собирает в одной панели пинг, FPS, DPS, состояние инвентаря и снаряжения, уведомления и цену краденого.
 
-## KanaNoRepeat
-Скрывает кнопку "повторить" из диалогов. Бесит
+## [Kana Dialogue: no repeat](KanaNoRepeat/README.md)
+Скрывает кнопку «Повторить» в диалогах ESO.
 
 ## KanaQuestZoneFix
 Это фиксы баз данных с квестами.
@@ -184,7 +186,7 @@
 Рисует вечный пинг вокруг персонажа. Чтобы всегда было видно где я.
 
 ## Kana Armor Penetration Bar
-Показывает шкалу личного пробития относительно расчётного сопротивления цели после дебаффов. Автоматические профили для оверленда, логов, публичных и групповых подземелий; оценки помечены `≈`. Настройка и перемещение — через меню дополнений.
+Показывает под здоровьем цели шкалу вашего пробития относительно её сопротивления.
 
 ## KanaReadBook
 Добавляет команду для чтения книги по названию.
