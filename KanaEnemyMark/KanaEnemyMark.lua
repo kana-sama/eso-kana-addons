@@ -22,8 +22,8 @@ local function OnLoaded(_, addonName)
     local LAM = LibAddonMenu2
     LAM:RegisterAddonPanel(ADDON_NAME .. "Settings", {
         type = "panel",
-        name = ADDON_NAME,
-        displayName = ADDON_NAME,
+        name = "Kana Enemy Markers",
+        displayName = "|cFF0000Kana|r |cFFFFFFEnemy Markers|r",
         author = "Kana",
         version = "1.0.0",
         registerForRefresh = true,
