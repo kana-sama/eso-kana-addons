@@ -1,0 +1,10 @@
+## Title: |cFF0000Kana|r |c4488FFReminderz|r|cFFFFFF: progress filter|r
+## APIVersion: 101050
+## Version: 1.0.2
+## AddOnVersion: 10002
+## Author: Kana
+## Description: Reminderz extension: optional filtering of achievement progress to the highest tier.
+## SavedVariables: KanaReminderzOptions
+## DependsOn: Reminderz LibAddonMenu-2.0>=40
+
+KanaReminderz.lua
