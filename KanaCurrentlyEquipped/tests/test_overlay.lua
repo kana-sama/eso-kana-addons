@@ -56,8 +56,28 @@ CurrentlyEquipped = {
     end,
 }
 
+local saved = {}
+ZO_SavedVars = {NewAccountWide = function(_, name, version, namespace, defaults)
+    assert(name == 'KanaCurrentlyEquippedSV' and version == 1 and namespace == nil)
+    if saved.inventoryOnly == nil then saved.inventoryOnly = defaults.inventoryOnly end
+    return saved
+end}
+local panel, options
+LibAddonMenu2 = {
+    RegisterAddonPanel = function(_, id, value)
+        assert(id == 'KanaCurrentlyEquipped_Panel')
+        panel = value
+    end,
+    RegisterOptionControls = function(_, id, value)
+        assert(id == 'KanaCurrentlyEquipped_Panel')
+        options = value
+    end,
+}
+
 dofile("KanaCurrentlyEquipped/KanaCurrentlyEquipped.lua")
 callbacks[EVENT_ADD_ON_LOADED](nil, "KanaCurrentlyEquipped")
+assert(panel.displayName:find('|c4488FFCurrentlyEquipped|r', 1, true))
+assert(#options == 1 and options[1].getFunc() and options[1].requiresReload)
 
 assert(CEFrame.hidden, "overlay hides the original display before inventory opens")
 

@@ -1,6 +1,7 @@
-## Title: KanaCurrentlyEquipped
+## Title: |cFF0000Kana|r |c4488FFCurrentlyEquipped|r: |cFFFFFFvisibility fix|r
 ## Author: Kana
-## DependsOn: CurrentlyEquipped
+## DependsOn: CurrentlyEquipped LibAddonMenu-2.0
+## SavedVariables: KanaCurrentlyEquippedSV
 ## APIVersion: 101045
 ## AddOnVersion: 1.0.0
 
