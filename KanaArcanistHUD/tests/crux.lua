@@ -42,7 +42,9 @@ GetFrameTimeSeconds = function() return now end
 GetNumBuffs = function(unit) assert(unit == 'player'); return #buffs end
 GetUnitBuffInfo = function(unit, i) assert(unit == 'player'); return unpack(buffs[i]) end
 local file=io.open('Crux.lua'); assert(file, 'Crux tracker missing'); file:close()
-dofile('Crux.lua'); events[1](1,'KanaAuras')
+dofile('Crux.lua'); events[1](1,'KanaArcanistHUD')
+assert(not SLASH_COMMANDS['/kanacrux'])
+assert(controls.KanaCruxLeft.texture == 'eso-kana-addons/KanaArcanistHUD/textures/CruxJadeLeft.dds')
 local left,right,top=controls.KanaCruxLeft,controls.KanaCruxRight,controls.KanaCruxTop
 local full=controls.KanaCruxFull
 local function aura(count,ending,id)

@@ -40,10 +40,12 @@ zo_strformat = function(_, text) return (text:gsub('%^.*$', '')) end
 GetFrameTimeSeconds = function() return now end
 GetNumBuffs = function(unit) assert(unit == 'player'); return #buffs end
 GetUnitBuffInfo = function(unit, i) assert(unit == 'player'); return unpack(buffs[i]) end
-dofile('KanaAuras.lua')
+dofile('SeethingFury.lua')
 events[1](1, 'OtherAddon')
 assert(not controls.KanaAurasWindow)
-events[1](1, 'KanaAuras')
+events[1](1, 'KanaDragonknightHUD')
+assert(not SLASH_COMMANDS['/kanauras'])
+assert(controls.KanaAurasLeft.texture == 'eso-kana-addons/KanaDragonknightHUD/textures/CircleLeft.dds')
 local left, right, top = controls.KanaAurasLeft, controls.KanaAurasRight, controls.KanaAurasTop
 assert(left and right and top, 'Must create left, right and top stack segments')
 assert(controls.KanaAurasWindow.anchor[2] == ZO_ReticleContainerReticle,

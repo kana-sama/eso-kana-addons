@@ -1,4 +1,5 @@
 local NAME = "KanaAuras"
+local ADDON_NAME = "KanaDragonknightHUD"
 local AURA_NAME = "кипящая ярость"
 local DIAMETER = 96
 local COLOR = { 1, 1, 1, 0.95 } -- Цвет пламени уже задан в текстурах.
@@ -68,7 +69,7 @@ local function Refresh()
 end
 
 local function Initialize(_, addonName)
-    if addonName ~= NAME then return end
+    if addonName ~= ADDON_NAME then return end
     EVENT_MANAGER:UnregisterForEvent(NAME, EVENT_ADD_ON_LOADED)
 
     local root = WINDOW_MANAGER:CreateTopLevelWindow(NAME .. "Window")
@@ -86,7 +87,7 @@ local function Initialize(_, addonName)
     for index, side in ipairs({ "Left", "Right", "Top" }) do
         local segment = WINDOW_MANAGER:CreateControl(NAME .. side, root, CT_TEXTURE)
         segment:SetAnchorFill(root)
-        segment:SetTexture("eso-kana-addons/KanaAuras/textures/Circle" .. side .. ".dds")
+        segment:SetTexture("eso-kana-addons/KanaDragonknightHUD/textures/Circle" .. side .. ".dds")
         segment:SetBlendMode(TEX_BLEND_MODE_ADD)
         segment:SetColor(unpack(COLOR))
         segment:SetMouseEnabled(false)
@@ -94,21 +95,21 @@ local function Initialize(_, addonName)
         segments[index] = segment
         local fire = WINDOW_MANAGER:CreateControl(NAME .. "Glow" .. side, glow, CT_TEXTURE)
         fire:SetAnchorFill(glow)
-        fire:SetTexture("eso-kana-addons/KanaAuras/textures/CircleGlow" .. side .. ".dds")
+        fire:SetTexture("eso-kana-addons/KanaDragonknightHUD/textures/CircleGlow" .. side .. ".dds")
         fire:SetBlendMode(TEX_BLEND_MODE_ADD)
         fire:SetColor(unpack(COLOR))
         fire:SetMouseEnabled(false)
         glowSegments[index] = fire
         local core = WINDOW_MANAGER:CreateControl(NAME .. "HotCore" .. side, glow, CT_TEXTURE)
         core:SetAnchorFill(glow)
-        core:SetTexture("eso-kana-addons/KanaAuras/textures/CircleGlow" .. side .. ".dds")
+        core:SetTexture("eso-kana-addons/KanaDragonknightHUD/textures/CircleGlow" .. side .. ".dds")
         core:SetBlendMode(TEX_BLEND_MODE_ADD)
         core:SetColor(1, 1, 0.85, 0.85)
         core:SetMouseEnabled(false)
         local halo = WINDOW_MANAGER:CreateControl(NAME .. "Halo" .. side, glow, CT_TEXTURE)
         halo:SetAnchor(CENTER, glow, CENTER, 0, 0)
         halo:SetDimensions(DIAMETER, DIAMETER)
-        halo:SetTexture("eso-kana-addons/KanaAuras/textures/CircleGlow" .. side .. ".dds")
+        halo:SetTexture("eso-kana-addons/KanaDragonknightHUD/textures/CircleGlow" .. side .. ".dds")
         halo:SetBlendMode(TEX_BLEND_MODE_ADD)
         halo:SetMouseEnabled(false)
         halos[index] = halo
@@ -117,7 +118,7 @@ local function Initialize(_, addonName)
             local trail = WINDOW_MANAGER:CreateControl(NAME .. "Flame" .. side .. layer, glow, CT_TEXTURE)
             trail:SetAnchor(CENTER, glow, CENTER, 0, 0)
             trail:SetDimensions(DIAMETER, DIAMETER)
-            trail:SetTexture("eso-kana-addons/KanaAuras/textures/CircleGlow" .. side .. ".dds")
+            trail:SetTexture("eso-kana-addons/KanaDragonknightHUD/textures/CircleGlow" .. side .. ".dds")
             trail:SetBlendMode(TEX_BLEND_MODE_ADD)
             trail:SetMouseEnabled(false)
             flameTrails[index][layer] = trail
@@ -131,29 +132,6 @@ local function Initialize(_, addonName)
     EVENT_MANAGER:RegisterForUpdate(NAME, 50, Refresh)
     Refresh()
 
-    SLASH_COMMANDS["/kanauras"] = function()
-        Refresh()
-        local x, y = root:GetCenter()
-        d(string.format("KanaAuras: stacks=%d rootHidden=%s alpha=%.2f center=%.0f,%.0f",
-            GetStacks(), tostring(root:IsHidden()), root:GetAlpha(), x, y))
-        for index, segment in ipairs(segments) do
-            local width, height = segment:GetDimensions()
-            local tw, th = segment:GetTextureFileDimensions()
-            d(string.format("%d: hidden=%s loaded=%s size=%.0fx%.0f texture=%dx%d",
-                index, tostring(segment:IsHidden()), tostring(segment:IsTextureLoaded()),
-                width, height, tw, th))
-        end
-        for i, fire in ipairs(glowSegments) do
-            d("Glow " .. i .. ": hidden=" .. tostring(glow:IsHidden()) .. " loaded=" .. tostring(fire:IsTextureLoaded()))
-        end
-        for i = 1, GetNumBuffs("player") do
-            local name, _, finish, _, count, _, _, _, _, _, id = GetUnitBuffInfo("player", i)
-            if id == 122658 or (name and zo_strlower(name):find("ярость", 1, true)) then
-                d(string.format("Aura: %s id=%d stacks=%d remaining=%.1f",
-                    name, id, count, finish - GetFrameTimeSeconds()))
-            end
-        end
-    end
 end
 
 EVENT_MANAGER:RegisterForEvent(NAME, EVENT_ADD_ON_LOADED, Initialize)

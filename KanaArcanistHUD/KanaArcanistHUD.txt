@@ -1,0 +1,7 @@
+## Title: |cFF0000Kana|r |cFFFFFFHUD: Arcanist|r
+## Author: kana
+## Version: 1.0.0
+## APIVersion: 101050 101051
+## Description: Arcanist Crux HUD.
+
+Crux.lua

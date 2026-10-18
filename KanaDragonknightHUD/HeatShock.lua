@@ -52,7 +52,7 @@ local function Refresh()
 end
 
 local function Initialize(_, addon)
-    if addon ~= 'KanaAuras' then return end
+    if addon ~= 'KanaDragonknightHUD' then return end
     EVENT_MANAGER:UnregisterForEvent(NAME, EVENT_ADD_ON_LOADED)
     local root = WINDOW_MANAGER:CreateTopLevelWindow('KanaHeatWindow')
     root:SetAnchor(CENTER, ZO_ReticleContainerReticle or GuiRoot, CENTER, 0, 112)
@@ -66,7 +66,7 @@ local function Initialize(_, addon)
         local stone = WINDOW_MANAGER:CreateControl('KanaHeatStone' .. i, content, CT_TEXTURE)
         stone:SetAnchor(TOPLEFT, content, TOPLEFT, (i - 1) * 36, 0)
         stone:SetDimensions(32, 32)
-        stone:SetTexture('eso-kana-addons/KanaAuras/textures/HeatStone.dds')
+        stone:SetTexture('eso-kana-addons/KanaDragonknightHUD/textures/HeatStone.dds')
         stone:SetBlendMode(TEX_BLEND_MODE_ADD)
         stones[i] = stone
     end
@@ -97,18 +97,5 @@ local function Initialize(_, addon)
     EVENT_MANAGER:RegisterForEvent(NAME, EVENT_PLAYER_ACTIVATED, Refresh)
     EVENT_MANAGER:RegisterForUpdate(NAME, 50, Refresh)
     Refresh()
-    SLASH_COMMANDS['/kanaheat'] = function()
-        local visible, stacks, remaining = ReadTarget()
-        d(string.format('Heat Shock: target=%s stacks=%d remaining=%.1f textureLoaded=%s',
-            tostring(visible), stacks, remaining, tostring(stones[1]:IsTextureLoaded())))
-        if visible then
-            for i = 1, GetNumBuffs('reticleover') do
-                local name, _, ending, _, count, _, _, _, _, _, id = GetUnitBuffInfo('reticleover', i)
-                if id == EFFECT_ID then
-                    d(string.format('%s id=%d stacks=%d remaining=%.1f', name, id, count, ending - GetFrameTimeSeconds()))
-                end
-            end
-        end
-    end
 end
 EVENT_MANAGER:RegisterForEvent(NAME, EVENT_ADD_ON_LOADED, Initialize)

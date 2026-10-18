@@ -1,0 +1,8 @@
+## Title: |cFF0000Kana|r |cFFFFFFHUD: Dragonknight|r
+## Author: kana
+## Version: 1.0.0
+## APIVersion: 101050 101051
+## Description: Seething Fury and Heat Shock HUD.
+
+SeethingFury.lua
+HeatShock.lua

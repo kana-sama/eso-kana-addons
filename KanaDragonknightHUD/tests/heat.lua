@@ -29,7 +29,9 @@ GetNumBuffs=function(unit) assert(unit=='reticleover'); return #buffs end
 GetUnitBuffInfo=function(_,i) return unpack(buffs[i]) end
 SLASH_COMMANDS={}
 local file=io.open('HeatShock.lua'); assert(file, 'Heat Shock tracker is not implemented'); file:close()
-dofile('HeatShock.lua'); events[1](1,'KanaAuras')
+dofile('HeatShock.lua'); events[1](1,'KanaDragonknightHUD')
+assert(not SLASH_COMMANDS['/kanaheat'])
+assert(controls.KanaHeatStone1.texture == 'eso-kana-addons/KanaDragonknightHUD/textures/HeatStone.dds')
 local content=controls.KanaHeatContent
 local function aura(n,ending,id)
     return {'Тепловой шок', 7, ending, 1, n, 'test.dds', '', 1, 1, 0, id or 134340, false, false}

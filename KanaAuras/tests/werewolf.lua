@@ -5,7 +5,8 @@ local methods = {}
 DT_LOW, DT_MEDIUM, DT_HIGH = 0, 1, 2
 function methods:SetDrawTier(value) self.tier=value end
 function methods:SetAlpha(value) self.alpha=value end
-for _, method in ipairs({'SetMouseEnabled', 'SetMovable', 'SetDrawLevel', 'SetDrawLayer', 'SetTextureCoords', 'SetBlendMode'}) do
+function methods:SetMouseEnabled(value) self.mouseEnabled=value end
+for _, method in ipairs({'SetMovable', 'SetDrawLevel', 'SetDrawLayer', 'SetTextureCoords', 'SetBlendMode'}) do
     methods[method] = function() end
 end
 function methods:SetDimensions(w, h) self.width, self.height = w, h end
@@ -81,6 +82,7 @@ assert(loadfile('WerewolfForm.lua'), 'Werewolf form tracker missing')()
 events[1](1,'KanaAuras')
 local content=controls.KanaWerewolfFormContent
 local root=controls.KanaWerewolfFormWindow
+assert(not root.mouseEnabled,'inactive werewolf panel must not capture the mouse')
 local refresh=events.update
 local function tick(dt)
     now=now+dt
@@ -92,6 +94,7 @@ events.update=function() refresh();tick(.2) end
 assert(content.hidden and not (content.handlers and content.handlers.OnUpdate))
 transformed=true; events.update()
 assert(not content.hidden and content.handlers.OnUpdate)
+assert(root.mouseEnabled,'active werewolf panel must receive cursor dragging')
 assert(root.anchor[2]==ZO_ReticleContainerReticle and root.anchor[5]==-90)
 local function filledWidth()
     local c=controls.KanaWerewolfFormFill1
@@ -116,14 +119,7 @@ assert(root.anchor[2]==ZO_ReticleContainerReticle)
 transformed=false;events.update();assert(content.hidden and not (content.handlers and content.handlers.OnUpdate))
 print('PASS: Werewolf form, real Ultimate fraction, clamp, low pulse, zero/max, cooldown ring anchor, hiding')
 
-SLASH_COMMANDS['/kanawolf']('height 55')
-assert(root.anchor[5]==-115 and KanaAurasSettings.wolfGap==55)
-SLASH_COMMANDS['/kanawolf']('height nope')
-assert(KanaAurasSettings.wolfGap==55)
-SLASH_COMMANDS['/kanawolf']('height -1')
-assert(KanaAurasSettings.wolfGap==55)
-SLASH_COMMANDS['/kanawolf']('height reset')
-assert(KanaAurasSettings.wolfGap==30 and root.anchor[5]==-90)
+assert(not SLASH_COMMANDS['/kanawolf'])
 assert(not socketVisible)
 
 transformed=true;events.update()
@@ -277,9 +273,8 @@ events[EVENT_GLOBAL_MOUSE_UP](EVENT_GLOBAL_MOUSE_UP,1)
 dofile('WerewolfForm.lua');events[1](1,'KanaAuras')
 root=controls.KanaWerewolfFormWindow
 assert(root.anchor[5]==150, 'Saved position survives reload')
-SLASH_COMMANDS['/kanawolf']('height reset')
-assert(KanaAurasSettings.wolfY==nil and root.anchor[5]==290, 'Reset restores ring-relative positioning')
-print('PASS: vertical drag, locked X, polling, global release, screen limits, persistence and reset')
+assert(not SLASH_COMMANDS['/kanawolf'])
+print('PASS: vertical drag, locked X, polling, global release, screen limits, persistence')
 
 -- Clockwise from top: right upper, right lower, left lower, left upper.
 transformed=true;buffs={};fury=125;events.update();now=now+.3;events.update()

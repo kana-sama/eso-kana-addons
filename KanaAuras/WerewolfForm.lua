@@ -452,28 +452,5 @@ local function Initialize(_, addon)
         REGISTER_FILTER_TARGET_COMBAT_UNIT_TYPE, COMBAT_UNIT_TYPE_PLAYER)
     EVENT_MANAGER:RegisterForUpdate(NAME, 50, Refresh)
     Refresh()
-    SLASH_COMMANDS['/kanawolf'] = function(args)
-        local value = (args or ''):match('^%s*height%s+(%S+)%s*$')
-        if value then
-            local gap = value == 'reset' and DEFAULT_GAP or tonumber(value)
-            if gap and gap == gap and gap >= 0 and gap <= 300 then
-                StopDrag()
-                KanaAurasSettings.wolfY = nil
-                KanaAurasSettings.wolfGap = gap
-                Anchor()
-                d(string.format('KanaAuras: отступ над кругом — %g. /kanawolf height reset', gap))
-            else
-                d('Высота: /kanawolf height 45 (от 0 до 300) или /kanawolf height reset')
-            end
-            return
-        end
-        d(string.format('Fury: %.0f%% ready=%s', furyFraction * 100, tostring(furyReady)))
-        d(string.format('Rampage: %.1fs', math.max(0, rampageEnd - GetFrameTimeSeconds())))
-        d('Положение: включи курсор и тяни панель мышью вверх/вниз. Сброс: /kanawolf height reset')
-        local current, maximum, effective = GetUnitPower('player', COMBAT_MECHANIC_FLAGS_ULTIMATE)
-        d(string.format('Werewolf: form=%s ultimate=%s/%s effective=%s fill=%.0f%% textureLoaded=%s',
-            tostring(IsPlayerInWerewolfForm()), tostring(current), tostring(maximum), tostring(effective),
-            fraction * 100, tostring(frame:IsTextureLoaded())))
-    end
 end
 EVENT_MANAGER:RegisterForEvent(NAME, EVENT_ADD_ON_LOADED, Initialize)

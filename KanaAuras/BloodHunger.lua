@@ -118,9 +118,5 @@ function KanaAurasCreateBloodSockets(parent)
         flashes[i]:SetDrawLevel(20)
         flashes[i]:SetHidden(true)
     end
-    SLASH_COMMANDS['/kanablood'] = function()
-        d(string.format('Blood Hunger: stacks=%d full=%s textureLoaded=%s', Stacks(),
-            tostring(not full:IsHidden()), tostring(orbs[1]:IsTextureLoaded())))
-    end
     return Refresh
 end

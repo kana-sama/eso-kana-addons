@@ -1,12 +1,9 @@
-## Title: KanaAuras
+## Title: |cFF0000Kana|r |cFFFFFFHUD: Werewolf|r
 ## Author: kana
 ## SavedVariables: KanaAurasSettings
 ## Version: 3.13.2
 ## APIVersion: 101050 101051
-## Description: Seething Fury, Heat Shock, Crux, Blood Hunger and Werewolf form.
+## Description: Werewolf hunger, fury and form HUD.
 
-KanaAuras.lua
-HeatShock.lua
-Crux.lua
 BloodHunger.lua
 WerewolfForm.lua

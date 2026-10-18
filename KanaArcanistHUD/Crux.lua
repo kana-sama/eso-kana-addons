@@ -49,7 +49,7 @@ end
 
 local function Texture(name, parent, file, additive)
     local control = WINDOW_MANAGER:CreateControl(name, parent, CT_TEXTURE)
-    control:SetTexture('eso-kana-addons/KanaAuras/textures/' .. file .. '.dds')
+    control:SetTexture('eso-kana-addons/KanaArcanistHUD/textures/' .. file .. '.dds')
     control:SetBlendMode(additive and TEX_BLEND_MODE_ADD or TEX_BLEND_MODE_ALPHA)
     control:SetMouseEnabled(false)
     control:SetColor(1, 1, 1, 1)
@@ -57,7 +57,7 @@ local function Texture(name, parent, file, additive)
 end
 
 local function Initialize(_, addon)
-    if addon ~= 'KanaAuras' then return end
+    if addon ~= 'KanaArcanistHUD' then return end
     EVENT_MANAGER:UnregisterForEvent(NAME, EVENT_ADD_ON_LOADED)
     local root = WINDOW_MANAGER:CreateTopLevelWindow(NAME .. 'Window')
     root:SetDimensions(DIAMETER, DIAMETER)
@@ -92,9 +92,5 @@ local function Initialize(_, addon)
     EVENT_MANAGER:RegisterForEvent(NAME, EVENT_PLAYER_ACTIVATED, Refresh)
     EVENT_MANAGER:RegisterForUpdate(NAME, 50, Refresh)
     Refresh()
-    SLASH_COMMANDS['/kanacrux'] = function()
-        d(string.format('Crux: stacks=%d full=%s textureLoaded=%s', Stacks(),
-            tostring(not full:IsHidden()), tostring(core:IsTextureLoaded())))
-    end
 end
 EVENT_MANAGER:RegisterForEvent(NAME, EVENT_ADD_ON_LOADED, Initialize)
