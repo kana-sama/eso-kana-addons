@@ -3,19 +3,12 @@ local ADDON_NAME = 'KanaSkillTranslations'
 -- panel also named NameLanguageNinja, replacing the global with a UI control.
 -- Keep the addon table, not SaveData, so settings/profile changes stay live.
 local ninja = NameLanguageNinja
-local diagnostics = { initialized = false, tooltips = {} }
-local tooltipStates = {}
-
+local settings
 
 local function AddTranslations(tooltip, abilityId)
-    local state = tooltipStates[tooltip]
-    state.calls = state.calls + 1
-    state.abilityId = abilityId
-    state.lines = 0
-    state.reason = 'settings/id unavailable'
     local library = LibMultilingualName
-    local settings = ninja and ninja.SaveData
-    local output = settings and settings.To and settings.To.Skill
+    local ninjaSettings = ninja and ninja.SaveData
+    local output = ninjaSettings and ninjaSettings.To and ninjaSettings.To.Skill
     if not abilityId or abilityId == 0 or not library or not output
         or not output.Tooltip or not output.Tooltip.Body then
         return
@@ -23,11 +16,11 @@ local function AddTranslations(tooltip, abilityId)
 
     local clientLanguage = string.lower(GetCVar('language.2'))
     local lines = {}
-    local description = settings.Description or {}
+    local description = ninjaSettings.Description or {}
     local languages = library.ALL_LANG_CODES
     for _, language in ipairs(languages) do
-        if not settings.DontShowClientLanguage or language ~= clientLanguage then
-            if settings.Languages and settings.Languages[language]
+        if not ninjaSettings.DontShowClientLanguage or language ~= clientLanguage then
+            if ninjaSettings.Languages and ninjaSettings.Languages[language]
                 and library.GetRawSkillName(language, abilityId) then
                 lines[#lines + 1] = ninja.GetColoredText(language, library.GetSkillName(language, abilityId))
             end
@@ -35,7 +28,7 @@ local function AddTranslations(tooltip, abilityId)
     end
     if description.OutputSkill then
         for _, language in ipairs(languages) do
-            if not settings.DontShowClientLanguage or language ~= clientLanguage then
+            if not ninjaSettings.DontShowClientLanguage or language ~= clientLanguage then
                 if description.Languages and description.Languages[language]
                     and library.GetRawAbilityDescription(language, abilityId) then
                     -- Keep the library's description unchanged, like Name Language Ninja.
@@ -47,10 +40,8 @@ local function AddTranslations(tooltip, abilityId)
             lines[#lines + 1] = 'skillId:' .. abilityId
         end
     end
-    state.lines = #lines
-    state.reason = #lines > 0 and 'added' or 'no matching translations'
     if #lines == 0 then return end
-    if not settings.DontShowDivider then
+    if not ninjaSettings.DontShowDivider then
         ZO_Tooltip_AddDivider(tooltip)
     end
     for _, line in ipairs(lines) do
@@ -75,11 +66,8 @@ local function UpgradeAbilityId(skillType, skillLineIndex, skillIndex)
     return progression and progression:GetAbilityId()
 end
 
-local function HookTooltip(tooltip, index)
-    local state = { present = tooltip ~= nil, calls = 0, lines = 0, hooks = {} }
-    diagnostics.tooltips[index] = state
+local function HookTooltip(tooltip)
     if not tooltip then return end
-    tooltipStates[tooltip] = state
     -- A setter may call another setter. Append only after the outermost one,
     -- retaining all original return values (including nils).
     local depth = 0
@@ -97,7 +85,6 @@ local function HookTooltip(tooltip, index)
             return Finish(self, abilityId, original(self, ...))
         end
         tooltip[method] = wrapper
-        state.hooks[method] = wrapper
     end
     Hook('SetAbilityId', AbilityId)
     Hook('SetProgressionAbility', ProgressionAbilityId)
@@ -106,46 +93,31 @@ local function HookTooltip(tooltip, index)
 end
 
 local function Initialize()
-    EVENT_MANAGER:UnregisterForEvent(ADDON_NAME, EVENT_PLAYER_ACTIVATED)
-    diagnostics.initialized = true
-    HookTooltip(HarvensSkillTooltipMorph1, 1)
-    HookTooltip(HarvensSkillTooltipMorph2, 2)
+    EVENT_MANAGER:UnregisterForEvent(ADDON_NAME .. 'Activate', EVENT_PLAYER_ACTIVATED)
+    if settings and settings.enabled == false then return end
+    HookTooltip(HarvensSkillTooltipMorph1)
+    HookTooltip(HarvensSkillTooltipMorph2)
 end
 
 -- Dependencies finish loading and initialize their controls/settings first.
-EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_PLAYER_ACTIVATED, Initialize)
-
--- Run after hovering a skill; the last observations survive hiding the tooltip.
-SLASH_COMMANDS['/kst'] = function()
-    d('[KST 1.0.2] initialized=' .. tostring(diagnostics.initialized))
-    local settings = ninja and ninja.SaveData
-    local output = settings and settings.To and settings.To.Skill
-    d('[KST] Ninja=' .. tostring(settings ~= nil)
-        .. ' body=' .. tostring(output and output.Tooltip and output.Tooltip.Body)
-        .. ' library=' .. tostring(LibMultilingualName ~= nil))
-    for index = 1, 2 do
-        local state = diagnostics.tooltips[index]
-        local tooltip = index == 1 and HarvensSkillTooltipMorph1 or HarvensSkillTooltipMorph2
-        if state then
-            local active, total = 0, 0
-            for method, wrapper in pairs(state.hooks) do
-                total = total + 1
-                if tooltip and tooltip[method] == wrapper then active = active + 1 end
-            end
-            d('[KST] tooltip ' .. index .. ' present=' .. tostring(state.present)
-                .. ' hooks=' .. active .. '/' .. total .. ' calls=' .. state.calls
-                .. ' id=' .. tostring(state.abilityId) .. ' lines=' .. state.lines
-                .. ' status=' .. tostring(state.reason))
-            if state.abilityId and LibMultilingualName then
-                for _, language in ipairs(LibMultilingualName.ALL_LANG_CODES) do
-                    if settings and settings.Languages and settings.Languages[language] then
-                        d('[KST] ' .. index .. ' ' .. language .. ' name='
-                            .. tostring(LibMultilingualName.GetRawSkillName(language, state.abilityId)))
-                    end
-                end
-            end
-        else
-            d('[KST] tooltip ' .. index .. ': initialization not reached')
-        end
+EVENT_MANAGER:RegisterForEvent(ADDON_NAME .. 'Activate', EVENT_PLAYER_ACTIVATED, Initialize)
+EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED, function(_, loadedName)
+    if loadedName ~= ADDON_NAME then return end
+    EVENT_MANAGER:UnregisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED)
+    settings = ZO_SavedVars:NewAccountWide('KanaSkillTranslationsSaved', 1, nil, { enabled = true })
+    if settings.enabled == nil then settings.enabled = true end
+    if LibAddonMenu2 then
+        local panelId = ADDON_NAME .. '_Options'
+        local visibleName = "|cFF0000Kana|r |c4488FFHarven's Improved Skills Window|r|cFFFFFF: translations|r"
+        LibAddonMenu2:RegisterAddonPanel(panelId, {
+            type = 'panel', name = visibleName, displayName = visibleName,
+            author = 'Kana', version = '1.0.2', registerForRefresh = true,
+        })
+        LibAddonMenu2:RegisterOptionControls(panelId, {
+            { type = 'checkbox', name = 'Переводы в подсказках навыков',
+              getFunc = function() return settings.enabled ~= false end,
+              setFunc = function(value) settings.enabled = value end,
+              default = true, requiresReload = true },
+        })
     end
-end
+end)

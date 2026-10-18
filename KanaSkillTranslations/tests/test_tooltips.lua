@@ -1,12 +1,23 @@
 local root = arg[1] or '.'
 local events = {}
 SLASH_COMMANDS = {}
-local diagnosticLines = {}
-function d(text) diagnosticLines[#diagnosticLines + 1] = text end
 EVENT_PLAYER_ACTIVATED = 1
+EVENT_ADD_ON_LOADED = 2
 EVENT_MANAGER = {
     RegisterForEvent = function(_, name, event, callback) events[event] = callback end,
     UnregisterForEvent = function(_, name, event) events[event] = nil end,
+}
+local saved = {}
+ZO_SavedVars = { NewAccountWide = function(_, name, version)
+    assert(name == 'KanaSkillTranslationsSaved' and version == 1)
+    return saved
+end }
+local controls
+LibAddonMenu2 = {
+    RegisterAddonPanel = function(_, id, panel)
+        assert(id == 'KanaSkillTranslations_Options' and panel.displayName:find("Harven's Improved Skills Window"))
+    end,
+    RegisterOptionControls = function(_, _, options) controls = options end,
 }
 function GetCVar() return 'ru' end
 function ZO_Tooltip_AddDivider(t) t.lines[#t.lines + 1] = 'divider' end
@@ -61,7 +72,10 @@ local file = io.open(root .. '/KanaSkillTranslations.lua')
 if file then file:close(); dofile(root .. '/KanaSkillTranslations.lua') end
 -- LAM creates a control named NameLanguageNinja during EVENT_ADD_ON_LOADED.
 NameLanguageNinja = {isSettingsPanel = true}
+if events[2] then events[2](nil, 'KanaSkillTranslations') end
 if events[1] then events[1]() end
+assert(saved.enabled == true and #controls == 1 and controls[1].getFunc() == true,
+    'own switch defaults on without changing Ninja settings')
 local count = 0
 local function expect(t, expected, label)
     count = count + 1
@@ -112,12 +126,11 @@ expect(a, 'original:114', 'settings not ready')
 assert(events[1] == nil, 'initialization event unregistered')
 print('PASS: ' .. count .. ' tooltip scenarios and return values')
 
+assert(SLASH_COMMANDS['/kst'] == nil, 'diagnostic slash command must be absent')
+controls[1].setFunc(false)
+assert(saved.enabled == false and controls[1].getFunc() == false,
+    'own switch must save its disabled state')
 ninja.SaveData = settings
-SLASH_COMMANDS['/kst']()
-assert(diagnosticLines[1] == '[KST 1.0.2] initialized=true')
-assert(table.concat(diagnosticLines, '\n'):find('hooks=4/4', 1, true))
-assert(table.concat(diagnosticLines, '\n'):find('id=114', 1, true))
-print('PASS: runtime diagnostics report hooks and last ability')
 
 -- Ninja can replace the settings table when resetting/changing profiles.
 local replacement = {

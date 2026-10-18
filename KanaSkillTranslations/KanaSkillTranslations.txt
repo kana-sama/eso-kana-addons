@@ -1,9 +1,11 @@
-## Title: Kana Skill Translations
+## Title: |cFF0000Kana|r |c4488FFHarven's Improved Skills Window|r|cFFFFFF: translations|r
 ## Author: Kana
 ## Version: 1.0.2
 ## AddOnVersion: 10002
 ## APIVersion: 101046 101047
 ## DependsOn: NameLanguageNinja HarvensImprovedSkillsWindow LibMultilingualName
+## OptionalDependsOn: LibAddonMenu-2.0
+## SavedVariables: KanaSkillTranslationsSaved
 ## Description: Adds Name Language Ninja translations to Harven's skill comparison tooltips, using Ninja's language and display settings.
 
 KanaSkillTranslations.lua
