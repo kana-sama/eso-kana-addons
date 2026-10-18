@@ -21,6 +21,15 @@ local function fixture(options)
     a.CRAFTING_TYPE_JEWELRYCRAFTING = 7
     a.GetCraftingInteractionType = function() return f.station end
     a.GetCVar = function() return options.language or 'ru' end
+    a.ZO_SavedVars = {NewAccountWide = function(_, name, version, namespace, defaults)
+        assert(name == 'KanaLazySetCrafterAutoHideSV' and version == 1 and namespace == nil)
+        f.saved = options.saved or defaults
+        return f.saved
+    end}
+    a.LibAddonMenu2 = {
+        RegisterAddonPanel = function(_, name, panel) f.panelName, f.panel = name, panel end,
+        RegisterOptionControls = function(_, name, controls) f.optionsName, f.options = name, controls end,
+    }
     a.EVENT_MANAGER = {}
     function a.EVENT_MANAGER:RegisterForEvent(name, event, callback)
         f.events[event] = f.events[event] or {}
@@ -157,6 +166,28 @@ end
 test('empty queue hides an already open window on entering', function()
     local f = fixture(); f.crafter.close(false); f:start()
     assert(f.window:IsHidden() and f.scroll:IsHidden(), 'empty queue must start collapsed')
+end)
+test('own settings keep the two patches independent and default to enabled', function()
+    local f = fixture()
+    assert(f.saved.autoHide == true and f.saved.stationButton == true)
+    assert(f.panelName == 'KanaLazySetCrafterAutoHide_Panel' and f.optionsName == f.panelName)
+    assert(#f.options == 2 and f.options[1].type == 'checkbox' and f.options[2].type == 'checkbox')
+end)
+test('disabling queue policy leaves the original station handler intact', function()
+    local f = fixture({saved = {autoHide = false, stationButton = true}})
+    f:start()
+    assert(f.stockEntries == 1 and not f.window:IsHidden())
+    assert(f:button())
+end)
+test('disabling station button keeps queue policy without adding controls', function()
+    local f = fixture({saved = {autoHide = true, stationButton = false}})
+    f:start()
+    assert(f.window:IsHidden() and f.stockEntries == 0 and not next(f.groups))
+end)
+test('disabling both patches leaves the original addon untouched', function()
+    local f = fixture({saved = {autoHide = false, stationButton = false}})
+    f:start()
+    assert(f.stockEntries == 1 and not f.window:IsHidden() and not next(f.groups))
 end)
 test('nonempty global queue opens even when upstream auto-open is off', function()
     local f = fixture({queue = {{station = 6}}, autoOpen = false}); f:start(1)

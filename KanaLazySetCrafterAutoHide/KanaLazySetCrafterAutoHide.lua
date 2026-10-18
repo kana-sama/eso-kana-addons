@@ -1,9 +1,35 @@
 KanaLazySetCrafterAutoHide = KanaLazySetCrafterAutoHide or {}
 local addon = KanaLazySetCrafterAutoHide
 local NAME = 'KanaLazySetCrafterAutoHide'
+local defaults = {autoHide = true, stationButton = true}
+
+local function LoadSettings(a)
+    if addon.settings then return addon.settings end
+    local saved = a.ZO_SavedVars:NewAccountWide('KanaLazySetCrafterAutoHideSV', 1, nil, defaults)
+    addon.settings = saved
+    local panelName = NAME .. '_Panel'
+    a.LibAddonMenu2:RegisterAddonPanel(panelName, {
+        type = 'panel', name = 'Kana Lazy Set Crafter: auto hide',
+        displayName = '|cFF0000Kana|r |c4488FFLazy Set Crafter|r|cFFFFFF: auto hide|r',
+        author = 'Kana', version = '1.0.0', registerForRefresh = true,
+    })
+    a.LibAddonMenu2:RegisterOptionControls(panelName, {
+        {type = 'checkbox', name = 'Скрывать окно при пустой очереди',
+            getFunc = function() return saved.autoHide end,
+            setFunc = function(value) saved.autoHide = value end,
+            default = true, requiresReload = true},
+        {type = 'checkbox', name = 'Кнопка показа окна у станка',
+            getFunc = function() return saved.stationButton end,
+            setFunc = function(value) saved.stationButton = value end,
+            default = true, requiresReload = true},
+    })
+    return saved
+end
 
 function addon.Initialize(a)
     if addon.initialized then return end
+    local settings = LoadSettings(a)
+    if not settings.autoHide and not settings.stationButton then addon.initialized = true; return end
     local crafter, window = a.DolgubonSetCrafter, a.DolgubonSetCrafterWindow
     if not crafter or not crafter.savedvars or type(crafter.savedvars.queue) ~= 'table'
         or type(crafter.close) ~= 'function' or type(crafter.GetSettings) ~= 'function'
@@ -58,7 +84,7 @@ function addon.Initialize(a)
             RemoveKeybind()
         end
     end
-    for _, name in ipairs({
+    if settings.stationButton then for _, name in ipairs({
         'smithing', 'enchanting',
         'gamepad_smithing_root', 'gamepad_smithing_refine', 'gamepad_smithing_creation',
         'gamepad_smithing_deconstruct', 'gamepad_smithing_improvement', 'gamepad_smithing_research',
@@ -71,25 +97,29 @@ function addon.Initialize(a)
             scene:RegisterCallback('StateChange', function(_, state) OnSceneState(scene, state) end)
             OnSceneState(scene, scene:GetState())
         end
-    end
+    end end
     -- Also catches the original slash command, which captures a local closeWindow
     -- and would bypass a hook on the exported crafter.close function.
-    a.ZO_PostHookHandler(window, 'OnShow', RefreshKeybind)
-    a.ZO_PostHookHandler(window, 'OnHide', RefreshKeybind)
+    if settings.stationButton then
+        a.ZO_PostHookHandler(window, 'OnShow', RefreshKeybind)
+        a.ZO_PostHookHandler(window, 'OnHide', RefreshKeybind)
+    end
 
     -- Set Crafter 3.0.8.0 opens from a private local closeWindow inside this
     -- event. Replace only its entry policy, retaining its manual-craft setup.
     -- Its exit handler, crafting library callbacks and saved settings stay intact.
-    a.EVENT_MANAGER:UnregisterForEvent(crafter.name, a.EVENT_CRAFTING_STATION_INTERACT)
-    a.EVENT_MANAGER:RegisterForEvent(NAME, a.EVENT_CRAFTING_STATION_INTERACT, function(_, station, sameStation)
-        if not supported[station] or a.GetCraftingInteractionType() ~= station then return end
-        if not crafter:GetAutocraft() then crafter.toggleCraftButton(true) end
-        if activeStation ~= station or not sameStation then
-            activeStation = station
-            crafter.close(next(crafter.savedvars.queue) == nil)
-        end
-        a.DolgubonSetCrafterToggle:SetHidden(not crafter:GetSettings().showToggle)
-    end)
+    if settings.autoHide then
+        a.EVENT_MANAGER:UnregisterForEvent(crafter.name, a.EVENT_CRAFTING_STATION_INTERACT)
+        a.EVENT_MANAGER:RegisterForEvent(NAME, a.EVENT_CRAFTING_STATION_INTERACT, function(_, station, sameStation)
+            if not supported[station] or a.GetCraftingInteractionType() ~= station then return end
+            if not crafter:GetAutocraft() then crafter.toggleCraftButton(true) end
+            if activeStation ~= station or not sameStation then
+                activeStation = station
+                crafter.close(next(crafter.savedvars.queue) == nil)
+            end
+            a.DolgubonSetCrafterToggle:SetHidden(not crafter:GetSettings().showToggle)
+        end)
+    end
     a.EVENT_MANAGER:RegisterForEvent(NAME, a.EVENT_END_CRAFTING_STATION_INTERACT, function()
         activeStation = nil
         RemoveKeybind()
