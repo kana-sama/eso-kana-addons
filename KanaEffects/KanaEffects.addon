@@ -1,8 +1,9 @@
-## Title: KanaEffects
+## Title: |cFF0000Kana|r |cFFFFFFEffects|r
 ## APIVersion: 101051
 ## Version: 0.1.0-alpha.1
 ## Author: Kana
 ## SavedVariables: KanaEffectsSettings
+## DependsOn: LibAddonMenu-2.0
 ## Description: Compact event-driven PvE effects HUD.
 
 Namespace.lua

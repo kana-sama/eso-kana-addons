@@ -123,7 +123,15 @@ function EsoApi.Build()
     api.informationTooltip = native.InformationTooltip
     api.sceneFragmentClass = native.ZO_SimpleSceneFragment
     api.scenes = {hud=native.HUD_SCENE, hudui=native.HUD_UI_SCENE}
-    api.slashCommands = native.SLASH_COMMANDS
+    api.addonMenu = native.LibAddonMenu2
+    api.ShowHudUI = function(callback)
+        if not sceneManager or not method(sceneManager,'IsShowing') or not method(sceneManager,'CallWhen') or not method(sceneManager,'Show') then
+            callback(); return
+        end
+        if sceneManager:IsShowing('hudui') then callback(); return end
+        sceneManager:CallWhen('hudui',native.SCENE_SHOWN,callback)
+        sceneManager:Show('hudui')
+    end
     local chatRouter = native.CHAT_ROUTER
     api.LocalMessage = function(text)
         if method(chatRouter, "AddSystemMessage") then chatRouter:AddSystemMessage(text) end

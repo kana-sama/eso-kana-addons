@@ -75,7 +75,7 @@ function NativeHUD:Sync(profile)
     if self.disposed then return {} end
     local diagnostics={}; local api=self.api
     if not api.capabilities.nativeHudRegistration or not api.hudManager then
-        return {{code='native_hud_unavailable',message='Штатный редактор HUD недоступен; используйте /ke.'}}
+        return {{code='native_hud_unavailable',message='Штатный редактор HUD недоступен; откройте редактор в настройках Kana Effects.'}}
     end
     if not self.loaded then
         self.loaded=true
@@ -94,7 +94,7 @@ function NativeHUD:Sync(profile)
         for id,r in pairs(self.records) do if not present[id] then r.valid=false; r.control:SetHidden(true); changed=true end end
         for id in pairs(present) do if not self.records[id] then changed=true end end
         if changed then
-            diagnostics[1]={code='native_hud_reload_required',message='Состав штатного редактора HUD обновится после /reloadui. Редактор /ke работает сразу.'}
+            diagnostics[1]={code='native_hud_reload_required',message='Состав штатного редактора HUD обновится после /reloadui. Редактор в настройках Kana Effects работает сразу.'}
             if not self.noticed and api.LocalMessage then self.noticed=true; api.LocalMessage('KanaEffects: '..diagnostics[1].message) end
         end
     end

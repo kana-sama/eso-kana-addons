@@ -69,6 +69,10 @@ local function setup(profile,raw,buffs,artificial)
     function api.hudManager:RebuildAllElements() self:Fire('RebuildAllElements') end
     api.capabilities={nativeHudRegistration=true,nativeHudCallbacks=true,nativeHudRebuild=true}
     api.slashCommands={}
+    api.addonMenu={}
+    function api.addonMenu:RegisterAddonPanel(name,data) self.panelName=name; self.panel=data end
+    function api.addonMenu:RegisterOptionControls(name,options) self.optionsName=name; self.options=options end
+    api.ShowHudUI=function(callback) callback() end
     local function flush()
         -- Drain only one-shot production flushes; never spin persistent timers.
         for round=1,10 do
@@ -151,7 +155,7 @@ Tests.effect_context_hide_is_draft_scoped_and_stale_menu_is_inert = function()
 end
 Tests.full_edit_session_save_reload=function()
     local c=setup(F.Profile(),nil,{player={buff(100)}}); local app=c.app
-    c.api.slashCommands['/ke'](); A.True(app.editor:IsOpen()); c.flush()
+    c.api.addonMenu.options[1].func(); A.True(app.editor:IsOpen()); c.flush()
     A.True(app.editor.setEditor:Put(allSet()))
     for _,id in ipairs({'grid-a','grid-b'}) do A.True(app.editor:Apply({type='widget.add',widget=grid(id)})) end
     A.True(app.editor:PatchWidget('widget-a',{name='Сохранено',style={mode='list',iconSize=37},layout={rows=2,columns=2},anchor={x=111,y=222}}))

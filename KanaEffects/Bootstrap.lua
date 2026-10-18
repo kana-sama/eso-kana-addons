@@ -156,40 +156,27 @@ function Bootstrap.Build(api,storage,catalog,presentation)
             catalog=catalog:GetCacheStats(),allUserAddonsMemoryMB=api.GetTotalUserAddOnMemoryPoolUsageMB and api.GetTotalUserAddOnMemoryPoolUsageMB() or nil}
     end
     app.replay=KanaEffects.Replay.New({api=api,runtime=app.runtime,diagnostics=app.diagnostics,editor=app.editor,nativeHud=app.nativeHud,bounds=bounds,isVisible=function() return not renderer.content:IsControlHidden() end})
-    local function performanceSummary(report)
-        if app.disposed then return end
-        local result='KanaEffects: render+ingestion profiler '..report.status
-        if report.status=='measured' then
-            result=result..string.format('; frames %d; p50 %.3f / p95 %.3f / max %.3f ms',report.frames,report.p50MS,report.p95MS,report.maxMS)
-            result=result..'; overhead included; synthetic history/export excluded; whole-addon target not assessed'
-        elseif report.reason then result=result..'; '..report.reason end
-        api.LocalMessage(result..'; KanaEffects.Diagnostics.LastReport')
+    function app:OpenEditor()
+        if self.disposed or self.replay.active or self.openEditorPending then return false end
+        self.openEditorPending=true
+        api.ShowHudUI(function()
+            self.openEditorPending=false
+            if self.disposed or self.replay.active then return end
+            self.targetView:Capture()
+            self.editor:Open()
+        end)
+        return true
     end
-    app.commands={
-        ['/ke']=function()
-            if not app.disposed then
-                if app.replay.active then api.LocalMessage('KanaEffects: capture active; /keperf stop restores live HUD.'); return end
-                app.targetView:Capture(); app.editor:Open()
-            end
-        end,
-        ['/keperf']=function(argument)
-            if app.disposed then return end
-            if argument=='stop' then app.replay:Stop('stopped by user'); return end
-            local ok,reason=app.replay:Start({native=true,onComplete=performanceSummary})
-            if ok then api.LocalMessage('KanaEffects: profiler capture5s; processing bounded; live HUD restores automatically.')
-            else api.LocalMessage('KanaEffects: profiler unavailable; '..tostring(reason)) end
-        end,
-        ['/kelive']=function() if not app.disposed then app.targetView:ResumeLive() end end,
-        ['/keprobe']=function()
-            if app.disposed then return end
-            if app.probe then app.probe:Stop() end
-            local tags={}; for tag in pairs(historyTags(api)) do tags[#tags+1]=tag end; table.sort(tags)
-            app.probe=KanaEffects.ApiProbe.Start(api,{unitTags=tags,maxSamples=100})
-            api.LocalMessage('KanaEffects: локальная API-проба включена; отчёт KanaEffects.ApiProbe.LastReport.')
-        end}
-    app.previousCommands={}
-    if api.slashCommands then
-        for name,fn in pairs(app.commands) do app.previousCommands[name]=api.slashCommands[name]; api.slashCommands[name]=fn end
+    if api.addonMenu then
+        local panelName='KanaEffects_Panel'
+        api.addonMenu:RegisterAddonPanel(panelName,{
+            type='panel',name='Kana Effects',displayName='|cFF0000Kana|r |cFFFFFFEffects|r',
+            author='Kana',version='0.1.0-alpha.1',registerForRefresh=true,
+        })
+        api.addonMenu:RegisterOptionControls(panelName,{{
+            type='button',name='Открыть редактор панелей',width='full',
+            func=function() app:OpenEditor() end,
+        }})
     end
     function app:Dispose()
         if self.disposed then return end; self.disposed=true
@@ -203,9 +190,6 @@ function Bootstrap.Build(api,storage,catalog,presentation)
         self.runtime:Dispose()
         for _,scene in ipairs(self.fragmentScenes) do scene:RemoveFragment(self.fragment) end
         self.root:SetHidden(true); self.timers:Dispose(); self.fontMetrics:Dispose()
-        if api.slashCommands then for name,fn in pairs(self.commands) do
-            if api.slashCommands[name]==fn then api.slashCommands[name]=self.previousCommands[name] end
-        end end
         if self.disposeBootstrap then self.disposeBootstrap() end
         if KanaEffects.application==self then KanaEffects.application=nil end
     end

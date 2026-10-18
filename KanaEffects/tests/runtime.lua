@@ -183,6 +183,10 @@ local function bootstrapApi()
     end
     api.sceneFragmentClass={New=function(_,control) return {control=control} end}
     api.slashCommands={}; api.messages={}; api.LocalMessage=function(message) api.messages[#api.messages+1]=message end
+    api.addonMenu={}
+    function api.addonMenu:RegisterAddonPanel(name,data) self.panelName=name; self.panel=data end
+    function api.addonMenu:RegisterOptionControls(name,options) self.optionsName=name; self.options=options end
+    api.ShowHudUI=function(callback) api.hudUICallback=callback end
     api.raw={}; api.GetWorldName=function() return 'EU Megaserver' end
     api.GetCurrentCharacterId=function() return '42' end; api.GetDisplayName=function() return '@Kana' end
     api.GetSettingsTable=function() return api.raw end; api.SetSettingsTable=function(value) api.raw=value end
@@ -274,12 +278,14 @@ Tests.bootstrap_transferred_presentation_keeps_application_disposal_owner=functi
     A.Equal(metricCalls,0); A.Equal(controlCalls,0); assert(app.runtime:GetView('named-widget'))
     app:Dispose(); app:Dispose(); A.Equal(metricCalls,1); A.Equal(controlCalls,1)
 end
-Tests.bootstrap_slash_commands_are_local_opt_in_and_dispose_owned_callbacks=function()
+Tests.bootstrap_editor_button_navigates_to_hudui_and_disposes_queued_callback=function()
     local api,frame=bootstrapApi(); api:Emit(91,'KanaEffects'); api:Emit(92); frame(); local app=KanaEffects.application
-    A.Equal(KanaEffects.ApiProbe.LastReport,nil); api.slashCommands['/ke'](); assert(app.editor,'missing composed editor'); A.True(app.editor:IsOpen()); A.Equal(#api.messages,0)
-    api.slashCommands['/keprobe'](); assert(KanaEffects.ApiProbe.LastReport); A.Equal(#KanaEffects.ApiProbe.LastReport.samples,1)
-    local command=api.slashCommands['/ke']; app:Dispose(); A.Equal(api.slashCommands['/ke'],nil); A.Equal(api.slashCommands['/keprobe'],nil)
-    command(); A.Equal(#api.messages,1); KanaEffects.ApiProbe.LastReport=nil
+    A.Equal(api.addonMenu.panelName,'KanaEffects_Panel'); A.Equal(api.addonMenu.optionsName,'KanaEffects_Panel')
+    local button=api.addonMenu.options[1]; A.Equal(button.type,'button'); button.func()
+    A.False(app.editor:IsOpen()); A.True(app.openEditorPending)
+    api.hudUICallback(); A.True(app.editor:IsOpen()); A.False(app.openEditorPending)
+    A.Equal(next(api.slashCommands),nil)
+    app:Dispose(); button.func(); A.Equal(app.openEditorPending,false); A.Equal(next(api.slashCommands),nil)
 end
 Tests.retired_view_callback_dispose_cannot_restart_sources_or_schedule_work=function()
     local c=setup(); c.rt:Start(c.profile); c.flush()
@@ -288,11 +294,10 @@ Tests.retired_view_callback_dispose_cannot_restart_sources_or_schedule_work=func
     A.Equal(next(c.api.updates),nil); A.Equal(c.pending(),0)
     for _,events in pairs(c.api.events) do A.Equal(next(events),nil) end
 end
-Tests.probe_command_uses_history_tags_as_dense_unit_list=function()
-    local api,frame=bootstrapApi(); api:Emit(91,'KanaEffects'); api:Emit(92); frame(); api.slashCommands['/keprobe']()
-    local sample=KanaEffects.ApiProbe.LastReport.samples[1]
-    assert(sample.units.player,'probe missed player'); assert(sample.units.boss2,'probe missed verified boss range')
-    A.Equal(sample.units.boss3,nil); KanaEffects.application:Dispose(); KanaEffects.ApiProbe.LastReport=nil
+Tests.bootstrap_dispose_before_hudui_transition_leaves_editor_closed=function()
+    local api,frame=bootstrapApi(); api:Emit(91,'KanaEffects'); api:Emit(92); frame()
+    local app=KanaEffects.application; api.addonMenu.options[1].func(); app:Dispose()
+    api.hudUICallback(); A.False(app.editor:IsOpen()); A.Equal(next(api.slashCommands),nil)
 end
 Tests.configuration_waiting_for_flush_keeps_complete_last_rendered_view=function()
     local c=setup(); c.rt:Start(c.profile); c.flush(); local p=F.Profile(); p.widgets[1].anchor.x=100
@@ -361,14 +366,13 @@ Tests.bootstrap_native_history_timestamp_is_independent_of_timer_frame_clock=fun
     A.Equal(app.history:Query('')[1].selector.id,101)
     app:Dispose()
 end
-Tests.bootstrap_performance_command_is_opt_in_and_restores_owned_command=function()
+Tests.bootstrap_does_not_replace_other_addons_commands=function()
     local api,frame=bootstrapApi(); local previous=function() end; api.slashCommands['/keperf']=previous
     api:Emit(91,'KanaEffects'); api:Emit(92); frame(); local app=assert(KanaEffects.application)
-    local command=api.slashCommands['/keperf']; assert(command and command~=previous,'missing opt-in performance slash command')
-    A.Equal(app.diagnostics.capture,nil); command(); A.Equal(app.replay.active,false); A.Equal(app.runtime.preview,nil)
-    A.True(string.find(api.messages[#api.messages],'unavailable',1,true)~=nil)
-    A.True(app.replay:Start()); frame(); api.slashCommands['/ke'](); A.False(app.editor:IsOpen())
-    command('stop'); frame(); A.Equal(app.runtime.preview,false); app:Dispose(); A.Equal(api.slashCommands['/keperf'],previous); A.Equal(next(api.updates),nil)
+    A.Equal(api.slashCommands['/keperf'],previous); A.Equal(api.slashCommands['/ke'],nil)
+    A.True(app.replay:Start()); frame(); A.False(app:OpenEditor()); A.False(app.editor:IsOpen())
+    app.replay:Stop('test'); frame(); app:Dispose()
+    A.Equal(api.slashCommands['/keperf'],previous); A.Equal(next(api.updates),nil)
 end
 Tests.panel_reference_warning_survives_empty_preview_and_clears_after_repair=function()
     local p=F.Profile(); local w=p.widgets[1]; w.type='grid'; w.rules.expression='on_panel("Support")'
