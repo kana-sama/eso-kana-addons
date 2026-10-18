@@ -1,4 +1,4 @@
-## Title: Kana No Repeat
+## Title: |cFF0000Kana|r |cFFFFFFDialogue: no repeat|r
 ## Author: kana
 ## Version: 1.0.0
 ## APIVersion: 101050
