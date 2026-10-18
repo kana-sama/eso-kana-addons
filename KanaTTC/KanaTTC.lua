@@ -126,6 +126,23 @@ end
 EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED, function(_, addonName)
     if addonName ~= ADDON_NAME then return end
     EVENT_MANAGER:UnregisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED)
+    local settings = ZO_SavedVars:NewAccountWide('KanaTTCSaved', 1, nil, { showPriceSummary = true })
+    if settings.showPriceSummary == nil then settings.showPriceSummary = true end
+    if LibAddonMenu2 then
+        local panelId = ADDON_NAME .. '_Options'
+        local visibleName = '|cFF0000Kana|r |c4488FFTamriel Trade Centre|r|cFFFFFF: price summary|r'
+        LibAddonMenu2:RegisterAddonPanel(panelId, {
+            type = 'panel', name = visibleName, displayName = visibleName,
+            author = 'Kana', version = '1.0.2', registerForRefresh = true,
+        })
+        LibAddonMenu2:RegisterOptionControls(panelId, {
+            { type = 'checkbox', name = 'Компактная таблица цен в подсказке',
+              getFunc = function() return settings.showPriceSummary ~= false end,
+              setFunc = function(value) settings.showPriceSummary = value end,
+              default = true, requiresReload = true },
+        })
+    end
+    if settings.showPriceSummary == false then return end
     -- Own tooltip hooks: TTC's settings and price-output hooks are independent.
     for _, entry in ipairs({
         {'SetAttachedMailItem', GetAttachedItemLink},

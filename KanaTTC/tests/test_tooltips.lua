@@ -64,6 +64,18 @@ GuiRoot = setmetatable({children = {}}, Control)
 EVENT_MANAGER = {}
 function EVENT_MANAGER:RegisterForEvent(name, _, callback) events[name] = callback end
 function EVENT_MANAGER:UnregisterForEvent(name) events[name] = nil end
+local saved = { showPriceSummary = os.getenv('KANA_TTC_DISABLED') ~= '1' }
+ZO_SavedVars = { NewAccountWide = function(_, name, version)
+    assert(name == 'KanaTTCSaved' and version == 1, 'own saved-variable identity')
+    return saved
+end }
+local options
+LibAddonMenu2 = {
+    RegisterAddonPanel = function(_, id, panel)
+        assert(id == 'KanaTTC_Options' and panel.displayName:find('Tamriel Trade Centre'))
+    end,
+    RegisterOptionControls = function(_, _, controls) options = controls end,
+}
 function GetCVar() return language end
 function ZO_PreHook(object, method, callback)
     local original = object[method]
@@ -154,8 +166,17 @@ events.KanaTTC(EVENT_ADD_ON_LOADED, 'OtherAddon')
 assert(events.KanaTTC, 'ignore unrelated addon events')
 events.KanaTTC(EVENT_ADD_ON_LOADED, 'KanaTTC')
 assert(not events.KanaTTC, 'unregister initialization after loading')
+assert(#options == 1 and options[1].getFunc() == saved.showPriceSummary,
+    'own switch must reflect persisted state')
 assert(TamrielTradeCentrePrice.AppendPriceInfo == originalAppend,
     'KanaTTC must leave the original TTC price output unchanged')
+if not saved.showPriceSummary then
+    assert(ItemTooltip:SetLink('disabled') == 'native-result' and ItemTooltip.body == nil,
+        'disabled patch must leave native tooltip unchanged')
+    assert(#controls == 0, 'disabled patch must not create overlay controls')
+    print('PASS: disabled price summary leaves TTC and native tooltip untouched')
+    return
+end
 
 local function tooltip(width)
     local control = setmetatable({width = width or 416, children = {}}, Control)
