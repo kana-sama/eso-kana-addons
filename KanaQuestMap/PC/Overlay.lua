@@ -1,6 +1,7 @@
 local Addon = KanaQuestMap
 
 local function DecorateTooltipCreators()
+  if not Addon:FeatureEnabled("chronology") then return end
   if Addon.tooltipCreatorsDecorated or QuestMap == nil or ZO_MapPin == nil then return end
   local tooltipCreators = ZO_MapPin.TOOLTIP_CREATORS
   if tooltipCreators == nil then return end
@@ -33,6 +34,7 @@ local function DecorateTooltipCreators()
 end
 
 local function InitializeJournalCompletionIndicator()
+  if not Addon:FeatureEnabled("journalCompletion") then return end
   local journal = ZO_QUEST_JOURNAL_QUESTS_KEYBOARD
   if journal == nil or journal.kanaQuestMapCompletionIndicator then return end
   local scrollChild = journal.questInfoContainer:GetNamedChild("ScrollChild")

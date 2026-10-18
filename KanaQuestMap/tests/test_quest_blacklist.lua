@@ -49,4 +49,11 @@ added, reason = KanaQuestMap:AddBlacklistedQuest("Несуществующий �
 assert_equal(added, 0, "unknown title adds nothing")
 assert_equal(reason, "not-found", "unknown title reports not-found")
 
+KanaQuestMap.settings.features = { blacklist = false }
+assert_equal(KanaQuestMap:IsQuestBlacklisted(11), false, "disabled blacklist keeps an existing ID visible")
+added = KanaQuestMap:AddBlacklistedQuest("Одинаковое название")
+assert_equal(added, 0, "disabled blacklist does not overwrite stored entries")
+KanaQuestMap.settings.features.blacklist = true
+assert_equal(KanaQuestMap:IsQuestBlacklisted(11), true, "reenabling restores stored blacklist")
+
 print("PASS: quest blacklist")

@@ -5,13 +5,26 @@ Addon.name = "KanaQuestMap"
 Addon.settingsDefaults = {
   blacklistedQuests = {},
   questMapSettingsMigrated = false,
+  features = {
+    chronology = true,
+    blacklist = true,
+    pinStates = true,
+    invalidLocations = true,
+    journalCompletion = true,
+  },
 }
 
 local KANA_ONLY_SETTINGS = {
   blacklistedQuests = true,
   blacklistMigrated = true,
   questMapSettingsMigrated = true,
+  features = true,
 }
+
+function Addon:FeatureEnabled(key)
+  local features = self.settings and self.settings.features
+  return type(features) ~= "table" or features[key] ~= false
+end
 
 local function AccountWideValues(savedVariables)
   if savedVariables == nil then return nil end
@@ -56,6 +69,10 @@ function Addon:Initialize()
   if self.initialized then return end
   self.initialized = true
   self.settings = ZO_SavedVars:NewAccountWide("KanaQuestMap_SavedVariables", 6, nil, self.settingsDefaults)
+  if type(self.settings.features) ~= "table" then self.settings.features = {} end
+  for key, enabled in pairs(self.settingsDefaults.features) do
+    if self.settings.features[key] == nil then self.settings.features[key] = enabled end
+  end
   self:MigrateForkSettings()
 end
 
@@ -64,7 +81,7 @@ local function Trim(text)
 end
 
 function Addon:IsQuestBlacklisted(questId)
-  return self.settings.blacklistedQuests[questId] ~= nil
+  return self:FeatureEnabled("blacklist") and self.settings.blacklistedQuests[questId] ~= nil
 end
 
 function Addon:BlacklistQuestId(questId)
@@ -87,7 +104,7 @@ function Addon:AddBlacklistedQuest(input)
 
   local added = 0
   for _, questId in ipairs(questIds) do
-    if not self:IsQuestBlacklisted(questId) then
+    if self.settings.blacklistedQuests[questId] == nil then
       self:BlacklistQuestId(questId)
       added = added + 1
     end
@@ -125,38 +142,45 @@ end
 
 function Addon:InstallMapHooks()
   if self.mapHooksInstalled or QuestMap == nil or LibMapPins == nil or LibQuestData == nil then return end
+  if not (self:FeatureEnabled("blacklist") or self:FeatureEnabled("pinStates")
+    or self:FeatureEnabled("invalidLocations")) then return end
   self.mapHooksInstalled = true
 
   local LMP = LibMapPins
   local LQD = LibQuestData
   local questPinTypes = QuestPinTypes()
-  local OriginalCreatePin = LMP.CreatePin
-  LMP.CreatePin = function(lib, pinType, pinTag, ...)
-    if questPinTypes[pinType] and type(pinTag) == "table" and type(pinTag.id) == "number" then
-      if Addon:IsQuestBlacklisted(pinTag.id) then return end
-
-      local questId = pinTag.id
-      if LQD.started_quests[questId] then
-        pinType = QuestMap.PIN_TYPE_QUEST_STARTED
-      elseif LQD.completed_quests[questId] and LQD:get_quest_repeat(questId) > QUEST_REPEAT_NOT_REPEATABLE then
-        pinType = QuestMap.PIN_TYPE_QUEST_COMPLETED
+  if self:FeatureEnabled("blacklist") or self:FeatureEnabled("pinStates") then
+    local OriginalCreatePin = LMP.CreatePin
+    LMP.CreatePin = function(lib, pinType, pinTag, ...)
+      if questPinTypes[pinType] and type(pinTag) == "table" and type(pinTag.id) == "number" then
+        if Addon:IsQuestBlacklisted(pinTag.id) then return end
+        if Addon:FeatureEnabled("pinStates") then
+          local questId = pinTag.id
+          if LQD.started_quests[questId] then
+            pinType = QuestMap.PIN_TYPE_QUEST_STARTED
+          elseif LQD.completed_quests[questId] and LQD:get_quest_repeat(questId) > QUEST_REPEAT_NOT_REPEATABLE then
+            pinType = QuestMap.PIN_TYPE_QUEST_COMPLETED
+          end
+        end
       end
+      return OriginalCreatePin(lib, pinType, pinTag, ...)
     end
-    return OriginalCreatePin(lib, pinType, pinTag, ...)
   end
 
-  local OriginalGetQuestList = LQD.get_quest_list
-  LQD.get_quest_list = function(lib, mapTexture)
-    local quests = OriginalGetQuestList(lib, mapTexture)
-    local invalidQuestIds = InvalidQuestLocations[mapTexture]
-    if invalidQuestIds == nil or type(quests) ~= "table" then return quests end
+  if self:FeatureEnabled("invalidLocations") then
+    local OriginalGetQuestList = LQD.get_quest_list
+    LQD.get_quest_list = function(lib, mapTexture)
+      local quests = OriginalGetQuestList(lib, mapTexture)
+      local invalidQuestIds = InvalidQuestLocations[mapTexture]
+      if invalidQuestIds == nil or type(quests) ~= "table" then return quests end
 
-    local filtered = {}
-    for _, quest in ipairs(quests) do
-      local questId = quest[lib.quest_map_pin_index.quest_id]
-      if not invalidQuestIds[questId] then table.insert(filtered, quest) end
+      local filtered = {}
+      for _, quest in ipairs(quests) do
+        local questId = quest[lib.quest_map_pin_index.quest_id]
+        if not invalidQuestIds[questId] then table.insert(filtered, quest) end
+      end
+      return filtered
     end
-    return filtered
   end
 end
 

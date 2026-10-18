@@ -130,14 +130,35 @@ end
 
 local panelData = {
   type = "panel",
-  name = "KanaQuestMap",
-  displayName = "|c70C0DEKanaQuestMap|r",
+  name = "|cFF0000Kana|r |c4488FFQuestMap|r|cFFFFFF: quest details|r",
+  displayName = "|cFF0000Kana|r |c4488FFQuestMap|r|cFFFFFF: quest details|r",
   author = "Kana",
   version = "3.29-kana.2",
   registerForRefresh = true,
 }
 
 local optionsTable = {
+  { type = "header", name = "Правки QuestMap", width = "full" },
+  { type = "checkbox", name = "Хронология в подсказках заданий",
+    getFunc = function() return Addon:FeatureEnabled("chronology") end,
+    setFunc = function(value) Addon.settings.features.chronology = value end,
+    default = true, requiresReload = true },
+  { type = "checkbox", name = "Чёрный список заданий",
+    getFunc = function() return Addon:FeatureEnabled("blacklist") end,
+    setFunc = function(value) Addon.settings.features.blacklist = value end,
+    default = true, requiresReload = true },
+  { type = "checkbox", name = "Значки начатых и повторяемых заданий",
+    getFunc = function() return Addon:FeatureEnabled("pinStates") end,
+    setFunc = function(value) Addon.settings.features.pinStates = value end,
+    default = true, requiresReload = true },
+  { type = "checkbox", name = "Удаление ошибочных точек заданий",
+    getFunc = function() return Addon:FeatureEnabled("invalidLocations") end,
+    setFunc = function(value) Addon.settings.features.invalidLocations = value end,
+    default = true, requiresReload = true },
+  { type = "checkbox", name = "Отметка повторяемого задания в журнале",
+    getFunc = function() return Addon:FeatureEnabled("journalCompletion") end,
+    setFunc = function(value) Addon.settings.features.journalCompletion = value end,
+    default = true, requiresReload = true },
   { type = "header", name = "Чёрный список заданий", width = "full" },
   {
     type = "description",

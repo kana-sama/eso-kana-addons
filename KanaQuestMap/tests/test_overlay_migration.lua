@@ -24,6 +24,7 @@ KanaQuestMap_SavedVariables = {
         pinSize = 42,
         pinFilters = { custom = true },
         blacklistedQuests = { [99] = "Kana-only" },
+        features = { chronology = false },
       },
     },
   },
@@ -39,5 +40,6 @@ KanaQuestMap:MigrateForkSettings()
 assert_equal(rawget(upstreamRaw, "pinSize"), 42, "fork value fills an upstream default-only field")
 assert_equal(rawget(upstreamRaw, "pinFilters").custom, true, "nested fork values are migrated")
 assert_equal(rawget(upstreamRaw, "blacklistedQuests"), nil, "Kana-only blacklist does not enter QuestMap")
+assert_equal(rawget(upstreamRaw, "features"), nil, "Kana-only switches do not enter QuestMap")
 
 print("PASS: overlay migration")

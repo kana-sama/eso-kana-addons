@@ -1,6 +1,7 @@
 local Addon = KanaQuestMap
 
 local function DecorateTooltipCreators()
+  if not Addon:FeatureEnabled("chronology") then return end
   if Addon.consoleTooltipCreatorsDecorated or QuestMap == nil or ZO_MapPin == nil then return end
   local tooltipCreators = ZO_MapPin.TOOLTIP_CREATORS
   if tooltipCreators == nil then return end

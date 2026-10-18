@@ -24,7 +24,7 @@ def test_settings_list_supports_removal_without_temporary_visibility():
 def test_blacklist_uses_storage_separate_from_manual_hiding():
     blacklist = (ROOT / "Overlay.lua").read_text()
     assert "blacklistedQuests" in blacklist
-    assert "return self.settings.blacklistedQuests[questId] ~= nil" in blacklist
+    assert "self.settings.blacklistedQuests[questId] ~= nil" in blacklist
 
 
 def test_blacklist_settings_do_not_load_questmap_settings_copy():
