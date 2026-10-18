@@ -1,0 +1,18 @@
+## Title: |cFF0000Kana|r |cFFFFFFBuff Panels|r
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101051
+## Description: Move native character effects into named panels, or hide them. Arrange panels with the built-in HUD editor.
+## SavedVariables: KanaBuffPanelsSV
+## DependsOn: LibAddonMenu-2.0 LibCustomMenu
+
+Rules.lua
+Layout.lua
+TimerLayout.lua
+Strings.lua
+Panels.lua
+Native.lua
+Menu.lua
+Settings.lua
+Core.lua
