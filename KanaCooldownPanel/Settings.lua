@@ -27,7 +27,7 @@ function addon:InitializeSettings()
     -- LAM creates a global control with this name; keep it distinct from saved variables.
     local panelName = 'KanaCooldownPanelOptions'
     LibAddonMenu2:RegisterAddonPanel(panelName, {
-        type = 'panel', name = 'KanaCooldownPanel', displayName = 'KanaCooldownPanel',
+        type = 'panel', name = 'Kana Cooldown Panel', displayName = '|cFF0000Kana|r |cFFFFFFCooldown Panel|r',
         author = 'Kana', version = '1.3.0', registerForRefresh = true, registerForDefaults = true,
     })
     local function Getter(key)
