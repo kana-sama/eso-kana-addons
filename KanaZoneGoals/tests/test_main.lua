@@ -25,7 +25,7 @@ dofile('Main.lua')
 callbacks[EVENT_ADD_ON_LOADED](nil,'OtherAddon')
 assert(not K.saved)
 callbacks[EVENT_ADD_ON_LOADED](nil,K.name)
-assert(SLASH_COMMANDS['/kzg']==K.OpenSettings)
+assert(SLASH_COMMANDS['/kzg']==nil)
 callbacks[EVENT_PLAYER_ACTIVATED]()
 assert(not K.ready,'do not lock out retries if guide is unavailable')
 WORLD_MAP_ZONE_STORY_KEYBOARD={list={}}

@@ -13,16 +13,12 @@ function K.AddCustomAchievement(zoneId,category,text)
     list[#list+1]={id=id,category=category};K.Refresh();return true
 end
 
-function K.OpenSettings()
-    LibAddonMenu2:OpenToPanel(K.settingsPanel)
-end
-
 function K.RegisterSettings()
     local LAM=LibAddonMenu2
     -- LAM creates a global control with this ID; keep it separate from the addon table.
     local panelId=K.name..'SettingsPanel'
     K.settingsPanel=LAM:RegisterAddonPanel(panelId,{
-        type='panel',name=K.name,displayName='KanaZoneGoals — цели местности',author='Kana',version=K.version,
+        type='panel',name='Kana Zone Completion',displayName='|cFF0000Kana|r |cFFFFFFZone Completion|r',author='Kana',version=K.version,
         registerForRefresh=true,registerForDefaults=true,
     })
     local options={{type='description',text='Выберите цели, которые хотите выполнять. Отключённые категории не входят в общий прогресс. Настройки общие для персонажей аккаунта.'}}

@@ -16,7 +16,6 @@ local function loaded(_,name)
         categories={},expanded={},custom={},ignored={},hideCompleted=false,
     },GetWorldName())
     K.RegisterSettings()
-    SLASH_COMMANDS['/kzg']=K.OpenSettings
     EM:RegisterForEvent(K.name,EVENT_PLAYER_ACTIVATED,activate)
     for _,event in ipairs({EVENT_ACHIEVEMENT_UPDATED,EVENT_ACHIEVEMENT_AWARDED,EVENT_ACHIEVEMENTS_UPDATED,
         EVENT_ITEM_SET_COLLECTION_UPDATED,EVENT_ITEM_SET_COLLECTIONS_UPDATED,EVENT_ANTIQUITY_UPDATED,

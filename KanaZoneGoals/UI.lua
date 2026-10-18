@@ -215,7 +215,7 @@ function K.ShowGoalTooltip(control)
     local group=data.group
     local title=group and group.name or 'Дополнительные цели'
     tooltip:GetNamedChild('Title'):SetText(title..': '..K.CleanName(GetZoneNameById(data.zoneId)))
-    local items=group and K.TooltipEntries(group,data.zoneId) or {{name=data.text or 'Настройки: /kzg'}}
+    local items=group and K.TooltipEntries(group,data.zoneId) or {{name=data.text or 'Настройки в меню дополнений'}}
     for _,entry in ipairs(items) do entry.zoneId=data.zoneId end
     local fishing=group and group.id=='fishing'
     local quests=group and group.id=='quests'

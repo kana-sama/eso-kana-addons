@@ -1,4 +1,4 @@
-## Title: KanaZoneGoals
+## Title: |cFF0000Kana|r |cFFFFFFZone Completion|r
 ## Description: Additional zone goals inside the world map exploration panel, with account-wide category settings.
 ## Author: Kana
 ## Version: 1.0.0
