@@ -6,7 +6,6 @@ local function Initialize(_, addonName)
     EVENT_MANAGER:UnregisterForEvent(EVENT_NAME, EVENT_ADD_ON_LOADED)
 
     local widget = AetherChat.Messenger.minBar
-    if not widget then return end
     local saved = ZO_SavedVars:NewAccountWide("KanaAetherChatSavedVariables", 1, "Widget", {
         hideWidget = true,
         compactNativeChat = false,
@@ -14,11 +13,14 @@ local function Initialize(_, addonName)
 
     -- The HUD fragment and /aethericon both call SetHidden. Suppress their
     -- attempts to show this control while the persistent setting is enabled.
-    ZO_PreHook(widget, "SetHidden", function(_, hidden)
-        return saved.hideWidget and not hidden
-    end)
+    if widget then
+        ZO_PreHook(widget, "SetHidden", function(_, hidden)
+            return saved.hideWidget and not hidden
+        end)
+    end
 
     local function Apply()
+        if not widget then return end
         local isHUD = SCENE_MANAGER:IsShowing("hud") or SCENE_MANAGER:IsShowing("hudui")
         widget:SetHidden(saved.hideWidget or not isHUD)
     end
@@ -26,14 +28,14 @@ local function Initialize(_, addonName)
 
     LibAddonMenu2:RegisterAddonPanel("KanaAetherChat_Panel", {
         type = "panel",
-        name = ADDON_NAME,
-        displayName = ADDON_NAME,
+        name = "Kana AetherChat Patch",
+        displayName = "|cFF0000Kana|r |c4488FFAetherChat|r |cFFFFFFPatch|r",
         author = "Kana",
         version = "1.6.0",
         registerForRefresh = true,
         registerForDefaults = true,
     })
-    LibAddonMenu2:RegisterOptionControls("KanaAetherChat_Panel", {
+    local options = {
         {
             type = "checkbox",
             name = "Компактный режим штатного чата",
@@ -56,7 +58,32 @@ local function Initialize(_, addonName)
             default = true,
             width = "full",
         },
-    })
+    }
+    local patchOptions = {
+        {"guildChannels", "Показывать каналы гильдий"},
+        {"fragmentShow", "Исправлять появление окна AetherChat"},
+        {"inputLayer", "Исправлять отображение строки ввода"},
+        {"focusInput", "Активировать ввод при открытии чата"},
+        {"reliableClose", "Исправлять закрытие чата"},
+        {"closeAfterSlash", "Закрывать чат после команды"},
+        {"escapeCloses", "Закрывать чат клавишей Escape"},
+        {"scrollPosition", "Сохранять место чтения при новых сообщениях"},
+        {"nativeChatLayout", "Возвращать положение штатного чата"},
+        {"lastChannel", "Запоминать выбранный канал"},
+    }
+    for _, option in ipairs(patchOptions) do
+        local key, name = option[1], option[2]
+        options[#options + 1] = {
+            type = "checkbox",
+            name = name,
+            getFunc = function() return KanaAetherChatSettings:Get(key) end,
+            setFunc = function(value) KanaAetherChatSettings:GetSaved()[key] = value end,
+            default = true,
+            requiresReload = true,
+            width = "full",
+        }
+    end
+    LibAddonMenu2:RegisterOptionControls("KanaAetherChat_Panel", options)
 end
 
 EVENT_MANAGER:RegisterForEvent(EVENT_NAME, EVENT_ADD_ON_LOADED, Initialize)

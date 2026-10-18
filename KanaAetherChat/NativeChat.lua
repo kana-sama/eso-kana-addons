@@ -4,6 +4,7 @@ local EVENT_NAME = ADDON_NAME .. "_NativeChat"
 local function Initialize(_, addonName)
     if addonName ~= ADDON_NAME then return end
     EVENT_MANAGER:UnregisterForEvent(EVENT_NAME, EVENT_ADD_ON_LOADED)
+    if KanaAetherChatSettings and not KanaAetherChatSettings:Get("nativeChatLayout") then return end
     local messenger = AetherChat.Messenger
 
     local function RestoreClosedChatEntry()

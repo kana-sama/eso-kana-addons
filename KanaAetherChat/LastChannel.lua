@@ -4,6 +4,7 @@ local EVENT_NAME = ADDON_NAME .. "_LastChannel"
 local function Initialize(_, addonName)
     if addonName ~= ADDON_NAME then return end
     EVENT_MANAGER:UnregisterForEvent(EVENT_NAME, EVENT_ADD_ON_LOADED)
+    if KanaAetherChatSettings and not KanaAetherChatSettings:Get("lastChannel") then return end
     local messenger = AetherChat.Messenger
     local saved = ZO_SavedVars:NewCharacterIdSettings("KanaAetherChatSavedVariables", 1, nil, {})
     local restored = false

@@ -1,12 +1,13 @@
-## Title: KanaAetherChat
+## Title: |cFF0000Kana|r |c4488FFAetherChat|r |cFFFFFFPatch|r
 ## APIVersion: 102000 102001
 ## Version: 1.6.0
 ## AddOnVersion: 10600
 ## Author: Kana
-## Description: Escape closes AetherChat; opening it activates chat input and cursor mode.
-## DependsOn: AetherChat
+## Description: Improves AetherChat controls and native ESO chat behavior.
+## DependsOn: AetherChat LibAddonMenu-2.0
 ## SavedVariables: KanaAetherChatSavedVariables
 
+Settings.lua
 KanaAetherChat.lua
 
 Scroll.lua

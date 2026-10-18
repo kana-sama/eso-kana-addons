@@ -6,7 +6,13 @@ EVENT_MANAGER = {
     RegisterForEvent=function(_,_,_,fn) callback=fn end,
     UnregisterForEvent=function() end,
 }
-dofile('/tmp/esoui-live/esoui/libraries/utility/zo_hook.lua')
+function ZO_PreHook(object, method, hook)
+    local original = object[method]
+    object[method] = function(...)
+        if hook(...) then return end
+        return original(...)
+    end
+end
 local buffer={position=0, rows=100, maxRows=100}
 function buffer:GetScrollPosition() return self.position end
 function buffer:SetScrollPosition(n) self.position=n end
