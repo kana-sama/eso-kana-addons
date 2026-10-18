@@ -143,25 +143,6 @@ function Bootstrap:Initialize()
                 wallSec=self.api.GetTimeStamp(),members=K.Copy(self.observer:ReadRoster())} end
         end)
     end
-    self.api.SLASH_COMMANDS['/ktri']=function(command)
-        if command=='bosstimes on' or command=='bosstimes off' then
-            K.Settings.SetBossKillTimes(self,command=='bosstimes on');return
-        elseif command=='settings' and self.settingsPanel then
-            self.api.LibAddonMenu2:OpenToPanel(self.settingsPanel);return
-        elseif command=='debug on' then self.diagnostics:SetEnabled(true)
-        elseif command=='debug off' then self.diagnostics:SetEnabled(false)
-        elseif command=='dump' then self.saved.dump=self.diagnostics:Dump(self.run and self.run:Snapshot() or {}) end
-        self.api.d(self.diagnostics:Status(self.run and self.run:Snapshot() or {}))
-        if command=='status' or command=='' then
-            local current=self.observer:ReadContext()
-            local manager=self.api.SCENE_MANAGER
-            local scene=manager and manager:GetCurrentScene()
-            local gamepad=self.api.IsInGamepadPreferredMode and self.api.IsInGamepadPreferredMode() or false
-            self.api.d(string.format('zone=%s; difficulty=%s; gamepad=%s; scene=%s',
-                tostring(current.zoneId),tostring(current.difficulty),tostring(gamepad),scene and scene:GetName() or '?'))
-            if self.hud then self.api.d(self.hud:Status()) end
-        end
-    end
     self:RefreshContext()
 end
 if EVENT_MANAGER and EVENT_ADD_ON_LOADED then
