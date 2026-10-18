@@ -4,6 +4,12 @@ local ru = GetCVar("language.2") == "ru"
 local FIRST_DIG = ru and "Можно выкопать впервые" or "Can scry, never excavated"
 local HIDE_SIMPLE = ru and "Скрыть обычные и простую мебель" or "Hide obvious and simple furnishings"
 local saved
+local features
+local featureDefaults = {
+    firstDig = true, hideSimple = true, zoneSorting = true, rewardTooltip = true,
+    doubleClickScry = true, columnVisibility = true, columnAutoWidth = true,
+    currentZoneHighlight = true,
+}
 
 -- Lua string ordering uses strcoll. On macOS ru_RU.UTF-8, distinct
 -- Cyrillic strings can collate equally and trigger LeadList's name tiebreaker.
@@ -114,8 +120,10 @@ local function installFilters()
     function ILLUnitList:FilterScrollList()
         local choices = ILL.savedVars.DropdownChoice
         local major, setType = choices.Major, choices.SetType
-        local firstDig, hideSimple = major == FIRST_DIG, setType == HIDE_SIMPLE
-        saved.firstDig, saved.hideSimple = firstDig, hideSimple
+        local firstDig = features.firstDig and major == FIRST_DIG
+        local hideSimple = features.hideSimple and setType == HIDE_SIMPLE
+        if features.firstDig then saved.firstDig = firstDig end
+        if features.hideSimple then saved.hideSimple = hideSimple end
         -- Let upstream keep handling zone selection and every existing filter.
         -- Restore selections even if another addon or upstream raises an error.
         if firstDig then choices.Major = ILL.DropdownData.ChoicesMajor[ILL_DROPDOWN_MAJOR_CANSCRY] end
@@ -232,7 +240,7 @@ local function installColumns()
     local measure = WINDOW_MANAGER:CreateControl("KanaLeadListColumnMeasure", GuiRoot, CT_LABEL)
     measure:SetHidden(true)
     if type(saved.hiddenColumns) ~= "table" then saved.hiddenColumns = {} end
-    local hidden = saved.hiddenColumns
+    local hidden = features.columnVisibility and saved.hiddenColumns or {}
     local function visibleCount()
         local count = 0
         for _, key in ipairs(keys) do if not hidden[key] then count = count + 1 end end
@@ -249,6 +257,15 @@ local function installColumns()
     headers:SetWidth(totalWidth)
     local textColumns = {Lead=true, Zone=true, Location=true, Set=true}
     local function calculateWidths()
+        if not features.columnAutoWidth then
+            local visibleWidth = 0
+            for _, key in ipairs(keys) do
+                widths[key] = baseWidths[key]
+                if not hidden[key] then visibleWidth = visibleWidth + widths[key] end
+            end
+            headers:SetWidth(visibleWidth)
+            return
+        end
         local available = ILLMainWindowList:GetNamedChild("Contents"):GetWidth()
         if available <= 0 then available = totalWidth end
         local desired, used, deficit = {}, 0, 0
@@ -378,8 +395,10 @@ local function installColumns()
             if original then return original(self, button, upInside, ...) end
         end)
     end
-    hookHeader(headers)
-    for _, key in ipairs(keys) do hookHeader(headers:GetNamedChild(key)) end
+    if features.columnVisibility then
+        hookHeader(headers)
+        for _, key in ipairs(keys) do hookHeader(headers:GetNamedChild(key)) end
+    end
     apply()
 end
 
@@ -460,22 +479,62 @@ end
 
 local function initialize()
     saved = ZO_SavedVars:NewAccountWide("KanaLeadListSavedVariables", 1, nil, {firstDig = false, hideSimple = false})
-    addChoice("Major", FIRST_DIG, ru and "Зацепка есть, а эту древность ещё ни разу не выкапывали." or "You have the lead and have never excavated this antiquity.")
-    addChoice("SetType", HIDE_SIMPLE, ru and "Скрыть обычные награды и декоративную мебель. Станки, манекены, хранилища и другие услуги остаются; учитывается награда за весь набор." or "Hide obvious rewards and decorative furnishings. Keep crafting stations, target dummies, storage and other services; classify the complete set reward.")
+    saved.features = saved.features or {}
+    features = saved.features
+    for key, enabled in pairs(featureDefaults) do
+        if features[key] == nil then features[key] = enabled end
+    end
+    local panelName = ADDON .. "_Panel"
+    LibAddonMenu2:RegisterAddonPanel(panelName, {
+        type = "panel", name = "Kana LeadList: search tools",
+        displayName = "|cFF0000Kana|r |c4488FFLeadList|r|cFFFFFF: search tools|r",
+        author = "Kana", version = "1.5.1", registerForRefresh = true,
+    })
+    local featureLabels = {
+        {"firstDig", "Фильтр первой раскопки"},
+        {"hideSimple", "Фильтр обычных наград и простой мебели"},
+        {"zoneSorting", "Сортировка по зонам"},
+        {"rewardTooltip", "Подсказка конечной награды"},
+        {"doubleClickScry", "Лоцирование двойным щелчком"},
+        {"columnVisibility", "Выбор видимых столбцов"},
+        {"columnAutoWidth", "Ширина столбцов по содержимому"},
+        {"currentZoneHighlight", "Подсветка текущей зоны"},
+    }
+    local options = {}
+    for _, item in ipairs(featureLabels) do
+        local key, label = item[1], item[2]
+        options[#options + 1] = {
+            type = "checkbox", name = label,
+            getFunc = function() return features[key] end,
+            setFunc = function(value) features[key] = value end,
+            default = true, requiresReload = true,
+        }
+    end
+    LibAddonMenu2:RegisterOptionControls(panelName, options)
+    if features.firstDig then
+        addChoice("Major", FIRST_DIG, ru and "Зацепка есть, а эту древность ещё ни разу не выкапывали." or "You have the lead and have never excavated this antiquity.")
+    elseif ILL.savedVars.DropdownChoice.Major == FIRST_DIG then
+        ILL.savedVars.DropdownChoice.Major = ILL.DropdownData.ChoicesMajor[ILL_DROPDOWN_MAJOR_CANSCRY]
+    end
+    if features.hideSimple then
+        addChoice("SetType", HIDE_SIMPLE, ru and "Скрыть обычные награды и декоративную мебель. Станки, манекены, хранилища и другие услуги остаются; учитывается награда за весь набор." or "Hide obvious rewards and decorative furnishings. Keep crafting stations, target dummies, storage and other services; classify the complete set reward.")
+    elseif ILL.savedVars.DropdownChoice.SetType == HIDE_SIMPLE then
+        ILL.savedVars.DropdownChoice.SetType = ILL.DropdownData.ChoicesSetType[ILL_DROPDOWN_SETTYPE_ALL]
+    end
     -- Upstream rejects unknown saved labels while initializing its dropdowns.
     -- Our own booleans restore these two choices on the next login/reload.
-    if saved.firstDig then ILL.savedVars.DropdownChoice.Major = FIRST_DIG end
-    if saved.hideSimple then ILL.savedVars.DropdownChoice.SetType = HIDE_SIMPLE end
+    if features.firstDig and saved.firstDig then ILL.savedVars.DropdownChoice.Major = FIRST_DIG end
+    if features.hideSimple and saved.hideSimple then ILL.savedVars.DropdownChoice.SetType = HIDE_SIMPLE end
     for _, name in ipairs({"Major", "SetType"}) do
         local control = _G["ILL_Dropdown" .. name]
         if control and control.comboBox then control.comboBox:SetSelectedItem(ILL.savedVars.DropdownChoice[name]) end
     end
-    installSorting()
-    installFilters()
-    installTooltips()
-    installScrying()
-    installColumns()
-    installCurrentZoneHighlight()
+    if features.zoneSorting then installSorting() end
+    if features.firstDig or features.hideSimple then installFilters() end
+    if features.rewardTooltip then installTooltips() end
+    if features.doubleClickScry then installScrying() end
+    if features.columnVisibility or features.columnAutoWidth then installColumns() end
+    if features.currentZoneHighlight then installCurrentZoneHighlight() end
     ILL.UnitList:RefreshData()
 end
 

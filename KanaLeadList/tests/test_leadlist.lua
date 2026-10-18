@@ -25,7 +25,22 @@ GetZoneNameById = function() return 'Даашан' end
 ZO_ScrollList_GetDataList = function(list) return list end
 ZO_ScrollList_CreateDataEntry = function(_, data) return {data = data} end
 local saved = {}
+local singleOff = arg[1] and arg[1]:match('^off:(%w+)$')
+if singleOff then saved.features = {[singleOff] = false} end
 if arg[1] == 'restore' then saved.firstDig, saved.hideSimple = true, true end
+if arg[1] == 'disabled' then
+    saved.firstDig, saved.hideSimple = true, true
+    saved.features = {
+        firstDig=false, hideSimple=false, zoneSorting=false, rewardTooltip=false,
+        doubleClickScry=false, columnVisibility=false, columnAutoWidth=false,
+        currentZoneHighlight=false,
+    }
+elseif arg[1] == 'columnWidthOff' then
+    saved.features = {columnAutoWidth=false}
+elseif arg[1] == 'columnMenuOff' then
+    saved.hiddenColumns = {Zone=true}
+    saved.features = {columnVisibility=false}
+end
 local columns = {'Lead','Zone','Location','Lore','Dug','Set','Expiration'}
 if arg[1] == 'restore' then saved.hiddenColumns = {Zone=true, Lore=true} end
 if arg[1] == 'allhidden' then
@@ -78,6 +93,11 @@ end
 ZO_CheckButton_SetEnableState = function(checkbox,enabled) checkbox.enabled=enabled end
 ShowMenu = function(owner) ZO_Menu.owner=owner end
 ZO_SavedVars = { NewAccountWide = function() return saved end }
+local addonPanel, addonOptions
+LibAddonMenu2 = {
+    RegisterAddonPanel = function(_, name, panel) addonPanel = {name=name, data=panel} end,
+    RegisterOptionControls = function(_, name, controls) addonOptions = {name=name, controls=controls} end,
+}
 ILeadList = {}
 dofile('LeadList/locale/ui_ru.lua')
 ILL_DROPDOWN_MAJOR_CANFIND, ILL_DROPDOWN_MAJOR_CANSCRY = 1, 2
@@ -141,6 +161,8 @@ for _, name in ipairs({'Major','SetType'}) do
     }
     _G['ILL_Dropdown' .. name] = {comboBox = combo}
 end
+local originalSort, originalFilter = ILLUnitList.SortScrollList, ILLUnitList.FilterScrollList
+local originalSetup, originalEnter = ILLUnitList.SetupUnitRow, ILL.RowMouseEnter
 local extension = io.open('KanaLeadList/KanaLeadList.lua')
 local initialMajor, initialSetType
 if extension then
@@ -157,10 +179,20 @@ if extension then
 end
 local passed, failed = 0, 0
 local function test(name, fn)
+    if (arg[1] == 'disabled' or arg[1] == 'columnWidthOff' or arg[1] == 'columnMenuOff' or singleOff)
+        and not name:match('^own ') then return end
     local ok, err = pcall(fn)
     if ok then passed = passed + 1; print('PASS ' .. name)
     else failed = failed + 1; print('FAIL ' .. name .. ': ' .. err) end
 end
+test('own settings expose eight independent patches', function()
+    assert(addonPanel and addonPanel.name == 'KanaLeadList_Panel')
+    assert(addonOptions and addonOptions.name == addonPanel.name and #addonOptions.controls == 8)
+    for _, option in ipairs(addonOptions.controls) do
+        assert(option.type == 'checkbox' and option.requiresReload == true)
+    end
+    assert(saved.features.firstDig ~= nil and saved.features.currentZoneHighlight ~= nil)
+end)
 local function row(id, zone, lead, have, dug)
     return {Aid=id, Zone=zone, ZoneId=1, Lead=lead, HaveLead=have, Dug=dug, Set='Other', SetId=0, Diff=3, Repeatable=true, Lore=0}
 end
@@ -461,6 +493,59 @@ test('row recoloring tolerates missing children and preserves the zone backgroun
     colorRow(list,rowControl,data,false)
     assert(labelColor and labelColor[1]==0.2 and labelColor[4]==0.7, 'label coloring changed')
     assert(not recolored, 'current zone background recolored')
+end)
+test('own all-off settings leave upstream list behavior and old choices intact', function()
+    if arg[1] ~= 'disabled' then return end
+    assert(ILLUnitList.SortScrollList == originalSort and ILLUnitList.FilterScrollList == originalFilter)
+    assert(ILLUnitList.SetupUnitRow == originalSetup and ILL.RowMouseEnter == originalEnter)
+    assert(not callbacks['Можно выкопать впервые'] and not callbacks['Скрыть обычные и простую мебель'])
+    assert(not ILLMainWindowHeaders:GetHandler('OnMouseUp'))
+    assert(saved.firstDig == true and saved.hideSimple == true, 'prior preferences were erased')
+end)
+test('own column-width switch preserves menu with original widths', function()
+    if arg[1] ~= 'columnWidthOff' then return end
+    local headers=ILLMainWindowHeaders
+    assert(headers:GetHandler('OnMouseUp'))
+    headers:GetHandler('OnMouseUp')(headers,2,true)
+    ZO_Menu.items[2].callback()
+    assert(headers:GetNamedChild('Zone').hidden and headers:GetNamedChild('Lead'):GetWidth()==300)
+    assert(headers:GetNamedChild('Location').anchor[4]==300)
+end)
+test('own column-menu switch ignores old hidden choices but still fills width', function()
+    if arg[1] ~= 'columnMenuOff' then return end
+    local headers=ILLMainWindowHeaders
+    assert(not headers:GetHandler('OnMouseUp') and not headers:GetNamedChild('Zone').hidden)
+    assert(saved.hiddenColumns.Zone==true, 'saved column choice must survive disable')
+    assert(math.abs(headers:GetWidth()-1200)<0.01)
+end)
+test('own single disabled patch leaves the other patches available', function()
+    if not singleOff then return end
+    assert(saved.features[singleOff] == false)
+    local unchecked = 0
+    for _, option in ipairs(addonOptions.controls) do if not option.getFunc() then unchecked = unchecked + 1 end end
+    assert(unchecked == 1, 'one setting must disable only its own patch')
+    if singleOff == 'firstDig' then
+        assert(not callbacks['Можно выкопать впервые'] and callbacks['Скрыть обычные и простую мебель'])
+    elseif singleOff == 'hideSimple' then
+        assert(callbacks['Можно выкопать впервые'] and not callbacks['Скрыть обычные и простую мебель'])
+    elseif singleOff == 'zoneSorting' then
+        assert(ILLUnitList.SortScrollList == originalSort and ILLUnitList.FilterScrollList ~= originalFilter)
+    elseif singleOff == 'rewardTooltip' then
+        assert(ILL.RowMouseEnter == originalEnter)
+    elseif singleOff == 'doubleClickScry' then
+        local control=uiControl(0)
+        list:SetupUnitRow(control,row(99,'Даашан','A',true,0))
+        assert(not control:GetHandler('OnMouseDoubleClick'))
+    elseif singleOff == 'columnVisibility' then
+        assert(not ILLMainWindowHeaders:GetHandler('OnMouseUp') and ILLMainWindowHeaders:GetWidth()==1200)
+    elseif singleOff == 'columnAutoWidth' then
+        assert(ILLMainWindowHeaders:GetHandler('OnMouseUp'))
+        assert(ILLMainWindowHeaders:GetNamedChild('Lead'):GetWidth()==300)
+    elseif singleOff == 'currentZoneHighlight' then
+        local control=uiControl(0)
+        list:SetupUnitRow(control,row(99,'Даашан','A',true,0))
+        assert(not control.kanaCurrentZoneHighlight and not events.KanaLeadListCurrentZone3)
+    else error('unknown setting '..singleOff) end
 end)
 print(string.format('%d passed, %d failed', passed, failed))
 if failed > 0 then os.exit(1) end
