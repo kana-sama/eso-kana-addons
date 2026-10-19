@@ -113,10 +113,10 @@ check(controls.KanaBackBarReminderBrackets.anchor[2] == ZO_ReticleContainerRetic
 check(panel.registerForRefresh and panel.registerForDefaults, 'Settings support refresh and defaults')
 check(panel.name == '|cFF0000Kana|r Back Bar Reminder' and panel.displayName == panel.name,
     'Display the spaced addon name with only the Kana prefix red')
-check(#options == 3 and options[1].type == 'checkbox' and options[2].type == 'checkbox'
-    and options[3].type == 'dropdown', 'Expose two independent effects and the main-bar choice')
-check(options[1].getFunc() and options[2].getFunc(), 'Both effects are enabled by default')
-check(options[3].getFunc() == 0, 'Primary weapon pair is the default main bar')
+check(#options == 4 and options[1].type == 'checkbox' and options[2].type == 'checkbox' and options[3].type == 'checkbox'
+    and options[4].type == 'dropdown', 'Expose both effects, glow intensity and the main-bar choice')
+check(options[1].getFunc() and options[3].getFunc(), 'Both effects are enabled by default')
+check(options[4].getFunc() == 0, 'Primary weapon pair is the default main bar')
 for _, option in ipairs(options) do check(not option.requiresReload, 'Settings must apply immediately') end
 for _, item in pairs(controls) do
     if item ~= GuiRoot and item ~= ZO_ReticleContainerReticle and item.mouseEnabled ~= nil then
@@ -128,15 +128,34 @@ fragments[1]:Show()
 signals(false, false, 'Opening the HUD on the main bar must not reveal effects')
 swap(1)
 signals(true, true, 'Both effects appear on the side bar')
+check(not options[2].getFunc() and controls.KanaBackBarReminderGlow.color[4] == 0.3,
+    'Existing settings keep the original glow intensity by default')
+options[2].setFunc(true)
+check(controls.KanaBackBarReminderGlow.color[4] == 1,
+    'Intense mode immediately increases the glow alpha from 0.3 to 1')
+check(controls.KanaBackBarReminderBracket1.color[4] == 0.85,
+    'Increasing glow intensity must not brighten the brackets')
+options[1].setFunc(false)
+signals(false, true, 'Intense glow still respects the independent glow toggle')
+check(options[2].disabled(), 'Disable the intensity control when glow itself is disabled')
+options[1].setFunc(true)
+check(controls.KanaBackBarReminderGlow.color[4] == 1 and not options[2].disabled(),
+    'Re-enabling glow restores the chosen intensity immediately')
+swap(0)
+signals(false, false, 'Intense mode must not reveal either effect on the main bar')
+swap(1)
+options[2].setFunc(false)
+check(controls.KanaBackBarReminderGlow.color[4] == 0.3,
+    'Disabling intense mode immediately restores the original intensity')
 events[EVENT_PLAYER_ACTIVATED]()
 signals(true, true, 'Player activation preserves the actual side-bar state')
 options[1].setFunc(false)
 signals(false, true, 'Disabling glow keeps brackets visible without a reload')
-options[2].setFunc(false)
+options[3].setFunc(false)
 signals(false, false, 'Both effects can be disabled')
 options[1].setFunc(true)
 signals(true, false, 'Glow can be used independently')
-options[2].setFunc(true)
+options[3].setFunc(true)
 signals(true, true, 'Brackets can be re-enabled immediately')
 swap(0)
 signals(false, false, 'Returning to the main bar hides both effects')
@@ -151,7 +170,7 @@ swap(0)
 fragments[1]:Show()
 signals(false, false, 'A fragment reopening on main must not resurrect stale effects')
 
-options[3].setFunc(1)
+options[4].setFunc(1)
 signals(true, true, 'Choosing backup as main makes primary the side bar')
 swap(1)
 signals(false, false, 'The chosen main bar remains visually normal')
@@ -170,16 +189,18 @@ events[EVENT_PLAYER_ACTIVATED]()
 check(controls.KanaBackBarReminderBrackets.anchor[2] == ZO_ReticleContainerReticle, 'Use a reticle that becomes available later')
 
 options[1].setFunc(false)
+options[2].setFunc(true)
 reload()
 fragments[1]:Show()
 signals(false, true, 'A reload preserves the selected main bar and independent toggles')
-check(options[3].getFunc() == 1 and not options[1].getFunc(), 'Settings survive reload')
+check(options[4].getFunc() == 1 and not options[1].getFunc() and options[2].getFunc(), 'Settings and glow intensity survive reload')
 character = 'character-b'
 reload()
-check(options[3].getFunc() == 0 and options[1].getFunc(), 'Characters have independent settings')
-saved[character] = {showGlow = 'invalid', showBrackets = false, mainBar = 999}
+check(options[4].getFunc() == 0 and options[1].getFunc() and not options[2].getFunc(), 'Characters have independent settings and intensity')
+saved[character] = {showGlow = 'invalid', showBrackets = false, intenseGlow = 'invalid', mainBar = 999}
 reload()
-check(options[1].getFunc() == true and options[2].getFunc() == false and options[3].getFunc() == 0,
+check(options[1].getFunc() == true and options[3].getFunc() == false and options[4].getFunc() == 0
+    and options[2].getFunc() == false,
     'Repair invalid settings while preserving a saved disabled effect')
 
 print(('PASS: %d KanaBackBarReminder behavior checks'):format(passed))

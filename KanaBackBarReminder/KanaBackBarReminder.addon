@@ -1,8 +1,8 @@
 ## Title: |cFF0000Kana|r Back Bar Reminder
 ## Author: Kana
 ## Description: Persistent screen-edge glow and reticle brackets on your side weapon bar.
-## Version: 1.0.1
-## AddOnVersion: 10001
+## Version: 1.0.2
+## AddOnVersion: 10002
 ## APIVersion: 101050
 ## SavedVariables: KanaBackBarReminderSV
 ## DependsOn: LibAddonMenu-2.0

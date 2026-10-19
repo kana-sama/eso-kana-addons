@@ -1,6 +1,6 @@
 local NAME = 'KanaBackBarReminder'
 local DISPLAY_NAME = '|cFF0000Kana|r Back Bar Reminder'
-local DEFAULTS = {showGlow = true, showBrackets = true, mainBar = HOTBAR_CATEGORY_PRIMARY}
+local DEFAULTS = {showGlow = true, showBrackets = true, intenseGlow = false, mainBar = HOTBAR_CATEGORY_PRIMARY}
 local RED, GREEN, BLUE = 0.4, 0.95, 0.8
 
 local function Initialize(_, addonName)
@@ -8,7 +8,7 @@ local function Initialize(_, addonName)
     EVENT_MANAGER:UnregisterForEvent(NAME, EVENT_ADD_ON_LOADED)
 
     local saved = ZO_SavedVars:NewCharacterIdSettings('KanaBackBarReminderSV', 1, nil, DEFAULTS)
-    for _, key in ipairs({'showGlow', 'showBrackets'}) do
+    for _, key in ipairs({'showGlow', 'showBrackets', 'intenseGlow'}) do
         if type(saved[key]) ~= 'boolean' then saved[key] = DEFAULTS[key] end
     end
     if saved.mainBar ~= HOTBAR_CATEGORY_PRIMARY and saved.mainBar ~= HOTBAR_CATEGORY_BACKUP then
@@ -24,7 +24,6 @@ local function Initialize(_, addonName)
     local glow = WINDOW_MANAGER:CreateControl(NAME .. 'Glow', root, CT_TEXTURE)
     glow:SetAnchorFill(root)
     glow:SetTexture('eso-kana-addons/KanaBackBarReminder/textures/EdgeGlow.dds')
-    glow:SetColor(RED, GREEN, BLUE, 0.3)
     glow:SetBlendMode(TEX_BLEND_MODE_ADD)
     glow:SetDrawLayer(DL_OVERLAY)
     glow:SetMouseEnabled(false)
@@ -54,6 +53,7 @@ local function Initialize(_, addonName)
             and active ~= saved.mainBar
         brackets:ClearAnchors()
         brackets:SetAnchor(CENTER, ZO_ReticleContainerReticle or GuiRoot, CENTER, 0, 0)
+        glow:SetColor(RED, GREEN, BLUE, saved.intenseGlow and 1 or 0.3)
         glow:SetHidden(not (sideBar and saved.showGlow))
         brackets:SetHidden(not (sideBar and saved.showBrackets))
     end
@@ -69,7 +69,7 @@ local function Initialize(_, addonName)
     local russian = GetCVar('language.2') == 'ru'
     local panelName = NAME .. 'Options'
     LibAddonMenu2:RegisterAddonPanel(panelName, {
-        type = 'panel', name = DISPLAY_NAME, displayName = DISPLAY_NAME, author = 'Kana', version = '1.0.1',
+        type = 'panel', name = DISPLAY_NAME, displayName = DISPLAY_NAME, author = 'Kana', version = '1.0.2',
         registerForRefresh = true, registerForDefaults = true,
     })
     local function Getter(key)
@@ -87,6 +87,14 @@ local function Initialize(_, addonName)
             tooltip = russian and 'Мягкое свечение по всем четырём краям экрана, пока активна сайдовая панель.'
                 or 'A soft glow along all four screen edges while the side bar is active.',
             getFunc = Getter('showGlow'), setFunc = Setter('showGlow'), default = DEFAULTS.showGlow,
+            width = 'full',
+        },
+        {
+            type = 'checkbox', name = russian and 'Усиленное свечение' or 'Intense glow',
+            tooltip = russian and 'Значительно увеличивает яркость свечения по краям экрана.'
+                or 'Significantly increases the brightness of the screen-edge glow.',
+            getFunc = Getter('intenseGlow'), setFunc = Setter('intenseGlow'), default = DEFAULTS.intenseGlow,
+            disabled = function() return not saved.showGlow end,
             width = 'full',
         },
         {
