@@ -1,0 +1,15 @@
+## Title: |cFF0000Kana|r |c4488FFCharacter Knowledge|r: |cFFFFFFscribing script source hint|r
+## Description: Shows script sources and today's observed rewards in Character Knowledge.
+## Author: Kana
+## Version: 1.0.0
+## AddOnVersion: 10000
+## APIVersion: 101051
+## DependsOn: CharacterKnowledge>=301040 LibCharacterKnowledge>=301020 LibAddonMenu-2.0
+## SavedVariables: KanaScribingScriptSourceHintSaved
+
+Sources.lua
+Tracking.lua
+Events.lua
+Tooltip.lua
+Filter.lua
+Main.lua

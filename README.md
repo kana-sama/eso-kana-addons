@@ -22,6 +22,9 @@
 ## Character Knowledge <sup>[esoui](https://www.esoui.com/downloads/info2938-CharacterKnowledgeMotifRecipeandFurnishingPlanTracker.html)</sup>
 Рисует табличку со всеми исследованиями. Так же чеклист всех рецептов.
 
+### [Kana Character Knowledge: scribing script source hint](KanaScribingScriptSourceHint/README.md)
+Показывает три значка источников страниц чарописи, подсказывает, где взять дейлики, и приглушает значки после получения страницы сегодня.
+
 ## Code's Combat Alerts <sup>[esoui](https://www.esoui.com/downloads/info1855-CodesCombatAlerts.html)</sup>
 Таймеры на кик/додж/босс под важные атаки боссов.
 
