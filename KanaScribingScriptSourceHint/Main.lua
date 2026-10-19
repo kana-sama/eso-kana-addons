@@ -1,6 +1,6 @@
 local A = KanaScribingScriptSourceHint
 A.name = 'KanaScribingScriptSourceHint'
-local displayName = '|cFF0000Kana|r |c4488FFCharacter Knowledge|r: |cFFFFFFscribing script source hint|r'
+local displayName = '|cFF0000Kana|r |c4488FFCharacter Knowledge|r: |cFFFFFFscribing sources|r'
 
 local function selection(api)
     local list = api.CharacterKnowledge.list

@@ -1,4 +1,4 @@
-# Kana Character Knowledge: scribing script source hint
+# Kana Character Knowledge: scribing sources
 
 Надстройка Character Knowledge помогает найти недостающие страницы чарописи.
 
